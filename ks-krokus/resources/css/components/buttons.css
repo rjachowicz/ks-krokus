@@ -1,0 +1,66 @@
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.btn,
+.btn-action {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease,
+        background 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease;
+}
+
+.btn:hover,
+.btn-action:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    border-color: var(--gold-strong);
+    background: var(--gold-strong);
+    color: #111318;
+    box-shadow: 0 12px 30px rgba(170, 127, 25, 0.2);
+}
+
+.btn-primary:hover {
+    background: #e0b541;
+    box-shadow: 0 16px 36px rgba(170, 127, 25, 0.28);
+}
+
+.btn-secondary {
+    border-color: var(--line-strong);
+    background: var(--surface);
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    border-color: var(--gold);
+    color: var(--gold-strong);
+}
+
+.btn-action {
+    border-color: rgba(209, 169, 54, 0.64);
+    background: var(--gold-soft);
+    color: var(--gold-strong);
+}
+
+.btn-action:hover {
+    border-color: var(--gold-strong);
+    background: var(--gold-strong);
+    color: #111318;
+}

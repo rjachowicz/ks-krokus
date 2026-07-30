@@ -1,0 +1,116 @@
+.hero {
+    width: min(var(--container-width), calc(100% - var(--page-gutter)));
+    margin: 32px auto 64px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+    align-items: center;
+    gap: clamp(36px, 6vw, 78px);
+}
+
+.hero-content {
+    min-width: 0;
+}
+
+.category-tag,
+.card-code,
+.card-status,
+.resource-badge {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.category-tag {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: var(--gold-strong);
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.category-tag::before {
+    width: 28px;
+    height: 1px;
+    content: "";
+    background: currentColor;
+}
+
+.hero h1 {
+    max-width: 900px;
+    margin-bottom: 24px;
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: clamp(2.7rem, 6vw, 5.25rem);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+}
+
+.hero .highlight {
+    color: var(--gold-strong);
+}
+
+.hero-description,
+.hero-content > p {
+    max-width: 680px;
+    margin-bottom: 32px;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 1.5vw, 1.12rem);
+}
+
+.hero-description > :last-child {
+    margin-bottom: 0;
+}
+
+.hero-visual {
+    position: relative;
+    min-height: 480px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-lg);
+    isolation: isolate;
+}
+
+.hero-visual::after {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    content: "";
+    background:
+        linear-gradient(to top, rgba(5, 7, 10, 0.92), transparent 58%),
+        linear-gradient(135deg, rgba(209, 169, 54, 0.18), transparent 42%);
+}
+
+.visual-canvas {
+    position: absolute;
+    inset: 0;
+    filter: grayscale(0.72) contrast(1.08) brightness(0.75);
+    transition:
+        transform 600ms cubic-bezier(.2, .8, .2, 1),
+        filter 600ms ease;
+}
+
+.hero-visual:hover .visual-canvas {
+    transform: scale(1.045);
+    filter: grayscale(0.45) contrast(1.08) brightness(0.8);
+}
+
+.telemetry-overlay {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px;
+    color: #f0ca58;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+}

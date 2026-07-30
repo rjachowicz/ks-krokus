@@ -3,122 +3,104 @@
 @section('title', 'KS Krokus — Klub Strzelecki Nowy Sącz')
 @section('meta_description', 'Klub Strzelecki Krokus LOK w Nowym Sączu. Treningi, zawody, patent strzelecki, licencja PZSS i członkostwo w klubie.')
 
+@php($club = config('club'))
+
 @section('content')
-    <section class="hero" aria-labelledby="home-title">
-        <div class="hero-content">
-            <span class="category-tag">Tradycja od 1999 roku</span>
-            <h1 id="home-title">Klub Strzelecki <span class="highlight">Krokus</span> Nowy Sącz</h1>
+    <x-page-hero
+        id="home-title"
+        eyebrow="Tradycja od {{ $club['founded_year'] }} roku"
+        :visual="true"
+        visual-class="visual-canvas--home"
+        visual-primary="Strzelnica sportowa"
+        visual-secondary="Nowy Sącz"
+    >
+        <x-slot:title>
+            Klub Strzelecki <span class="highlight">Krokus</span> Nowy Sącz
+        </x-slot:title>
+
+        <x-slot:description>
             <p>
                 Oficjalny klub zrzeszony w Polskim Związku Strzelectwa Sportowego oraz Małopolskim Związku
                 Strzelectwa Sportowego. Szkolimy bezpiecznie, rozwijamy sportową rywalizację i pomagamy członkom
                 zdobywać patent oraz licencję zawodniczą.
             </p>
+        </x-slot:description>
 
-            <div class="btn-group">
-                <a href="{{ route('contact') }}" class="btn btn-primary">Dołącz do klubu</a>
-                <a href="#historia" class="btn btn-secondary">Poznaj historię</a>
-            </div>
-        </div>
-
-        <div class="hero-visual" aria-hidden="true">
-            <div class="visual-canvas"></div>
-            <div class="telemetry-overlay">
-                <span>Strzelnica sportowa</span>
-                <span>Nowy Sącz</span>
-            </div>
-        </div>
-    </section>
+        <x-slot:actions>
+            <a href="{{ route('contact') }}" class="btn btn-primary">Dołącz do klubu</a>
+            <a href="#historia" class="btn btn-secondary">Poznaj historię</a>
+        </x-slot:actions>
+    </x-page-hero>
 
     <section class="hero-stats-bar" aria-label="Najważniejsze informacje o klubie">
-        <article class="stat-card">
-            <span class="stat-number">25+</span>
-            <span class="stat-label">lat tradycji</span>
-        </article>
-        <article class="stat-card">
-            <span class="stat-number">20+</span>
-            <span class="stat-label">zawodów rocznie</span>
-        </article>
-        <article class="stat-card">
-            <span class="stat-number">PZSS</span>
-            <span class="stat-label">licencja klubowa</span>
-        </article>
+        <x-stat-card :value="(now()->year - $club['founded_year']).'+'" label="lat tradycji"/>
+        <x-stat-card :value="$club['annual_events'].'+'" label="zawodów rocznie"/>
+        <x-stat-card value="PZSS" label="licencja klubowa"/>
     </section>
 
     <section class="features-section" aria-labelledby="about-title">
-        <header class="section-header">
-            <h2 id="about-title" class="section-title">O Klubie Strzeleckim</h2>
-            <span class="section-meta">KS_KROKUS / 01</span>
-        </header>
+        <x-section-heading id="about-title" title="O Klubie Strzeleckim" meta="KS_KROKUS / 01"/>
 
         <div class="bento-grid">
-            <article class="card bento-span-2">
-                <div>
-                    <span class="card-code">SEC_01 // TRENINGI I KOMPETENCJE</span>
-                    <h3>Kompleksowe szkolenie strzeleckie</h3>
-                    <p>
-                        Regularne zajęcia z pistoletu, karabinu i strzelby gładkolufowej pod opieką doświadczonej
-                        kadry. Nacisk kładziemy na bezpieczeństwo, poprawną technikę i systematyczny rozwój zawodnika.
-                    </p>
-                </div>
-                <footer class="card-footer">
-                    <span class="card-status">TRENINGI KLUBOWE</span>
-                    <a href="{{ route('contact') }}#lokalizacje" class="card-link">Sprawdź lokalizacje →</a>
-                </footer>
-            </article>
+            <x-content-card
+                class="bento-span-2"
+                code="SEC_01 // TRENINGI I KOMPETENCJE"
+                title="Kompleksowe szkolenie strzeleckie"
+                status="TRENINGI KLUBOWE"
+                :href="route('contact').'#lokalizacje'"
+                link-label="Sprawdź lokalizacje →"
+            >
+                <p>
+                    Regularne zajęcia z pistoletu, karabinu i strzelby gładkolufowej pod opieką doświadczonej
+                    kadry. Nacisk kładziemy na bezpieczeństwo, poprawną technikę i systematyczny rozwój zawodnika.
+                </p>
+            </x-content-card>
 
-            <article class="card">
-                <div>
-                    <span class="card-code">SEC_02 // UPRAWNIENIA</span>
-                    <h3>Patent i licencja PZSS</h3>
-                    <p>
-                        Przygotowanie do egzaminu na patent strzelecki oraz wsparcie w procedurach związanych
-                        z licencją zawodniczą i dalszym rozwojem sportowym.
-                    </p>
-                </div>
-                <footer class="card-footer">
-                    <span class="card-status">SZKOLENIE PATENTOWE</span>
-                    <a href="{{ route('club') }}#szkolenie-patentowe" class="card-link">Poznaj program →</a>
-                </footer>
-            </article>
+            <x-content-card
+                code="SEC_02 // UPRAWNIENIA"
+                title="Patent i licencja PZSS"
+                status="SZKOLENIE PATENTOWE"
+                :href="route('club').'#szkolenie-patentowe'"
+                link-label="Poznaj program →"
+            >
+                <p>
+                    Przygotowanie do egzaminu na patent strzelecki oraz wsparcie w procedurach związanych
+                    z licencją zawodniczą i dalszym rozwojem sportowym.
+                </p>
+            </x-content-card>
 
-            <article class="card">
-                <div>
-                    <span class="card-code">SEC_03 // ZAPLECZE</span>
-                    <h3>Broń i infrastruktura klubowa</h3>
-                    <p>
-                        Członkowie korzystają z zaplecza treningowego i broni klubowej zgodnie z regulaminem,
-                        uprawnieniami oraz zasadami obowiązującymi na danej osi strzeleckiej.
-                    </p>
-                </div>
-                <footer class="card-footer">
-                    <span class="card-status">ZASOBY KLUBOWE</span>
-                    <a href="{{ route('contact') }}" class="card-link">Zapytaj zarząd →</a>
-                </footer>
-            </article>
+            <x-content-card
+                code="SEC_03 // ZAPLECZE"
+                title="Broń i infrastruktura klubowa"
+                status="ZASOBY KLUBOWE"
+                :href="route('contact')"
+                link-label="Zapytaj zarząd →"
+            >
+                <p>
+                    Członkowie korzystają z zaplecza treningowego i broni klubowej zgodnie z regulaminem,
+                    uprawnieniami oraz zasadami obowiązującymi na danej osi strzeleckiej.
+                </p>
+            </x-content-card>
 
-            <article class="card bento-span-2">
-                <div>
-                    <span class="card-code">SEC_04 // RYWALIZACJA SPORTOWA</span>
-                    <h3>Zawody o randze regionalnej i ogólnopolskiej</h3>
-                    <p>
-                        Organizujemy zawody wpisane do kalendarza MZSS, w tym Puchar Zimy, Krokus Open oraz
-                        Memoriał majora rez. Eugeniusza Nurka. Starty umożliwiają realizację wymaganej liczby
-                        konkurencji potrzebnych do przedłużenia licencji zawodniczej.
-                    </p>
-                </div>
-                <footer class="card-footer">
-                    <span class="card-status">SEZON SPORTOWY</span>
-                    <a href="{{ route('contact') }}" class="card-link">Kontakt w sprawie zawodów →</a>
-                </footer>
-            </article>
+            <x-content-card
+                class="bento-span-2"
+                code="SEC_04 // RYWALIZACJA SPORTOWA"
+                title="Zawody o randze regionalnej i ogólnopolskiej"
+                status="SEZON SPORTOWY"
+                :href="route('contact')"
+                link-label="Kontakt w sprawie zawodów →"
+            >
+                <p>
+                    Organizujemy zawody wpisane do kalendarza MZSS, w tym Puchar Zimy, Krokus Open oraz
+                    Memoriał majora rez. Eugeniusza Nurka. Starty umożliwiają realizację wymaganej liczby
+                    konkurencji potrzebnych do przedłużenia licencji zawodniczej.
+                </p>
+            </x-content-card>
         </div>
     </section>
 
     <section id="historia" class="features-section" aria-labelledby="history-title">
-        <header class="section-header">
-            <h2 id="history-title" class="section-title">Historia Klubu Krokus</h2>
-            <span class="section-meta">CHRONOLOGY_LOG</span>
-        </header>
+        <x-section-heading id="history-title" title="Historia Klubu Krokus" meta="CHRONOLOGY_LOG"/>
 
         <div class="timeline">
             <article class="timeline-item">
@@ -168,10 +150,7 @@
     </section>
 
     <section class="features-section" aria-labelledby="join-title">
-        <header class="section-header">
-            <h2 id="join-title" class="section-title">Jak dołączyć do Krokusa?</h2>
-            <span class="section-meta">JOIN_PROTOCOL</span>
-        </header>
+        <x-section-heading id="join-title" title="Jak dołączyć do Krokusa?" meta="JOIN_PROTOCOL"/>
 
         <div class="steps-grid">
             <article class="step-card">

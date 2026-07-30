@@ -1,0 +1,195 @@
+.site-header {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    left: 0;
+    border-bottom: 1px solid transparent;
+    background: var(--header-bg);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.site-header.is-scrolled {
+    border-color: var(--line);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.nav-container {
+    width: min(var(--container-width), calc(100% - var(--page-gutter)));
+    min-height: 82px;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.logo-mark {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgba(209, 169, 54, 0.55);
+    border-radius: 10px;
+    background: var(--gold-soft);
+    color: var(--gold-strong);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.logo:hover .logo-mark {
+    background: var(--gold-strong);
+    color: #101216;
+    transform: rotate(-3deg) scale(1.04);
+}
+
+.logo-title {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1;
+}
+
+.logo-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 6px;
+    color: var(--text-soft);
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.12em;
+}
+
+.status-dot {
+    position: relative;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--gold-strong);
+    box-shadow: 0 0 0 4px var(--gold-soft);
+}
+
+.main-nav ul {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.main-nav a {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 160ms ease, color 160ms ease;
+}
+
+.main-nav a:hover {
+    background: var(--surface);
+    color: var(--text);
+}
+
+.main-nav a.active {
+    background: var(--gold-soft);
+    color: var(--gold-strong);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.icon-button,
+.mobile-menu-toggle {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.icon-button:hover,
+.mobile-menu-toggle:hover {
+    border-color: rgba(209, 169, 54, 0.65);
+    color: var(--gold-strong);
+    transform: translateY(-1px);
+}
+
+.theme-icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+html[data-theme="light"] .sun-icon,
+html[data-theme="dark"] .moon-icon {
+    display: none;
+}
+
+.mobile-menu-toggle {
+    display: none;
+    position: relative;
+    padding: 10px;
+}
+
+.mobile-menu-toggle .bar {
+    position: absolute;
+    width: 20px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.mobile-menu-toggle .bar:nth-child(1) {
+    transform: translateY(-6px);
+}
+
+.mobile-menu-toggle .bar:nth-child(3) {
+    transform: translateY(6px);
+}
+
+.mobile-menu-toggle.is-open .bar:nth-child(1) {
+    transform: rotate(45deg);
+}
+
+.mobile-menu-toggle.is-open .bar:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.is-open .bar:nth-child(3) {
+    transform: rotate(-45deg);
+}

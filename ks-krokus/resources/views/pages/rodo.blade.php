@@ -1,32 +1,25 @@
 @extends('layouts.app')
 
 @section('title', 'Klauzula informacyjna RODO — KS Krokus')
+@section('meta_description', 'Klauzula informacyjna RODO dotycząca rejestracji i udziału w zawodach strzeleckich organizowanych przez KS Krokus.')
 
-@section(
-    'meta_description',
-    'Klauzula informacyjna RODO dotycząca rejestracji i udziału w zawodach strzeleckich organizowanych przez KS Krokus.'
-)
+@php($club = config('club'))
 
 @section('content')
-    <section class="hero regulamin-hero" aria-labelledby="rodo-page-title">
-        <div class="hero-content regulamin-hero-content">
-            <span class="category-tag">OCHRONA DANYCH OSOBOWYCH</span>
+    <x-page-hero id="rodo-page-title" eyebrow="OCHRONA DANYCH OSOBOWYCH" class="regulamin-hero">
+        <x-slot:title>
+            Klauzula <span class="highlight">RODO</span>
+        </x-slot:title>
 
-            <h1 id="rodo-page-title">
-                Klauzula <span class="highlight">RODO</span>
-            </h1>
-
+        <x-slot:description>
             <p>
                 Informacja o przetwarzaniu danych osobowych uczestników zawodów
                 strzeleckich organizowanych przez KS Krokus.
             </p>
-        </div>
-    </section>
+        </x-slot:description>
+    </x-page-hero>
 
-    <section
-        class="features-section regulamin-section"
-        aria-label="Treść klauzuli RODO"
-    >
+    <section class="features-section regulamin-section" aria-label="Treść klauzuli RODO">
         <article class="card regulamin-card rodo-card">
             <div class="card-code">
                 <span>[ DOC_ID: RODO-2026 ]</span>
@@ -34,11 +27,9 @@
 
             <div class="regulamin-header">
                 <h2>KLAUZULA INFORMACYJNA RODO</h2>
-
                 <p class="regulamin-subtitle">
                     Rejestracja zawodników na zawody strzeleckie
                 </p>
-
                 <span class="regulamin-date">
                     Zgodnie z art. 13 ust. 1 i 2 Rozporządzenia Parlamentu
                     Europejskiego i Rady (UE) 2016/679
@@ -46,7 +37,6 @@
             </div>
 
             <div class="regulamin-body rodo-body">
-
                 <section class="rodo-section">
                     <h3 class="regulamin-chapter-title">
                         1. Administrator danych
@@ -58,19 +48,12 @@
                         </p>
 
                         <address class="rodo-address">
-                            <strong>
-                                Klub Strzelecki „Krokus” Ligi Obrony Kraju
-                                w Nowym Sączu
-                            </strong>
-
-                            <span>
-                                ul. Tarnowska 32, 33-300 Nowy Sącz
-                            </span>
-
+                            <strong>{{ $club['full_name'] }}</strong>
+                            <span>{{ $club['address']['formatted'] }}</span>
                             <span>
                                 E-mail:
-                                <a href="mailto:zarzad@ks-krokus.pl">
-                                    zarzad@ks-krokus.pl
+                                <a href="mailto:{{ $club['email'] }}">
+                                    {{ $club['email'] }}
                                 </a>
                             </span>
                         </address>
@@ -110,18 +93,15 @@
                                 Rejestracja i udział w zawodach strzeleckich –
                                 art. 6 ust. 1 lit. b RODO.
                             </li>
-
                             <li>
                                 Organizacja i przeprowadzenie zawodów, w tym
                                 weryfikacja uprawnień zawodnika oraz zapewnienie
                                 bezpieczeństwa – art. 6 ust. 1 lit. f RODO.
                             </li>
-
                             <li>
                                 Wypełnienie obowiązków prawnych ciążących na
                                 organizatorze – art. 6 ust. 1 lit. c RODO.
                             </li>
-
                             <li>
                                 Publikacja wyników zawodów obejmująca imię,
                                 nazwisko, klub oraz wyniki sportowe –
@@ -171,11 +151,9 @@
                     <div class="rodo-content">
                         <ol class="rodo-list">
                             <li>sędziowie i obsługa zawodów,</li>
-
                             <li>
                                 podmioty wspierające obsługę techniczną zawodów,
                             </li>
-
                             <li>
                                 organy uprawnione na podstawie przepisów prawa.
                             </li>
@@ -201,7 +179,6 @@
                                 Dane rejestracyjne – przez okres niezbędny do
                                 realizacji zawodów oraz okres przedawnienia roszczeń.
                             </li>
-
                             <li>
                                 Wyniki zawodów – przez czas wymagany do
                                 dokumentowania działalności sportowej.
@@ -245,18 +222,14 @@
                         </p>
                     </div>
                 </section>
-
             </div>
 
-            <div class="card-footer regulamin-footer">
-                <span class="card-status">
-                    STATUS: OBOWIĄZUJĄCY
-                </span>
-
+            <footer class="card-footer regulamin-footer">
+                <span class="card-status">STATUS: OBOWIĄZUJĄCY</span>
                 <a href="{{ route('home') }}" class="card-link">
                     ← Powrót do strony głównej
                 </a>
-            </div>
+            </footer>
         </article>
     </section>
 @endsection

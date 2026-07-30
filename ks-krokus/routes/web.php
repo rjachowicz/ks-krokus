@@ -10,4 +10,5 @@ Route::view('/kontakt', 'pages.contact')->name('contact');
 Route::view('/regulamin', 'pages.rules')->name('rules');
 Route::view('/rodo', 'pages.rodo')->name('rodo');
 
-Route::redirect('/informacje-klubowe', '/klub', 301)->name('club.legacy');
+Route::permanentRedirect('/informacje-klubowe', '/klub')
+    ->name('club.legacy');

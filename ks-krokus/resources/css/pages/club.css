@@ -1,0 +1,145 @@
+.regulamin-section,
+.club-section {
+    margin-top: 0;
+}
+
+.bank-box,
+.invoice-box,
+.wpa-box {
+    margin: 16px 0;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold-strong);
+    border-radius: 10px;
+    background: var(--surface-muted);
+    color: var(--text-muted);
+}
+
+.bank-account {
+    display: inline-block;
+    margin-top: 4px;
+    color: var(--gold-strong);
+    font-family: var(--font-mono);
+    font-size: clamp(0.88rem, 2vw, 1.08rem);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.fees-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.fee-box,
+.person-tile,
+.vice-item,
+.trainer-card {
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-muted);
+}
+
+.plain-list,
+.audit-list {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plain-list li {
+    position: relative;
+    margin-top: 5px;
+    padding-left: 1.1rem;
+    color: var(--text-muted);
+}
+
+.plain-list li::before {
+    position: absolute;
+    left: 0;
+    content: "•";
+    color: var(--gold-strong);
+    font-weight: 700;
+}
+
+.audit-list li {
+    margin-top: 5px;
+    color: var(--text-muted);
+}
+
+.club-info-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+    color: var(--text-muted);
+    font-size: 0.94rem;
+}
+
+.club-info-list p {
+    margin-bottom: 0;
+}
+
+.club-subtitle {
+    margin: 20px 0 10px;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+}
+
+.club-list-small,
+.club-steps {
+    margin: 8px 0 0;
+    padding-left: 20px;
+    color: var(--text-muted);
+    font-size: 0.93rem;
+}
+
+.club-list-small li,
+.club-steps li {
+    margin-top: 7px;
+}
+
+.persons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 12px;
+}
+
+.person-tile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+}
+
+.person-tile span {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.person-tile a {
+    flex: 0 0 auto;
+    color: var(--gold-strong);
+    font-family: var(--font-mono);
+    text-decoration: none;
+}
+
+.whatsapp-subtext {
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.whatsapp-disclaimer {
+    margin-top: 10px;
+    color: var(--text-soft);
+    font-size: 0.8rem;
+    font-style: italic;
+}
