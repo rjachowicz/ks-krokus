@@ -33,13 +33,13 @@
     </x-page-hero>
 
     <section class="hero-stats-bar" aria-label="Najważniejsze informacje o klubie">
-        <x-stat-card :value="(now()->year - $club['founded_year']).'+'" label="lat tradycji"/>
-        <x-stat-card :value="$club['annual_events'].'+'" label="zawodów rocznie"/>
-        <x-stat-card value="PZSS" label="licencja klubowa"/>
+        <x-stat-card :value="(now()->year - $club['founded_year']).'+'" label="lat tradycji" />
+        <x-stat-card :value="$club['annual_events'].'+'" label="zawodów rocznie" />
+        <x-stat-card value="PZSS" label="licencja klubowa" />
     </section>
 
     <section class="features-section" aria-labelledby="about-title">
-        <x-section-heading id="about-title" title="O Klubie Strzeleckim" meta="KS_KROKUS / 01"/>
+        <x-section-heading id="about-title" title="O Klubie Strzeleckim" meta="KS_KROKUS / 01" />
 
         <div class="bento-grid">
             <x-content-card
@@ -99,8 +99,142 @@
         </div>
     </section>
 
+
+    <section class="features-section home-dynamic-section" aria-labelledby="latest-news-title">
+        <x-section-heading
+            id="latest-news-title"
+            title="Najnowsze aktualności"
+            meta="NEWS_FEED"
+        />
+
+        @if ($latestNews->isEmpty())
+            <div class="content-empty">
+                Aktualności pojawią się po opublikowaniu pierwszego wpisu w panelu.
+            </div>
+        @else
+            <div class="news-grid">
+                @foreach ($latestNews as $post)
+                    <x-content-card class="news-card">
+                        @if ($post->coverUrl())
+                            <div class="news-card__media">
+                                <img
+                                    src="{{ $post->coverUrl() }}"
+                                    alt="{{ $post->cover_image_alt ?: $post->title }}"
+                                    loading="lazy"
+                                >
+                            </div>
+                        @endif
+
+                        <div class="news-card__meta">
+                            <span>{{ $post->published_at?->format('d.m.Y') }}</span>
+                            <span>{{ $post->author?->name ?? 'KS Krokus' }}</span>
+                        </div>
+
+                        <h3>{{ $post->title }}</h3>
+
+                        <p>
+                            {{ $post->excerpt ?: \Illuminate\Support\Str::limit($post->content, 180) }}
+                        </p>
+
+                        <x-slot:footer>
+                            <span class="card-status">AKTUALNOŚĆ</span>
+                            <a href="{{ route('news.show', $post) }}" class="card-link">
+                                Czytaj dalej →
+                            </a>
+                        </x-slot:footer>
+                    </x-content-card>
+                @endforeach
+            </div>
+
+            <div class="btn-group content-actions">
+                <a href="{{ route('news.index') }}" class="btn btn-secondary">
+                    Wszystkie aktualności
+                </a>
+            </div>
+        @endif
+    </section>
+
+    <section class="features-section home-dynamic-section" aria-labelledby="upcoming-events-title">
+        <x-section-heading
+            id="upcoming-events-title"
+            title="Najbliższe wydarzenia"
+            meta="EVENT_CALENDAR"
+        />
+
+        @if ($upcomingEvents->isEmpty())
+            <div class="content-empty">
+                Brak zaplanowanych publicznych zawodów i treningów.
+            </div>
+        @else
+            <div class="event-grid">
+                @foreach ($upcomingEvents as $event)
+                    <x-content-card class="event-card">
+                        <div class="event-card__meta">
+                            <span>{{ $event->event_type->label() }}</span>
+                            <span>{{ $event->start_at->format('d.m.Y H:i') }}</span>
+                        </div>
+
+                        <h3>{{ $event->title }}</h3>
+
+                        <p>
+                            <strong>{{ $event->location_name }}</strong><br>
+                            {{ $event->address }}
+                        </p>
+
+                        @if ($event->discipline || $event->competition_system)
+                            <p>
+                                {{ $event->competition_system?->label() }}
+                                {{ $event->discipline?->label() }}
+                            </p>
+                        @endif
+
+                        <x-slot:footer>
+                            <span class="card-status">{{ $event->event_type->label() }}</span>
+                            <a href="{{ route('calendar.show', $event) }}" class="card-link">
+                                Szczegóły →
+                            </a>
+                        </x-slot:footer>
+                    </x-content-card>
+                @endforeach
+            </div>
+
+            <div class="btn-group content-actions">
+                <a href="{{ route('calendar.index') }}" class="btn btn-secondary">
+                    Pełny kalendarz
+                </a>
+            </div>
+        @endif
+    </section>
+
+    @if ($recentResultEvents->isNotEmpty())
+        <section class="features-section home-dynamic-section" aria-labelledby="recent-results-title">
+            <x-section-heading
+                id="recent-results-title"
+                title="Ostatnie rezultaty"
+                meta="RESULTS_ARCHIVE"
+            />
+
+            <div class="results-event-grid">
+                @foreach ($recentResultEvents as $event)
+                    <x-content-card
+                        code="{{ $event->competition_system?->label() ?? 'SPORT' }}"
+                        title="{{ $event->title }}"
+                        status="{{ $event->results_count }} WYNIKÓW"
+                        :href="route('results.show', $event)"
+                        link-label="Zobacz wyniki →"
+                    >
+                        <p>
+                            {{ $event->start_at->format('d.m.Y') }} —
+                            {{ $event->location_name }}
+                        </p>
+                    </x-content-card>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <section id="historia" class="features-section" aria-labelledby="history-title">
-        <x-section-heading id="history-title" title="Historia Klubu Krokus" meta="CHRONOLOGY_LOG"/>
+        <x-section-heading id="history-title" title="Historia Klubu Krokus" meta="CHRONOLOGY_LOG" />
 
         <div class="timeline">
             <article class="timeline-item">
@@ -150,7 +284,7 @@
     </section>
 
     <section class="features-section" aria-labelledby="join-title">
-        <x-section-heading id="join-title" title="Jak dołączyć do Krokusa?" meta="JOIN_PROTOCOL"/>
+        <x-section-heading id="join-title" title="Jak dołączyć do Krokusa?" meta="JOIN_PROTOCOL" />
 
         <div class="steps-grid">
             <article class="step-card">

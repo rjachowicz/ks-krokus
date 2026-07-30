@@ -5,7 +5,6 @@
 
 @php
     $club = config('club');
-    $contacts = config('contacts');
     $finance = $club['finance'];
     $training = $club['patent_training'];
 @endphp
@@ -136,6 +135,40 @@
                     </a>
                 </x-slot:footer>
             </x-content-card>
+
+
+            @if ($trainers->isNotEmpty())
+                <x-content-card
+                    class="bento-full card-equal"
+                    code="SEC_03A // KADRA"
+                    title="Trenerzy i instruktorzy"
+                    status="{{ $trainers->count() }} OSÓB"
+                    :href="route('contact')"
+                    link-label="Pełne dane kontaktowe →"
+                >
+                    <p>
+                        Kadra prowadząca szkolenia i przygotowanie do egzaminu na patent strzelecki.
+                    </p>
+
+                    <div class="trainers-grid">
+                        @foreach ($trainers as $trainer)
+                            <div class="trainer-card">
+                                <strong class="trainer-name">{{ $trainer->name }}</strong>
+
+                                @if ($trainer->show_phone_publicly && $trainer->phone)
+                                    <a href="tel:{{ $trainer->phone }}" class="trainer-phone">
+                                        {{ $trainer->phone }}
+                                    </a>
+                                @endif
+
+                                @if ($trainer->trainer_bio)
+                                    <p>{{ $trainer->trainer_bio }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </x-content-card>
+            @endif
 
             <x-content-card
                 id="refundacja"
@@ -301,12 +334,19 @@
                 <h4 class="club-subtitle">Osoby uprawnione z dostępem do strzelnicy:</h4>
 
                 <div class="persons-grid">
-                    @foreach ($contacts['range_access_people'] as $person)
+                    @forelse ($rangeAccessPeople as $person)
                         <div class="person-tile">
-                            <span title="{{ $person['name'] }}">{{ $person['name'] }}</span>
-                            <a href="tel:{{ $person['phone'] }}">{{ $person['phone_display'] }}</a>
+                            <span title="{{ $person->name }}">{{ $person->name }}</span>
+
+                            @if ($person->show_phone_publicly && $person->phone)
+                                <a href="tel:{{ $person->phone }}">{{ $person->phone }}</a>
+                            @else
+                                <span>kontakt przez zarząd</span>
+                            @endif
                         </div>
-                    @endforeach
+                    @empty
+                        <p>Lista osób z dostępem nie została jeszcze uzupełniona.</p>
+                    @endforelse
                 </div>
             </x-content-card>
         </div>

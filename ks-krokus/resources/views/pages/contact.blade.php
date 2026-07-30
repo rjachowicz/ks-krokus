@@ -1,12 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Kontakt — KS Krokus Nowy Sącz')
-@section('meta_description', 'Dane kontaktowe, zarząd, komisja rewizyjna, instruktorzy i lokalizacje Klubu Strzeleckiego Krokus LOK w Nowym Sączu.')
+@section('meta_description', 'Dane kontaktowe, władze klubu, trenerzy i lokalizacje Klubu Strzeleckiego Krokus LOK w Nowym Sączu.')
 
-@php
-    $club = config('club');
-    $contacts = config('contacts');
-@endphp
+@php($club = config('club'))
 
 @section('content')
     <x-page-hero
@@ -18,13 +15,17 @@
         visual-primary="Sekretariat klubu"
         visual-secondary="Nowy Sącz / Tylicz"
     >
-        <x-slot:title>Skontaktuj się z <span class="highlight">Krokusem</span></x-slot:title>
+        <x-slot:title>
+            Skontaktuj się z <span class="highlight">Krokusem</span>
+        </x-slot:title>
+
         <x-slot:description>
             <p>
                 Masz pytania dotyczące członkostwa, treningów, patentu strzeleckiego lub organizacji zawodów?
                 Napisz do zarządu albo skontaktuj się bezpośrednio z właściwą osobą.
             </p>
         </x-slot:description>
+
         <x-slot:actions>
             <a href="mailto:{{ $club['email'] }}" class="btn btn-primary">Napisz e-mail</a>
             <a href="#lokalizacje" class="btn btn-secondary">Zobacz lokalizacje</a>
@@ -51,7 +52,9 @@
                 <p><strong>Adres:</strong> {{ $club['address']['formatted'] }}</p>
                 <p>
                     <strong>E-mail:</strong>
-                    <a href="mailto:{{ $club['email'] }}" class="card-link inline-mail-link">{{ $club['email'] }}</a>
+                    <a href="mailto:{{ $club['email'] }}" class="card-link inline-mail-link">
+                        {{ $club['email'] }}
+                    </a>
                 </p>
             </x-content-card>
 
@@ -70,84 +73,87 @@
         </div>
     </section>
 
-    <section class="features-section" aria-labelledby="board-title">
-        <x-section-heading id="board-title" title="Zarząd klubu" meta="BOARD_DIRECTORS" />
+    <section class="features-section" aria-labelledby="positions-title">
+        <x-section-heading id="positions-title" title="Władze i funkcje klubowe" meta="CLUB_DIRECTORY" />
 
-        <div class="bento-grid">
-            @foreach ($contacts['board'] as $member)
-                <x-content-card
-                    code="{{ $member['role'] }}"
-                    title="{{ $member['name'] }}"
-                    status="KONTAKT"
-                    :href="'mailto:'.$member['email']"
-                    link-label="{{ $member['email'] }}"
-                >
-                    @if ($member['phone'])
-                        <p class="board-desc-phone">
-                            <a href="tel:{{ $member['phone'] }}" class="club-link">{{ $member['phone_display'] }}</a>
-                        </p>
-                    @endif
-                    <p class="board-desc">{{ $member['description'] }}</p>
-                </x-content-card>
-            @endforeach
+        @if ($positions->isEmpty())
+            <div class="content-empty">
+                Lista osób funkcyjnych nie została jeszcze uzupełniona w panelu administracyjnym.
+            </div>
+        @else
+            <div class="bento-grid">
+                @foreach ($positions as $position)
+                    <x-content-card
+                        code="{{ mb_strtoupper($position->name) }}"
+                        title="{{ $position->name }}"
+                        status="{{ $position->users->count() }} OSÓB"
+                        link-label="FUNKCJA KLUBOWA"
+                    >
+                        @if ($position->description)
+                            <p>{{ $position->description }}</p>
+                        @endif
 
-            <x-content-card class="bento-span-2" code="WICEPREZESI" title="Władze wykonawcze">
-                <div class="vices-grid">
-                    @foreach ($contacts['vice_presidents'] as $vice)
-                        <div class="vice-item">
-                            <strong class="vice-name">{{ $vice['name'] }}</strong>
-                            <a href="tel:{{ $vice['phone'] }}" class="vice-phone">{{ $vice['phone_display'] }}</a>
-                            <a href="mailto:{{ $vice['email'] }}" class="card-link vice-mail">{{ $vice['email'] }}</a>
-                        </div>
-                    @endforeach
-                </div>
-            </x-content-card>
-        </div>
+                        @if ($position->users->isNotEmpty())
+                            <div class="vices-grid">
+                                @foreach ($position->users as $person)
+                                    <div class="vice-item">
+                                        <strong class="vice-name">{{ $person->name }}</strong>
+
+                                        @if ($person->show_phone_publicly && $person->phone)
+                                            <a href="tel:{{ $person->phone }}" class="vice-phone">
+                                                {{ $person->phone }}
+                                            </a>
+                                        @endif
+
+                                        @if ($person->show_email_publicly && ! str_ends_with($person->email, '@ks-krokus.local'))
+                                            <a href="mailto:{{ $person->email }}" class="card-link vice-mail">
+                                                {{ $person->email }}
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p>Brak przypisanej osoby.</p>
+                        @endif
+                    </x-content-card>
+                @endforeach
+            </div>
+        @endif
     </section>
 
-    <section class="features-section" aria-labelledby="audit-title">
-        <x-section-heading id="audit-title" title="Komisja rewizyjna i szkolenia" meta="AUDIT_AND_TRAINING" />
+    <section class="features-section" aria-labelledby="trainers-title">
+        <x-section-heading id="trainers-title" title="Trenerzy i instruktorzy" meta="TRAINING_STAFF" />
 
-        <div class="bento-grid">
-            <x-content-card
-                code="NADZÓR KONTROLNY"
-                title="Komisja Rewizyjna"
-                status="ORGAN KONTROLNY"
-                link-label="AUDIT"
-            >
-                <p class="audit-mail-wrapper">
-                    <a href="mailto:{{ $contacts['audit_committee']['email'] }}" class="card-link">
-                        {{ $contacts['audit_committee']['email'] }}
-                    </a>
-                </p>
+        @if ($trainers->isEmpty())
+            <div class="content-empty">
+                Lista trenerów nie została jeszcze uzupełniona w panelu.
+            </div>
+        @else
+            <div class="trainers-grid">
+                @foreach ($trainers as $trainer)
+                    <article class="trainer-card">
+                        <strong class="trainer-name">{{ $trainer->name }}</strong>
 
-                <ul class="audit-list">
-                    @foreach ($contacts['audit_committee']['members'] as $member)
-                        <li><strong>{{ $member['role'] }}:</strong> {{ $member['name'] }}</li>
-                    @endforeach
-                </ul>
-            </x-content-card>
+                        @if ($trainer->show_phone_publicly && $trainer->phone)
+                            <a href="tel:{{ $trainer->phone }}" class="trainer-phone">
+                                {{ $trainer->phone }}
+                            </a>
+                        @endif
 
-            <x-content-card
-                class="bento-span-2"
-                code="PATENT STRZELECKI"
-                title="Osoby przygotowujące do egzaminu"
-                status="SZKOLENIA PZSS"
-                :href="route('club').'#szkolenie-patentowe'"
-                link-label="Informacje o szkoleniu →"
-            >
-                <p class="trainers-desc">Kontakt do instruktorów prowadzących szkolenia przygotowawcze:</p>
+                        @if ($trainer->show_email_publicly && ! str_ends_with($trainer->email, '@ks-krokus.local'))
+                            <a href="mailto:{{ $trainer->email }}" class="card-link">
+                                {{ $trainer->email }}
+                            </a>
+                        @endif
 
-                <div class="trainers-grid">
-                    @foreach ($contacts['trainers'] as $trainer)
-                        <div class="trainer-card">
-                            <strong class="trainer-name">{{ $trainer['name'] }}</strong>
-                            <a href="tel:{{ $trainer['phone'] }}" class="trainer-phone">{{ $trainer['phone_display'] }}</a>
-                        </div>
-                    @endforeach
-                </div>
-            </x-content-card>
-        </div>
+                        @if ($trainer->trainer_bio)
+                            <p class="trainers-desc">{{ $trainer->trainer_bio }}</p>
+                        @endif
+                    </article>
+                @endforeach
+            </div>
+        @endif
     </section>
 
     <section id="lokalizacje" class="features-section" aria-labelledby="locations-title">
@@ -174,10 +180,12 @@
 
                     <x-slot:footer>
                         <span class="card-status">{{ $location['status'] }}</span>
-                        <a href="{{ $location['map_url'] }}"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="card-link">
+                        <a
+                            href="{{ $location['map_url'] }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="card-link"
+                        >
                             Otwórz mapę →
                         </a>
                     </x-slot:footer>

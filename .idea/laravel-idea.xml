@@ -18,6 +18,11 @@
     </option>
     <option name="frameworkFound" value="true" />
     <option name="laravelBasePath" value="ks-krokus" />
+    <option name="translation">
+      <LaravelTranslation>
+        <option name="defaultLanguageFromConfig" value="pl" />
+      </LaravelTranslation>
+    </option>
     <option name="userClassName" value="\App\Models\User" />
   </component>
 </project>

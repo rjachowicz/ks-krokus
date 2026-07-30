@@ -14,5 +14,8 @@
 @import "./pages/club.css";
 @import "./pages/contact.css";
 @import "./pages/documents.css";
+@import "./pages/public-content.css";
+@import "./pages/auth.css";
+@import "./pages/admin.css";
 
 @import "./utilities/responsive.css";

@@ -8,10 +8,17 @@
         </div>
 
         <nav class="footer-links" aria-label="Nawigacja w stopce">
+            <a href="{{ route('news.index') }}">Aktualności</a>
+            <a href="{{ route('calendar.index') }}">Kalendarz</a>
+            <a href="{{ route('results.index') }}">Wyniki</a>
             <a href="{{ route('contact') }}">Kontakt</a>
             <a href="{{ route('rules') }}">Regulamin</a>
             <a href="{{ route('rodo') }}">RODO</a>
-            <a href="mailto:{{ $club['email'] }}">{{ $club['email'] }}</a>
+            @guest
+                <a href="{{ route('login') }}">Logowanie</a>
+            @else
+                <a href="{{ route('admin.dashboard') }}">Panel</a>
+            @endguest
         </nav>
 
         <p class="footer-copy">© {{ now()->year }} KS Krokus</p>

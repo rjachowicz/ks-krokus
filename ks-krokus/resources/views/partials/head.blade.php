@@ -3,12 +3,19 @@
 <meta name="color-scheme" content="light dark">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<meta
-    name="description"
-    content="@yield('meta_description', 'Klub Strzelecki Krokus LOK w Nowym Sączu — treningi, zawody, patent i licencja PZSS.')"
->
+@php
+    $pageTitle = trim($__env->yieldContent(
+        'title',
+        'KS Krokus — Klub Strzelecki Nowy Sącz',
+    ));
+    $pageDescription = trim($__env->yieldContent(
+        'meta_description',
+        'Klub Strzelecki Krokus LOK w Nowym Sączu — treningi, zawody, patent i licencja PZSS.',
+    ));
+@endphp
 
-<title>@yield('title', 'KS Krokus — Klub Strzelecki Nowy Sącz')</title>
+<meta name="description" content="{{ $pageDescription }}">
+<title>{{ $pageTitle }}</title>
 
 <script>
     (() => {

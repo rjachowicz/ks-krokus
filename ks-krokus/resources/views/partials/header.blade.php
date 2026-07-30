@@ -27,6 +27,27 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('news.index') }}"
+                       class="{{ request()->routeIs('news.*') ? 'active' : '' }}"
+                       @if (request()->routeIs('news.*')) aria-current="page" @endif>
+                        Aktualności
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('calendar.index') }}"
+                       class="{{ request()->routeIs('calendar.*') ? 'active' : '' }}"
+                       @if (request()->routeIs('calendar.*')) aria-current="page" @endif>
+                        Kalendarz
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('results.index') }}"
+                       class="{{ request()->routeIs('results.*') ? 'active' : '' }}"
+                       @if (request()->routeIs('results.*')) aria-current="page" @endif>
+                        Wyniki
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('club') }}"
                        class="{{ request()->routeIs('club') ? 'active' : '' }}"
                        @if (request()->routeIs('club')) aria-current="page" @endif>
@@ -40,24 +61,16 @@
                         Kontakt
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('rules') }}"
-                       class="{{ request()->routeIs('rules') ? 'active' : '' }}"
-                       @if (request()->routeIs('rules')) aria-current="page" @endif>
-                        Regulamin
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('rodo') }}"
-                       class="{{ request()->routeIs('rodo') ? 'active' : '' }}"
-                       @if (request()->routeIs('rodo')) aria-current="page" @endif>
-                        RODO
-                    </a>
-                </li>
             </ul>
         </nav>
 
         <div class="header-actions">
+            @auth
+                <a class="icon-button" href="{{ route('admin.dashboard') }}" aria-label="Panel administracyjny" title="Panel">
+                    <span aria-hidden="true">A</span>
+                </a>
+            @endauth
+
             <button
                 class="icon-button theme-toggle-btn"
                 type="button"
