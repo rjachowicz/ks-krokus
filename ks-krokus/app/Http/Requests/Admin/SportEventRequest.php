@@ -8,10 +8,9 @@ use App\Enums\CompetitionSystem;
 use App\Enums\Discipline;
 use App\Enums\EventType;
 use App\Enums\PublicationStatus;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SportEventRequest extends FormRequest
+class SportEventRequest extends AdminFormRequest
 {
     public function authorize(): bool
     {

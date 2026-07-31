@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Enums\PublicationStatus;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class PostRequest extends FormRequest
+class PostRequest extends AdminFormRequest
 {
     public function authorize(): bool
     {

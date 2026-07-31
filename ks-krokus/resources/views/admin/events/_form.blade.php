@@ -26,6 +26,7 @@
 @endphp
 
 <div class="admin-form-grid admin-form-grid--3">
+    <div class="span-full"><h3 class="admin-section-title">Informacje, termin i miejsce</h3></div>
     <label class="span-full">
         Nazwa wydarzenia
         <input type="text" name="title" value="{{ old('title', $event->title ?? '') }}" required>

@@ -13,6 +13,7 @@
 @endphp
 
 <div class="admin-form-grid">
+    <div class="span-full"><h3 class="admin-section-title">Treść i publikacja</h3></div>
     <label class="span-full">
         Tytuł
         <input type="text" name="title" value="{{ old('title', $post->title ?? '') }}" required>

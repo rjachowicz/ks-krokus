@@ -6,11 +6,10 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-class UpdateUserRequest extends FormRequest
+class UpdateUserRequest extends AdminFormRequest
 {
     public function authorize(): bool
     {

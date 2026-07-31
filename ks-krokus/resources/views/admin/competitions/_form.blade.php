@@ -1,4 +1,5 @@
 <div class="admin-form-grid">
+    <div class="span-full"><h3 class="admin-section-title">Dane konkurencji</h3></div>
     <label>
         Kod
         <input type="text" name="code" value="{{ old('code', $definition->code ?? '') }}" required>

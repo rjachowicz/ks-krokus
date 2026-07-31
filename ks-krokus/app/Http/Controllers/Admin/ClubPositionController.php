@@ -99,8 +99,8 @@ final class ClubPositionController extends Controller
     }
 
     /**
-     * @param list<int|string> $userIds
-     * @param array<int|string, int|string|null> $userSortOrders
+     * @param  list<int|string>  $userIds
+     * @param  array<int|string, int|string|null>  $userSortOrders
      */
     private function syncUsers(
         ClubPosition $position,

@@ -3,12 +3,12 @@
 <head>
     @include('partials.head')
 </head>
-<body class="@yield('body_class')">
+<body class="public-body @yield('body_class')">
 <a class="skip-link" href="#main-content">Przejdź do treści</a>
 
 @include('partials.header')
 
-<main id="main-content">
+<main id="main-content" class="public-main">
     @yield('content')
 </main>
 

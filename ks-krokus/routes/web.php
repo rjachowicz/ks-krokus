@@ -64,7 +64,7 @@ Route::prefix('panel')
             ->name('dashboard');
 
         Route::middleware(
-            'role:' . UserRole::Admin->value . ',' . UserRole::Moderator->value,
+            'role:'.UserRole::Admin->value.','.UserRole::Moderator->value,
         )->group(function (): void {
             Route::resource('aktualnosci', AdminPostController::class)
                 ->except('show')
@@ -103,7 +103,7 @@ Route::prefix('panel')
                 ]);
         });
 
-        Route::middleware('role:' . UserRole::Admin->value)
+        Route::middleware('role:'.UserRole::Admin->value)
             ->group(function (): void {
                 Route::resource('uzytkownicy', UserController::class)
                     ->except('show')
