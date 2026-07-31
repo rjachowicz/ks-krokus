@@ -27,6 +27,9 @@
 - [x] Dodać serwerowe ARIA i podsumowanie błędów bez zależności od JavaScriptu.
 - [x] Dodać wymagania uploadu, podgląd i usuwanie wybranych plików.
 - [x] Zweryfikować autoryzację i ochronę ostatniego administratora.
+- [x] Naprawić relację wyników z definicjami konkurencji i pokryć publiczne wyniki,
+  CRUD panelu oraz dashboard testami regresyjnymi.
+- [x] Uzależnić opis trenera od statusu trenera w interfejsie, walidacji i zapisie.
 
 ## P1 — motyw i kontakt
 

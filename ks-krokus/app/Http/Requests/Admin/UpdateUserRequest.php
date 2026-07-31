@@ -48,7 +48,14 @@ class UpdateUserRequest extends AdminFormRequest
             'has_range_access' => ['nullable', 'boolean'],
             'show_email_publicly' => ['nullable', 'boolean'],
             'show_phone_publicly' => ['nullable', 'boolean'],
-            'trainer_bio' => ['nullable', 'string', 'max:5000'],
+            'trainer_bio' => [
+                'nullable',
+                'string',
+                'max:5000',
+                Rule::prohibitedIf(
+                    fn (): bool => ! $this->boolean('is_trainer'),
+                ),
+            ],
         ];
     }
 
@@ -59,6 +66,7 @@ class UpdateUserRequest extends AdminFormRequest
             'name.required' => 'Podaj imię i nazwisko użytkownika.',
             'email.required' => 'Podaj adres e-mail użytkownika.',
             'role.required' => 'Wybierz rolę systemową.',
+            'trainer_bio.prohibited' => 'Opis trenera można dodać tylko po zaznaczeniu opcji „Trener”.',
         ];
     }
 }

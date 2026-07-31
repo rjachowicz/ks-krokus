@@ -26,7 +26,10 @@ class EventCompetition extends Model
 
     public function competition(): BelongsTo
     {
-        return $this->belongsTo(CompetitionDefinition::class);
+        return $this->belongsTo(
+            CompetitionDefinition::class,
+            'competition_definition_id',
+        );
     }
 
     public function results(): HasMany

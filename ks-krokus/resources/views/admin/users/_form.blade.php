@@ -69,7 +69,7 @@
 
     <label class="admin-check-option">
         <input type="hidden" name="is_trainer" value="0">
-        <input id="user-trainer" type="checkbox" name="is_trainer" value="1" @checked(old('is_trainer', $editedUser->is_trainer ?? false))
+        <input id="user-trainer" type="checkbox" name="is_trainer" value="1" data-trainer-toggle aria-controls="user-trainer-bio" @checked(old('is_trainer', $editedUser->is_trainer ?? false))
             @error('is_trainer') aria-invalid="true" aria-describedby="user-trainer-error" @enderror>
         <span>
             <strong>Trener</strong><br>
@@ -111,12 +111,12 @@
         @error('show_phone_publicly') <span id="user-public-phone-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full">
+    <label class="span-full" data-trainer-bio-field>
         Opis trenera
-        <textarea id="user-trainer-bio" name="trainer_bio"
+        <textarea id="user-trainer-bio" name="trainer_bio" data-trainer-bio
             aria-describedby="user-trainer-bio-help @error('trainer_bio') user-trainer-bio-error @enderror"
             @error('trainer_bio') aria-invalid="true" @enderror>{{ old('trainer_bio', $editedUser->trainer_bio ?? '') }}</textarea>
-        <span id="user-trainer-bio-help" class="form-help">Pole wykorzystywane wyłącznie przy zaznaczonej opcji „Trener”.</span>
+        <span id="user-trainer-bio-help" class="form-help">Pole jest dostępne wyłącznie po zaznaczeniu opcji „Trener”. Odznaczenie opcji usuwa zapisany opis.</span>
         @error('trainer_bio') <span id="user-trainer-bio-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 </div>

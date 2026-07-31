@@ -1,4 +1,20 @@
 export function initAdminUi() {
+    document.querySelectorAll('[data-trainer-toggle]').forEach((toggle) => {
+        const form = toggle.closest('form');
+        const bio = form?.querySelector('[data-trainer-bio]');
+
+        if (!bio) {
+            return;
+        }
+
+        const syncTrainerBio = () => {
+            bio.disabled = !toggle.checked;
+        };
+
+        toggle.addEventListener('change', syncTrainerBio);
+        syncTrainerBio();
+    });
+
     document.querySelectorAll('.admin-table').forEach((table) => {
         const labels = [...table.querySelectorAll('thead th')].map((header) => header.textContent.trim());
 

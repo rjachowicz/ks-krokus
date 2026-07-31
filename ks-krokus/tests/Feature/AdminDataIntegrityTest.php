@@ -124,4 +124,80 @@ final class AdminDataIntegrityTest extends TestCase
             self::assertStringNotContainsString('The ', $message);
         }
     }
+
+    public function test_trainer_bio_cannot_be_saved_without_trainer_status(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.store'), [
+                'name' => 'Użytkownik bez statusu trenera',
+                'email' => 'bez-trenera@example.com',
+                'password' => 'BezpieczneHaslo123',
+                'password_confirmation' => 'BezpieczneHaslo123',
+                'role' => UserRole::User->value,
+                'is_active' => '1',
+                'is_trainer' => '0',
+                'trainer_bio' => 'Ten opis nie może zostać zapisany.',
+            ])
+            ->assertSessionHasErrors([
+                'trainer_bio' => 'Opis trenera można dodać tylko po zaznaczeniu opcji „Trener”.',
+            ]);
+
+        $this->assertDatabaseMissing('users', [
+            'email' => 'bez-trenera@example.com',
+        ]);
+    }
+
+    public function test_trainer_bio_is_available_and_removed_after_disabling_trainer(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.create'))
+            ->assertOk()
+            ->assertSee('data-trainer-toggle', false)
+            ->assertSee('data-trainer-bio', false);
+
+        $this->post(route('admin.users.store'), [
+            'name' => 'Trener Testowy',
+            'email' => 'trener@example.com',
+            'password' => 'BezpieczneHaslo123',
+            'password_confirmation' => 'BezpieczneHaslo123',
+            'role' => UserRole::User->value,
+            'is_active' => '1',
+            'is_trainer' => '1',
+            'trainer_bio' => 'Doświadczony trener klubowy.',
+        ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $trainer = User::query()
+            ->where('email', 'trener@example.com')
+            ->firstOrFail();
+
+        self::assertTrue($trainer->is_trainer);
+        self::assertSame('Doświadczony trener klubowy.', $trainer->trainer_bio);
+
+        $this->put(route('admin.users.update', $trainer), [
+            'name' => $trainer->name,
+            'email' => $trainer->email,
+            'role' => $trainer->role->value,
+            'is_active' => '1',
+            'is_trainer' => '0',
+        ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $trainer->refresh();
+
+        self::assertFalse($trainer->is_trainer);
+        self::assertNull($trainer->trainer_bio);
+    }
 }

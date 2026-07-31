@@ -49,6 +49,12 @@ Dysk publiczny, katalogi i lokalne połączenie `public/storage` były sprawne.
   duplikowania rekordu w bazie; dodano indeks `sport_events.end_at`.
 - [x] Zabezpieczono ostatnie aktywne konto administratora blokadą transakcyjną.
 - [x] Zachowano nieaktywne konkurencje już przypisane do edytowanego wydarzenia.
+- [x] Naprawiono relację wyniku z definicją konkurencji przez jawne wskazanie klucza
+  `event_competitions.competition_definition_id`; publiczne wyniki, CRUD panelu
+  i dashboard zawodnika ponownie renderują pełne dane konkurencji.
+- [x] Opis trenera jest dostępny w formularzu tylko przy zaznaczonej opcji
+  „Trener”; backend odrzuca spreparowany opis dla osoby bez tego statusu i usuwa
+  istniejący opis po odznaczeniu opcji.
 - [x] Ograniczono dane dashboardu zależnie od roli i dodano podstawowe nagłówki
   bezpieczeństwa HTTP.
 - [x] Dodano polskie strony błędów 403, 404, 413, 419, 429, 500 i 503.
@@ -63,7 +69,7 @@ Dysk publiczny, katalogi i lokalne połączenie `public/storage` były sprawne.
 
 ### Testy i kontrole
 
-- [x] `composer test` — 35 testów, 152 asercje.
+- [x] `composer test` — 40 testów, 192 asercje.
 - [x] `vendor/bin/pint --test` — bez błędów.
 - [x] `npm run build` — build Vite zakończony poprawnie.
 - [x] `composer validate --strict` — poprawny plik `composer.json`.
@@ -127,3 +133,11 @@ Lokalny PostgreSQL zawiera 10 wykonanych migracji.
   dostępności, bezpieczeństwa, wydajności i dokumentacji wdrożeniowej.
 - Testy: 35 testów / 152 asercje, Pint, Vite, audyty zależności i cache poprawne.
 - Pozostało: czynności zależne od infrastruktury opisane powyżej.
+
+### 2026-07-31 — wyniki i profil trenera
+
+- Cel: przywrócić działanie modułu wyników i zabezpieczyć zależność opisu trenera
+  od statusu trenera.
+- Wykonano: poprawkę klucza obcego relacji konkurencji, testy publicznych wyników,
+  CRUD i dashboardu oraz warunkowy interfejs, walidację i czyszczenie opisu trenera.
+- Testy: 40 testów / 192 asercje, Pint i build Vite poprawne.

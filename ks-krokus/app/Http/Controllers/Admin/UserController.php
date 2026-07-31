@@ -75,11 +75,7 @@ final class UserController extends Controller
         $data = $request->validated();
 
         $data['email'] = mb_strtolower($data['email']);
-        $data['is_active'] = $request->boolean('is_active');
-        $data['is_trainer'] = $request->boolean('is_trainer');
-        $data['has_range_access'] = $request->boolean('has_range_access');
-        $data['show_email_publicly'] = $request->boolean('show_email_publicly');
-        $data['show_phone_publicly'] = $request->boolean('show_phone_publicly');
+        $data = $this->normalizeProfileOptions($request, $data);
 
         $user = User::query()->create($data);
 
@@ -105,11 +101,7 @@ final class UserController extends Controller
         $newIsActive = $request->boolean('is_active');
 
         $data['email'] = mb_strtolower($data['email']);
-        $data['is_active'] = $newIsActive;
-        $data['is_trainer'] = $request->boolean('is_trainer');
-        $data['has_range_access'] = $request->boolean('has_range_access');
-        $data['show_email_publicly'] = $request->boolean('show_email_publicly');
-        $data['show_phone_publicly'] = $request->boolean('show_phone_publicly');
+        $data = $this->normalizeProfileOptions($request, $data);
 
         if (blank($data['password'] ?? null)) {
             unset($data['password']);
@@ -166,5 +158,26 @@ final class UserController extends Controller
                 'role' => 'Nie można usunąć, wyłączyć ani zdegradować ostatniego aktywnego administratora.',
             ]);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function normalizeProfileOptions(
+        Request $request,
+        array $data,
+    ): array {
+        $data['is_active'] = $request->boolean('is_active');
+        $data['is_trainer'] = $request->boolean('is_trainer');
+        $data['has_range_access'] = $request->boolean('has_range_access');
+        $data['show_email_publicly'] = $request->boolean('show_email_publicly');
+        $data['show_phone_publicly'] = $request->boolean('show_phone_publicly');
+
+        if (! $data['is_trainer']) {
+            $data['trainer_bio'] = null;
+        }
+
+        return $data;
     }
 }

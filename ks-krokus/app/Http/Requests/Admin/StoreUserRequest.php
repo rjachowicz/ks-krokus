@@ -39,7 +39,14 @@ class StoreUserRequest extends AdminFormRequest
             'has_range_access' => ['nullable', 'boolean'],
             'show_email_publicly' => ['nullable', 'boolean'],
             'show_phone_publicly' => ['nullable', 'boolean'],
-            'trainer_bio' => ['nullable', 'string', 'max:5000'],
+            'trainer_bio' => [
+                'nullable',
+                'string',
+                'max:5000',
+                Rule::prohibitedIf(
+                    fn (): bool => ! $this->boolean('is_trainer'),
+                ),
+            ],
         ];
     }
 
@@ -51,6 +58,7 @@ class StoreUserRequest extends AdminFormRequest
             'email.required' => 'Podaj adres e-mail użytkownika.',
             'password.required' => 'Podaj hasło użytkownika.',
             'role.required' => 'Wybierz rolę systemową.',
+            'trainer_bio.prohibited' => 'Opis trenera można dodać tylko po zaznaczeniu opcji „Trener”.',
         ];
     }
 }
