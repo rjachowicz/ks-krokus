@@ -140,7 +140,7 @@ final class SportEventController extends Controller
     }
 
     /**
-     * @param list<int> $selectedCompetitionIds
+     * @param  list<int>  $selectedCompetitionIds
      */
     private function guardResultIntegrity(
         SportEvent $event,

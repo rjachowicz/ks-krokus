@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 final class EnsureUserHasRole
 {
     /**
-     * @param \Closure(Request): Response $next
+     * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {

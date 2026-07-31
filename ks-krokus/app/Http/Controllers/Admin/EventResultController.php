@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\EventResultRequest;
 use App\Models\EventCompetition;
 use App\Models\EventResult;
+use App\Models\SportEvent;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,7 +54,7 @@ final class EventResultController extends Controller
 
         return view('admin.results.index', [
             'results' => $results,
-            'events' => \App\Models\SportEvent::query()
+            'events' => SportEvent::query()
                 ->where('event_type', EventType::Competition->value)
                 ->latest('start_at')
                 ->get(),

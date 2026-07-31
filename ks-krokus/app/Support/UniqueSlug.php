@@ -11,7 +11,7 @@ use InvalidArgumentException;
 final class UniqueSlug
 {
     /**
-     * @param class-string<Model> $modelClass
+     * @param  class-string<Model>  $modelClass
      */
     public static function for(
         string $modelClass,
@@ -32,7 +32,7 @@ final class UniqueSlug
         $slug = $base;
         $counter = 2;
 
-        $model = new $modelClass();
+        $model = new $modelClass;
         $keyName = $model->getKeyName();
 
         while (self::slugExists(
@@ -51,7 +51,7 @@ final class UniqueSlug
     }
 
     /**
-     * @param class-string<Model> $modelClass
+     * @param  class-string<Model>  $modelClass
      */
     private static function slugExists(
         string $modelClass,
