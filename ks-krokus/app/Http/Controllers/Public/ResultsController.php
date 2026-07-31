@@ -25,35 +25,13 @@ final class ResultsController extends Controller
             ->latest('start_at');
 
         if (filled($validated['discipline'] ?? null)) {
-            $discipline = (string) $validated['discipline'];
-
-            $query->where(function ($builder) use ($discipline): void {
-                $builder
-                    ->where('discipline', $discipline)
-                    ->orWhereHas(
-                        'competitions',
-                        fn ($competitionQuery) => $competitionQuery->where(
-                            'discipline',
-                            $discipline,
-                        ),
-                    );
-            });
+            $query->matchingDiscipline((string) $validated['discipline']);
         }
 
         if (filled($validated['competition_system'] ?? null)) {
-            $system = (string) $validated['competition_system'];
-
-            $query->where(function ($builder) use ($system): void {
-                $builder
-                    ->where('competition_system', $system)
-                    ->orWhereHas(
-                        'competitions',
-                        fn ($competitionQuery) => $competitionQuery->where(
-                            'competition_system',
-                            $system,
-                        ),
-                    );
-            });
+            $query->matchingCompetitionSystem(
+                (string) $validated['competition_system'],
+            );
         }
 
         if (filled($validated['q'] ?? null)) {
@@ -71,21 +49,17 @@ final class ResultsController extends Controller
         ]);
     }
 
-    public function show(SportEvent $sportEvent): View
+    public function show(string $slug): View
     {
-        abort_unless(
-            SportEvent::query()
-                ->publiclyVisible()
-                ->where('event_type', EventType::Competition->value)
-                ->whereKey($sportEvent->getKey())
-                ->exists(),
-            404,
-        );
-
-        $sportEvent->load([
-            'eventCompetitions.competition',
-            'eventCompetitions.results.user',
-        ]);
+        $sportEvent = SportEvent::query()
+            ->publiclyVisible()
+            ->where('event_type', EventType::Competition->value)
+            ->with([
+                'eventCompetitions.competition',
+                'eventCompetitions.results',
+            ])
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         return view('results.show', compact('sportEvent'));
     }

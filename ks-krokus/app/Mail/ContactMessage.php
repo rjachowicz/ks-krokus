@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
 final class ContactMessage extends Mailable
 {
-    use Queueable;
-    use SerializesModels;
-
     /**
      * @param  array{name: string, email: string, phone?: string|null, subject: string, message: string}  $formData
      */

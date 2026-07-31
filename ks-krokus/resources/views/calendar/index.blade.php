@@ -129,14 +129,14 @@
                 </div>
                 <div class="month-calendar__grid">
                     @foreach ($days as $day)
-                        @php($dayEvents = $eventsByDate->get($day->toDateString(), collect()))
+                        @php($dayEvents = $eventsByDate->get($day->toDateString(), []))
                         <section class="calendar-day {{ $day->month !== $displayDate->month ? 'calendar-day--outside' : '' }} {{ $day->isToday() ? 'calendar-day--today' : '' }}" aria-label="{{ $day->translatedFormat('l, j F Y') }}">
                             <header>
                                 <span class="calendar-day__weekday">{{ ucfirst($day->translatedFormat('D')) }}</span>
                                 <time datetime="{{ $day->toDateString() }}">{{ $day->day }}</time>
                             </header>
                             <div class="calendar-day__events">
-                                @foreach ($dayEvents as $event)
+                                @forelse ($dayEvents as $event)
                                     <a class="calendar-event calendar-event--{{ $event->event_type->value }}" href="{{ route('calendar.show', $event) }}">
                                         @if (! $event->end_at)
                                             <time datetime="{{ $event->start_at->toIso8601String() }}">{{ $event->start_at->format('H:i') }}</time>
@@ -154,10 +154,9 @@
                                         <strong>{{ $event->title }}</strong>
                                         @if ($event->location_name)<span>{{ $event->location_name }}</span>@endif
                                     </a>
-                                @endforeach
-                                @if ($dayEvents->isEmpty())
+                                @empty
                                     <span class="calendar-day__empty">Brak wydarzeń</span>
-                                @endif
+                                @endforelse
                             </div>
                         </section>
                     @endforeach

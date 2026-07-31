@@ -23,17 +23,17 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::get('/aktualnosci', [NewsController::class, 'index'])
     ->name('news.index');
-Route::get('/aktualnosci/{post}', [NewsController::class, 'show'])
+Route::get('/aktualnosci/{slug}', [NewsController::class, 'show'])
     ->name('news.show');
 
 Route::get('/kalendarz', [CalendarController::class, 'index'])
     ->name('calendar.index');
-Route::get('/kalendarz/{sportEvent}', [CalendarController::class, 'show'])
+Route::get('/kalendarz/{slug}', [CalendarController::class, 'show'])
     ->name('calendar.show');
 
 Route::get('/wyniki', [ResultsController::class, 'index'])
     ->name('results.index');
-Route::get('/wyniki/{sportEvent}', [ResultsController::class, 'show'])
+Route::get('/wyniki/{slug}', [ResultsController::class, 'show'])
     ->name('results.show');
 
 Route::get('/klub', ClubController::class)->name('club');

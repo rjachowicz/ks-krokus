@@ -40,14 +40,13 @@ final class NewsController extends Controller
         return view('news.index', compact('posts'));
     }
 
-    public function show(Post $post): View
+    public function show(string $slug): View
     {
-        abort_unless(
-            Post::query()->published()->whereKey($post->getKey())->exists(),
-            404,
-        );
-
-        $post->load(['author', 'images']);
+        $post = Post::query()
+            ->published()
+            ->with(['author', 'images'])
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         $morePosts = Post::query()
             ->published()

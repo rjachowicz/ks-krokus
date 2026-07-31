@@ -100,7 +100,8 @@ final class AdminCrudAuditTest extends TestCase
 
         $this->get(route('admin.events.edit', $event))
             ->assertOk()
-            ->assertSeeText($linkedDefinition->name);
+            ->assertSeeText($linkedDefinition->name)
+            ->assertSeeText('Dodaj wynik');
 
         $unlinkedInactiveDefinition = $this->definition(
             'AUDIT-EVENT-INACTIVE',

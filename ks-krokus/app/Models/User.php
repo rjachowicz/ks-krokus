@@ -9,18 +9,14 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
-    use Notifiable;
     use SoftDeletes;
 
     /**
@@ -77,11 +73,6 @@ class User extends Authenticatable
         return $this->role === UserRole::Admin;
     }
 
-    public function isModerator(): bool
-    {
-        return $this->role === UserRole::Moderator;
-    }
-
     public function canManageContent(): bool
     {
         return in_array($this->role, [UserRole::Admin, UserRole::Moderator], true);
@@ -101,32 +92,5 @@ class User extends Authenticatable
             ->where('is_active', true)
             ->where('has_range_access', true)
             ->orderBy('name');
-    }
-
-    public function clubPositions(): BelongsToMany
-    {
-        return $this->belongsToMany(ClubPosition::class)
-            ->withPivot('sort_order')
-            ->withTimestamps();
-    }
-
-    public function posts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'author_id');
-    }
-
-    public function createdEvents(): HasMany
-    {
-        return $this->hasMany(SportEvent::class, 'created_by');
-    }
-
-    public function enteredResults(): HasMany
-    {
-        return $this->hasMany(EventResult::class, 'entered_by');
-    }
-
-    public function results(): HasMany
-    {
-        return $this->hasMany(EventResult::class);
     }
 }

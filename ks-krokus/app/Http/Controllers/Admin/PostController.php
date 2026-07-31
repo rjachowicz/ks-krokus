@@ -10,6 +10,7 @@ use App\Http\Requests\Admin\PostRequest;
 use App\Models\Post;
 use App\Models\PostImage;
 use App\Support\UniqueSlug;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -146,8 +147,14 @@ final class PostController extends Controller
                     ->whereKey($post->getKey())
                     ->lockForUpdate()
                     ->firstOrFail();
-                $lockedPost->images()->lockForUpdate()->get();
-                $this->guardGalleryLimit($request, $lockedPost, count($galleryPaths));
+                $lockedImages = $lockedPost->images()
+                    ->lockForUpdate()
+                    ->get();
+                $this->guardGalleryLimit(
+                    $request,
+                    $lockedImages,
+                    count($galleryPaths),
+                );
 
                 $data = $request->validated();
                 $data['updated_by'] = $request->user()->getKey();
@@ -183,10 +190,14 @@ final class PostController extends Controller
                 }
 
                 $lockedPost->update($data);
-                $this->updateExistingImages($request, $lockedPost);
+                $this->updateExistingImages($request, $lockedImages);
                 $pathsToDelete = [
                     ...$pathsToDelete,
-                    ...$this->deleteSelectedImages($request, $lockedPost),
+                    ...$this->deleteSelectedImages(
+                        $request,
+                        $lockedPost,
+                        $lockedImages,
+                    ),
                 ];
                 $this->createGalleryImages($lockedPost, $galleryPaths);
 
@@ -268,19 +279,15 @@ final class PostController extends Controller
 
     private function guardGalleryLimit(
         Request $request,
-        Post $post,
+        EloquentCollection $images,
         int $newImagesCount,
     ): void {
-        $deleteImageIds = $request->input('delete_images', []);
-
-        if (! is_array($deleteImageIds)) {
-            $deleteImageIds = [];
-        }
-
-        $deletedImagesCount = $post->images()
-            ->whereKey($deleteImageIds)
-            ->count();
-        $remainingImagesCount = $post->images()->count()
+        $deleteImageIds = $this->submittedImageIds(
+            $request,
+            'delete_images',
+        );
+        $deletedImagesCount = $images->whereIn('id', $deleteImageIds)->count();
+        $remainingImagesCount = $images->count()
             - $deletedImagesCount
             + $newImagesCount;
         $maxGalleryImages = (int) config('content.gallery_max_images');
@@ -345,7 +352,7 @@ final class PostController extends Controller
 
     private function updateExistingImages(
         Request $request,
-        Post $post,
+        EloquentCollection $images,
     ): void {
         $imageData = $request->input('existing_images', []);
 
@@ -353,8 +360,10 @@ final class PostController extends Controller
             return;
         }
 
+        $imagesById = $images->keyBy('id');
+
         foreach ($imageData as $imageId => $data) {
-            $image = $post->images()->find($imageId);
+            $image = $imagesById->get((int) $imageId);
 
             if (! $image instanceof PostImage || ! is_array($data)) {
                 continue;
@@ -374,20 +383,53 @@ final class PostController extends Controller
     private function deleteSelectedImages(
         Request $request,
         Post $post,
+        EloquentCollection $images,
     ): array {
-        $ids = $request->input('delete_images', []);
+        $ids = $this->submittedImageIds($request, 'delete_images');
 
-        if (! is_array($ids) || $ids === []) {
+        if ($ids === []) {
             return [];
         }
 
-        $images = $post->images()->whereKey($ids)->get();
-        $paths = $images->pluck('path')->all();
+        $selectedImages = $images->whereIn('id', $ids);
 
-        foreach ($images as $image) {
-            $image->delete();
+        if ($selectedImages->isEmpty()) {
+            return [];
         }
 
+        $paths = $selectedImages->pluck('path')->all();
+        $post->images()->whereKey($selectedImages->modelKeys())->delete();
+
         return $paths;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function submittedImageIds(
+        Request $request,
+        string $field,
+    ): array {
+        $values = $request->input($field, []);
+
+        if (! is_array($values)) {
+            return [];
+        }
+
+        $ids = [];
+
+        foreach ($values as $value) {
+            if (! is_int($value) && ! is_string($value)) {
+                continue;
+            }
+
+            $id = filter_var($value, FILTER_VALIDATE_INT);
+
+            if ($id !== false && $id > 0) {
+                $ids[] = (int) $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 }

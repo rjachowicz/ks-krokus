@@ -44,21 +44,6 @@ class EventResult extends Model
         return $this->belongsTo(EventCompetition::class);
     }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class)->withTrashed();
-    }
-
-    public function enteredBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'entered_by')->withTrashed();
-    }
-
-    public function updatedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by')->withTrashed();
-    }
-
     public function displayName(): string
     {
         return $this->participant_name;

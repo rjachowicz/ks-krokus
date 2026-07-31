@@ -22,19 +22,25 @@ final class DashboardController extends Controller
         $metrics = null;
 
         if ($user->canManageContent()) {
+            $postCounts = Post::query()
+                ->selectRaw('COUNT(*) AS total')
+                ->selectRaw(
+                    'COUNT(*) FILTER (WHERE status = ?) AS published',
+                    [PublicationStatus::Published->value],
+                )
+                ->toBase()
+                ->first();
+
             $metrics = [
                 'users' => $user->isAdmin() ? User::query()->count() : null,
-                'posts' => Post::query()->count(),
-                'published_posts' => Post::query()
-                    ->where('status', PublicationStatus::Published->value)
-                    ->count(),
+                'posts' => (int) $postCounts->total,
+                'published_posts' => (int) $postCounts->published,
                 'events' => SportEvent::query()->count(),
                 'results' => EventResult::query()->count(),
             ];
 
             $upcomingEvents = SportEvent::query()
-                ->where('start_at', '>=', now()->startOfDay())
-                ->orderBy('start_at')
+                ->upcoming()
                 ->limit(6)
                 ->get();
         } else {

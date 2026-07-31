@@ -6,6 +6,7 @@
 - [x] Skonfigurować osobną bazę PostgreSQL dla testów.
 - [x] Uruchomić migracje i ograniczyć runtime wyłącznie do PostgreSQL.
 - [x] Dodać indeks zakresowy dla wydarzeń wielodniowych.
+- [x] Dodać indeks dashboardu wyników po użytkowniku, statusie usunięcia i dacie.
 - [x] Odtworzyć lokalne dane startowe bez wpisów wyników.
 
 ## P0 — uploady i wdrożenie
@@ -20,6 +21,8 @@
 - [x] Dodać główny `php.ini` dla Railway Railpack/FrankenPHP, niezależny od
   `public/.user.ini`.
 - [x] Powtórzyć rzeczywisty lokalny upload HTTP pliku większego niż 2 MB.
+- [x] Zweryfikować lokalnie produkcyjny cache, migracje, logi, zapis do storage,
+  link publiczny, manifest Vite i wymagania platformy PHP.
 - [ ] Podpiąć na Railway wolumen do `/app/storage/app/public`.
 - [ ] Ustawić na Railway `RAILPACK_SKIP_MIGRATIONS=true` przy własnym
   pre-deploy command.
@@ -78,6 +81,8 @@
 
 - [x] Walidować filtry enumami i zakres miesiąca/roku.
 - [x] Obsłużyć wydarzenia wielodniowe bez duplikowania danych.
+- [x] Uwzględnić trwające wydarzenia wielodniowe w listach nadchodzących i
+  przetestować filtry po metadanych wydarzenia oraz podpiętej konkurencji.
 - [x] Sprawdzić N+1, mobile, puste stany, sukcesy, błędy i potwierdzenia.
 - [x] Zapewnić focus-visible, etykiety, ARIA, skip link i obsługę klawiatury.
 - [x] Połączyć błędy filtrów publicznych z kontrolkami i dodać kompletne stany
@@ -104,6 +109,12 @@
 - [x] Usunąć wykryty martwy CSS, przykładowy kod i puste zasoby; ponowny audyt
   potwierdza użycie wszystkich literalnych klas CSS.
 - [x] Zweryfikować importy JS, komponenty Blade i zależności.
+- [x] Przeprowadzić końcowy audyt zapytań, eager loadingu, operacji galerii,
+  renderowania Blade oraz włączyć wykrywanie lazy loadingu poza produkcją.
+- [x] Usunąć nieużywane relacje modeli, kod szkieletowy, puste stacki i trasę
+  konsolową oraz lokalne pliki `.idea` z repozytorium.
+- [x] Rozdzielić obsługę uploadu do dynamicznego pakietu JavaScript i potwierdzić
+  użycie wszystkich pozostałych klas CSS, komponentów oraz selektorów JS.
 - [x] Uprościć semantykę wszystkich widoków Blade i ujednolicić formularze,
   karty, tabele, kontrolki oraz nagłówki panelu.
 - [x] Dodać testy regresyjne i dokumentację wdrożenia.

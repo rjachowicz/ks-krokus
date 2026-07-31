@@ -9,9 +9,9 @@
         :description="$event->start_at->format('d.m.Y H:i').' — '.$event->location_name"
     >
         <x-slot:actions>
-            @if ($event->event_type === \App\Enums\EventType::Competition && $event->eventCompetitions()->exists())
+            @if ($event->event_type === \App\Enums\EventType::Competition && $firstEventCompetitionId)
                 <a
-                    href="{{ route('admin.results.create', ['event_competition_id' => $event->eventCompetitions()->value('id')]) }}"
+                    href="{{ route('admin.results.create', ['event_competition_id' => $firstEventCompetitionId]) }}"
                     class="btn btn-primary"
                 >
                     Dodaj wynik

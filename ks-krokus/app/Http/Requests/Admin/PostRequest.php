@@ -75,16 +75,20 @@ class PostRequest extends AdminFormRequest
 
             /** @var Post|null $post */
             $post = $this->route('post');
-            $existingCount = $post?->images()->count() ?? 0;
-            $deleteImageIds = $this->input('delete_images', []);
-
-            if (! is_array($deleteImageIds)) {
-                $deleteImageIds = [];
-            }
-
-            $deletedCount = $post?->images()
-                ->whereKey($deleteImageIds)
-                ->count() ?? 0;
+            $postImageIds = $post instanceof Post
+                ? $post->images()
+                    ->pluck('id')
+                    ->map(static fn (mixed $id): int => (int) $id)
+                    ->all()
+                : [];
+            $existingCount = count($postImageIds);
+            $deleteImageIds = $this->normalizedImageIds(
+                $this->input('delete_images', []),
+            );
+            $deletedCount = count(array_intersect(
+                $postImageIds,
+                $deleteImageIds,
+            ));
             $newFiles = $this->file('gallery_images', []);
             $newCount = is_array($newFiles) ? count($newFiles) : 0;
 
@@ -100,19 +104,13 @@ class PostRequest extends AdminFormRequest
             $existingImageData = $this->input('existing_images', []);
 
             if (is_array($existingImageData) && $existingImageData !== []) {
-                $submittedIds = array_values(array_filter(
-                    array_map(
-                        static fn (mixed $id): ?int => filter_var(
-                            $id,
-                            FILTER_VALIDATE_INT,
-                        ) !== false ? (int) $id : null,
-                        array_keys($existingImageData),
-                    ),
-                    static fn (?int $id): bool => $id !== null,
+                $submittedIds = $this->normalizedImageIds(
+                    array_keys($existingImageData),
+                );
+                $ownedCount = count(array_intersect(
+                    $postImageIds,
+                    $submittedIds,
                 ));
-                $ownedCount = $post?->images()
-                    ->whereKey($submittedIds)
-                    ->count() ?? 0;
 
                 if (
                     count($submittedIds) !== count($existingImageData)
@@ -162,5 +160,31 @@ class PostRequest extends AdminFormRequest
             'gallery_images.*.dimensions' => 'Każde zdjęcie galerii może mieć maksymalnie 12 000 × 12 000 pikseli.',
             'delete_images.*.exists' => 'Co najmniej jedno usuwane zdjęcie nie należy do tej aktualności.',
         ];
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function normalizedImageIds(mixed $values): array
+    {
+        if (! is_array($values)) {
+            return [];
+        }
+
+        $ids = [];
+
+        foreach ($values as $value) {
+            if (! is_int($value) && ! is_string($value)) {
+                continue;
+            }
+
+            $id = filter_var($value, FILTER_VALIDATE_INT);
+
+            if ($id !== false && $id > 0) {
+                $ids[] = (int) $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 }

@@ -24,7 +24,6 @@ final class HomeController extends Controller
         $upcomingEvents = SportEvent::query()
             ->publiclyVisible()
             ->upcoming()
-            ->with('competitions')
             ->limit(4)
             ->get();
 

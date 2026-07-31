@@ -4,7 +4,109 @@
 
 `main`
 
-## Bieżąca sesja — 2026-07-31 — audyt UX, dostępności i bezpieczeństwa
+## Bieżąca sesja — 2026-07-31 — końcowa refaktoryzacja i gotowość produkcyjna
+
+### Cel
+
+Przejrzeć kompletny backend, Blade, CSS i JavaScript, usunąć potwierdzony martwy
+kod oraz zbędne operacje, zweryfikować zapytania i kalendarz, a następnie
+sprawdzić konfigurację wdrożenia, cache, logi, storage, migracje i build.
+
+### Najważniejsze potwierdzone problemy
+
+- Publiczne strony szczegółów najpierw wykonywały route model binding, a potem
+  dodatkowe zapytanie `exists()` sprawdzające widoczność tego samego rekordu.
+- Kalendarz, strona główna i wyniki eager-loadowały relacje, których widoki nie
+  używały. Edycja wydarzenia wykonywała ponadto dwa zapytania bezpośrednio z
+  szablonu Blade.
+- Walidacja i aktualizacja galerii wielokrotnie pobierały te same zdjęcia, a ich
+  metadane były aktualizowane po dodatkowym zapytaniu dla każdego rekordu.
+- Scope nadchodzących wydarzeń pomijał trwające wydarzenie wielodniowe, jeżeli
+  zaczęło się przed bieżącym dniem.
+- Zapytanie dashboardu użytkownika po `event_results.user_id`, `deleted_at` i
+  `created_at` nie miało dopasowanego indeksu PostgreSQL.
+- Obsługa uploadu była częścią głównego pakietu JavaScript na każdej stronie,
+  mimo że jest potrzebna wyłącznie w wybranych formularzach.
+- Repozytorium nadal śledziło lokalne pliki projektu PhpStorm, pusty plik tras
+  konsolowych, nieużywane relacje modeli, trait powiadomień, stacki Blade i kod
+  fabryki wygenerowany przez szkielet Laravela.
+
+### Wykonane
+
+- [x] Publiczne aktualności, wydarzenia i wyniki są pobierane jednym zapytaniem,
+  które równocześnie egzekwuje status publikacji i ładuje tylko używane relacje.
+- [x] Usunięto nieużywane eager loadingi z kalendarza, strony głównej i wyników,
+  zapytania z Blade oraz relację użytkownika nieużywaną przy renderowaniu wyników.
+- [x] Połączono dwa zapytania zliczające aktualności na dashboardzie w jeden
+  agregat PostgreSQL.
+- [x] Połączono filtry dyscypliny i systemu konkurencji we wspólne scope'y modelu,
+  używane przez kalendarz i wyniki. Pokryto zarówno metadane wydarzenia, jak i
+  podpięte definicje konkurencji.
+- [x] Scope `upcoming()` uwzględnia wydarzenia wielodniowe trwające dzisiaj;
+  zachowano zakres miesiąca i mapowanie jednego rekordu na wszystkie widoczne dni
+  bez duplikowania danych w bazie.
+- [x] Galeria aktualności używa jednej zablokowanej kolekcji do limitu, edycji i
+  usuwania, a wybrane rekordy usuwa jednym zapytaniem.
+- [x] Dodano indeks `event_results (user_id, deleted_at, created_at)` dla zapytania
+  dashboardu i regresję sprawdzającą jego obecność.
+- [x] Włączono wykrywanie lazy loadingu poza produkcją, aby kolejne N+1 kończyły
+  się błędem podczas testów i pracy lokalnej.
+- [x] Moduł uploadu jest ładowany dynamicznie tylko na stronach z odpowiednim
+  formularzem. Główny pakiet JS zmalał z około 12,3 kB do 9,4 kB.
+- [x] Usunięto nieużywane relacje i metody modeli, trait `Notifiable`, kolejkowe
+  traity synchronicznego maila, nieużywaną fabrykę `unverified()`, puste stacki
+  Blade, pustą trasę konsolową i zbędne wpisy szkieletu Composer/PHPUnit.
+- [x] Usunięto z repozytorium dziewięć plików `.idea` i dodano główny `.gitignore`.
+  Ponowny audyt potwierdził użycie wszystkich literalnych klas CSS, komponentów
+  Blade, selektorów JavaScript i bezpośrednich zależności npm, więc nie usuwano
+  działających zasobów na podstawie niepewnej heurystyki.
+- [x] Uporządkowano metadane i wymagane rozszerzenia w Composerze, przeniesiono
+  Tinker do zależności deweloperskich i ustawiono synchroniczną kolejkę, ponieważ
+  aplikacja nie ma obecnie żadnych zadań asynchronicznych.
+- [x] Zaktualizowano instrukcję Railway o `php artisan optimize`, cache startowy,
+  wymagania PHP i brak workera kolejki.
+
+### Testy i kontrole
+
+- [x] `composer test` — 69 testów, 588 asercji, wszystkie poprawne.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — produkcyjny build Vite zakończony poprawnie; główny JS
+  9,37 kB, osobny moduł uploadu 3,14 kB.
+- [x] `composer validate --strict`, `composer check-platform-reqs`,
+  `composer audit --locked` i `npm audit --audit-level=moderate` — poprawne,
+  0 znanych podatności.
+- [x] `php artisan optimize` — konfiguracja, zdarzenia, trasy i widoki zapisane w
+  cache; po kontroli cache wyczyszczono do lokalnego stanu deweloperskiego.
+- [x] Wszystkie 11 migracji ma status `Ran`, nowy indeks potwierdzono także przez
+  introspekcję schematu PostgreSQL.
+- [x] `public/storage` wskazuje na `storage/app/public`; katalogi `storage` i
+  `bootstrap/cache` są zapisywalne, manifest Vite istnieje, a konfiguracja PHP z
+  repozytorium ustawia limity uploadu 8 MB / 85 MB / 20 plików.
+- [x] Audyt logu nie wykazał nowych błędów po zmianach; 40 wpisów `ERROR` w
+  lokalnym logu pochodzi z wcześniejszych, już naprawionych etapów prac.
+
+### Migracje i zmienne środowiskowe
+
+- Dodano migrację
+  `2026_07_31_000800_add_user_dashboard_index_to_event_results_table.php`.
+- Nie dodano nowych wymaganych zmiennych środowiskowych.
+- Domyślne i przykładowe `QUEUE_CONNECTION` zmieniono z `database` na `sync`;
+  na istniejącym środowisku należy ustawić tę wartość jawnie albo usunąć stare
+  nadpisanie, jeżeli nadal wskazuje na bazę.
+- Composer wymaga teraz jawnie `fileinfo`, `PDO` i `pdo_pgsql`; `gd` pozostaje
+  wymaganiem deweloperskim potrzebnym do testów obrazów.
+
+### Znane ograniczenia i kontrole wdrożeniowe
+
+- Nie wykonano deployu ani operacji na produkcyjnym Railway. Nadal trzeba podpiąć
+  wolumen, ustawić zmienne usługi, uruchomić migrację i wykonać smoke test po HTTPS.
+- Rzeczywiste SMTP, trwałość uploadów po redeployu, backup/restore PostgreSQL,
+  alerty i zachowanie nagłówków reverse proxy wymagają środowiska produkcyjnego.
+- Fizyczny test NVDA/VoiceOver, zewnętrzny test penetracyjny, brakujący dokument
+  PDF oraz polityka trwałego czyszczenia miękko usuniętych zdjęć pozostają poza
+  zakresem kontroli lokalnej.
+
+## Poprzednia sesja — 2026-07-31 — audyt UX, dostępności i bezpieczeństwa
 
 ### Cel
 

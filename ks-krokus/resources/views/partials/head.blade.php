@@ -30,7 +30,7 @@
 
         try {
             savedTheme = localStorage.getItem(storageKey);
-        } catch (error) {
+        } catch {
             // Tryb prywatny lub polityka przeglądarki może blokować storage.
         }
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -52,6 +52,3 @@
 >
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-@stack('styles')
-@stack('head')

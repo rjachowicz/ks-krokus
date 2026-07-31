@@ -6,6 +6,7 @@ klubu, kalendarz, wyniki oraz panel administracyjny.
 ## Wymagania
 
 - PHP 8.4,
+- rozszerzenia PHP `fileinfo`, `PDO`, `pdo_pgsql` oraz `gd` do uruchamiania testów,
 - Composer 2,
 - Node.js i npm,
 - PostgreSQL.
@@ -23,7 +24,9 @@ npm run build
 
 Uzupełnij połączenie PostgreSQL i konfigurację poczty w `.env`. Do pracy
 deweloperskiej użyj `composer dev`; polecenie uruchamia serwer PHP z limitami
-uploadu zgodnymi z aplikacją (8 MB na poziomie PHP, 6 MB na poziomie walidacji).
+uploadu zgodnymi z aplikacją, podgląd logów i Vite (8 MB na poziomie PHP, 6 MB
+na poziomie walidacji). Aplikacja nie używa obecnie zadań asynchronicznych, więc
+nie wymaga lokalnego ani produkcyjnego workera kolejki.
 
 ## Jakość
 

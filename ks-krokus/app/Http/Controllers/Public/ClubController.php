@@ -12,8 +12,21 @@ final class ClubController extends Controller
 {
     public function __invoke(): View
     {
-        $trainers = User::query()->trainers()->get();
-        $rangeAccessPeople = User::query()->rangeAccess()->get();
+        $directoryPeople = User::query()
+            ->where('is_active', true)
+            ->where(function ($query): void {
+                $query
+                    ->where('is_trainer', true)
+                    ->orWhere('has_range_access', true);
+            })
+            ->orderBy('name')
+            ->get();
+        $trainers = $directoryPeople
+            ->where('is_trainer', true)
+            ->values();
+        $rangeAccessPeople = $directoryPeople
+            ->where('has_range_access', true)
+            ->values();
 
         return view('pages.club', compact(
             'trainers',

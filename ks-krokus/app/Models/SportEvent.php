@@ -10,7 +10,6 @@ use App\Enums\EventType;
 use App\Enums\PublicationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -69,18 +68,46 @@ class SportEvent extends Model
     public function scopeUpcoming(Builder $query): Builder
     {
         return $query
-            ->where('start_at', '>=', now()->startOfDay())
+            ->where(function (Builder $query): void {
+                $query
+                    ->where('start_at', '>=', now()->startOfDay())
+                    ->orWhere('end_at', '>=', now()->startOfDay());
+            })
             ->orderBy('start_at');
     }
 
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by')->withTrashed();
+    public function scopeMatchingDiscipline(
+        Builder $query,
+        string $discipline,
+    ): Builder {
+        return $query->where(function (Builder $query) use ($discipline): void {
+            $query
+                ->where('discipline', $discipline)
+                ->orWhereHas(
+                    'competitions',
+                    fn (Builder $competitionQuery) => $competitionQuery->where(
+                        'discipline',
+                        $discipline,
+                    ),
+                );
+        });
     }
 
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by')->withTrashed();
+    public function scopeMatchingCompetitionSystem(
+        Builder $query,
+        string $system,
+    ): Builder {
+        return $query->where(function (Builder $query) use ($system): void {
+            $query
+                ->where('competition_system', $system)
+                ->orWhereHas(
+                    'competitions',
+                    fn (Builder $competitionQuery) => $competitionQuery->where(
+                        'competition_system',
+                        $system,
+                    ),
+                );
+        });
     }
 
     public function eventCompetitions(): HasMany
@@ -93,7 +120,9 @@ class SportEvent extends Model
         return $this->belongsToMany(
             CompetitionDefinition::class,
             'event_competitions',
-        )->withTimestamps();
+        )
+            ->withPivot('id')
+            ->withTimestamps();
     }
 
     public function results(): HasManyThrough

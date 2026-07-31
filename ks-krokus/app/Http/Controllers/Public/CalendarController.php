@@ -32,7 +32,6 @@ final class CalendarController extends Controller
 
         $query = SportEvent::query()
             ->publiclyVisible()
-            ->with('competitions')
             ->where('start_at', '<=', $displayDate->copy()->endOfMonth())
             ->where(function ($builder) use ($displayDate): void {
                 $builder
@@ -42,40 +41,18 @@ final class CalendarController extends Controller
             })
             ->orderBy('start_at');
 
-        if ($request->filled('event_type')) {
-            $query->where('event_type', (string) $request->string('event_type'));
+        if (filled($validated['event_type'] ?? null)) {
+            $query->where('event_type', (string) $validated['event_type']);
         }
 
-        if ($request->filled('discipline')) {
-            $discipline = (string) $request->string('discipline');
-
-            $query->where(function ($builder) use ($discipline): void {
-                $builder
-                    ->where('discipline', $discipline)
-                    ->orWhereHas(
-                        'competitions',
-                        fn ($competitionQuery) => $competitionQuery->where(
-                            'discipline',
-                            $discipline,
-                        ),
-                    );
-            });
+        if (filled($validated['discipline'] ?? null)) {
+            $query->matchingDiscipline((string) $validated['discipline']);
         }
 
-        if ($request->filled('competition_system')) {
-            $system = (string) $request->string('competition_system');
-
-            $query->where(function ($builder) use ($system): void {
-                $builder
-                    ->where('competition_system', $system)
-                    ->orWhereHas(
-                        'competitions',
-                        fn ($competitionQuery) => $competitionQuery->where(
-                            'competition_system',
-                            $system,
-                        ),
-                    );
-            });
+        if (filled($validated['competition_system'] ?? null)) {
+            $query->matchingCompetitionSystem(
+                (string) $validated['competition_system'],
+            );
         }
 
         $events = $query->get();
@@ -104,20 +81,13 @@ final class CalendarController extends Controller
         ]);
     }
 
-    public function show(SportEvent $sportEvent): View
+    public function show(string $slug): View
     {
-        abort_unless(
-            SportEvent::query()
-                ->publiclyVisible()
-                ->whereKey($sportEvent->getKey())
-                ->exists(),
-            404,
-        );
-
-        $sportEvent->load([
-            'competitions',
-            'eventCompetitions.competition',
-        ]);
+        $sportEvent = SportEvent::query()
+            ->publiclyVisible()
+            ->with('competitions')
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         return view('calendar.show', compact('sportEvent'));
     }

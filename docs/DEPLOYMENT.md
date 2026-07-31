@@ -5,11 +5,12 @@
 1. Ustaw katalog główny usługi na `/ks-krokus`.
 2. Użyj automatycznego buildera Railpack dla Laravel/PHP 8.4. Railpack
    rozpoznaje Laravel i uruchamia aplikację przez FrankenPHP z katalogiem
-   dokumentów `/app/public`.
+   dokumentów `/app/public`. Composer jawnie wymaga rozszerzeń `fileinfo`, `PDO`
+   i `pdo_pgsql`, dlatego Railpack dołącza obsługę PostgreSQL do obrazu.
 3. Jako build command ustaw:
 
    ```bash
-   npm ci && npm run build && php artisan storage:link && php artisan event:cache && php artisan route:cache && php artisan view:cache
+   npm ci && npm run build && php artisan storage:link && php artisan optimize
    ```
 
 4. Jako pre-deploy command ustaw:
@@ -24,9 +25,10 @@
    własnego pre-deploy command.
 
 Skrypt pre-deploy wykonuje wyłącznie migracje. Link `public/storage` i cache
-niezależne od danych powstają wcześniej w obrazie aplikacji. Wolumen nie jest
-dostępny podczas buildu ani pre-deploy — zostanie zamontowany dopiero w
-uruchomionej usłudze.
+konfiguracji, zdarzeń, tras oraz widoków powstają wcześniej w obrazie aplikacji;
+startowy skrypt Railpack odświeża optymalizacje także w uruchamianym kontenerze.
+Wolumen nie jest dostępny podczas buildu ani pre-deploy — zostanie zamontowany
+dopiero w uruchomionej usłudze.
 
 ## Trwałe zdjęcia
 
@@ -80,7 +82,7 @@ DB_URL=${{Postgres.DATABASE_URL}}
 SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
 CACHE_STORE=database
-QUEUE_CONNECTION=database
+QUEUE_CONNECTION=sync
 FILESYSTEM_DISK=local
 MEDIA_DISK=public
 RAILPACK_SKIP_MIGRATIONS=true
@@ -119,3 +121,5 @@ RAILPACK_PHP_ROOT_DIR=/app/public
 5. Wykonaj redeploy i potwierdź, że zdjęcie nadal jest dostępne.
 6. Wyślij formularz kontaktowy i sprawdź logi `stderr`.
 7. Sprawdź stan migracji: `php artisan migrate:status`.
+8. Sprawdź cache: `php artisan about --only=cache`; konfiguracja, zdarzenia,
+   trasy i widoki powinny być oznaczone jako zapisane w cache.

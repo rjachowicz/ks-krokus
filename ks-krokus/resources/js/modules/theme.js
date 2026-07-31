@@ -6,7 +6,7 @@ function getPreferredTheme() {
 
     try {
         savedTheme = localStorage.getItem(STORAGE_KEY);
-    } catch (error) {
+    } catch {
         // Preferencja systemowa pozostaje bezpiecznym ustawieniem awaryjnym.
     }
 
@@ -25,7 +25,7 @@ function applyTheme(theme, button = null) {
     document.documentElement.dataset.theme = normalizedTheme;
     try {
         localStorage.setItem(STORAGE_KEY, normalizedTheme);
-    } catch (error) {
+    } catch {
         // Motyw nadal działa w bieżącej karcie bez trwałego zapisu.
     }
 

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\CompetitionSystem;
+use App\Enums\Discipline;
 use App\Enums\EventType;
 use App\Enums\PublicationStatus;
 use App\Enums\UserRole;
+use App\Models\CompetitionDefinition;
 use App\Models\Post;
 use App\Models\SportEvent;
 use App\Models\User;
@@ -105,6 +108,60 @@ final class PublicContentTest extends TestCase
             ->assertDontSeeText('Tylko zawody');
     }
 
+    public function test_calendar_filters_event_and_linked_competition_metadata(): void
+    {
+        $definition = CompetitionDefinition::query()->create([
+            'code' => 'IPSC-RIFLE-FILTER',
+            'name' => 'Karabin dynamiczny',
+            'discipline' => Discipline::Rifle,
+            'competition_system' => CompetitionSystem::IPSC,
+            'is_active' => true,
+        ]);
+        $linkedEvent = SportEvent::query()->create([
+            'title' => 'Zawody z konkurencją karabinową',
+            'slug' => 'zawody-z-konkurencja-karabinowa',
+            'event_type' => EventType::Competition,
+            'start_at' => '2026-07-18 10:00:00',
+            'location_name' => 'Strzelnica',
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+        $linkedEvent->competitions()->attach($definition);
+        SportEvent::query()->create([
+            'title' => 'Zawody z metadanymi karabinowymi',
+            'slug' => 'zawody-z-metadanymi-karabinowymi',
+            'event_type' => EventType::Competition,
+            'start_at' => '2026-07-19 10:00:00',
+            'location_name' => 'Strzelnica',
+            'discipline' => Discipline::Rifle,
+            'competition_system' => CompetitionSystem::IPSC,
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+        SportEvent::query()->create([
+            'title' => 'Trening pistoletowy bez dopasowania',
+            'slug' => 'trening-pistoletowy-bez-dopasowania',
+            'event_type' => EventType::Training,
+            'start_at' => '2026-07-20 10:00:00',
+            'location_name' => 'Strzelnica',
+            'discipline' => Discipline::Pistol,
+            'competition_system' => CompetitionSystem::ISSF,
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+
+        $this->get(route('calendar.index', [
+            'month' => 7,
+            'year' => 2026,
+            'discipline' => Discipline::Rifle->value,
+            'competition_system' => CompetitionSystem::IPSC->value,
+        ]))
+            ->assertOk()
+            ->assertSeeText('Zawody z konkurencją karabinową')
+            ->assertSeeText('Zawody z metadanymi karabinowymi')
+            ->assertDontSeeText('Trening pistoletowy bez dopasowania');
+    }
+
     public function test_calendar_distinguishes_start_time_from_same_day_range(): void
     {
         SportEvent::query()->create([
@@ -160,6 +217,26 @@ final class PublicContentTest extends TestCase
         $response
             ->assertSeeText('od 10:00')
             ->assertSeeText('do 16:00');
+    }
+
+    public function test_ongoing_multiday_event_is_listed_on_homepage(): void
+    {
+        $this->travelTo('2026-07-15 12:00:00');
+
+        SportEvent::query()->create([
+            'title' => 'Trwające zawody wielodniowe',
+            'slug' => 'trwajace-zawody-wielodniowe',
+            'event_type' => EventType::Competition,
+            'start_at' => '2026-07-14 09:00:00',
+            'end_at' => '2026-07-16 18:00:00',
+            'location_name' => 'Strzelnica',
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSeeText('Trwające zawody wielodniowe');
     }
 
     public function test_calendar_year_picker_keeps_valid_year_outside_default_window(): void

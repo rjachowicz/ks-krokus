@@ -40,7 +40,6 @@ final class EventResultController extends Controller
             ->with([
                 'eventCompetition.event',
                 'eventCompetition.competition',
-                'user',
             ])
             ->latest();
 
@@ -113,7 +112,6 @@ final class EventResultController extends Controller
         $eventResult->load([
             'eventCompetition.event',
             'eventCompetition.competition',
-            'user',
         ]);
 
         return view('admin.results.edit', array_merge(

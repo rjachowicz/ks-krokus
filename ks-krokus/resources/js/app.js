@@ -3,7 +3,6 @@ import { initStickyHeader } from './modules/sticky-header';
 import { initTheme } from './modules/theme';
 import { initToasts } from './modules/toasts';
 import { initAdminUi } from './modules/admin-ui';
-import { initFileUploads } from './modules/file-upload';
 import { initFormStates } from './modules/form-state';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,9 +10,19 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();
     initStickyHeader();
     initToasts();
-    initAdminUi();
-    initFileUploads();
+
+    if (document.querySelector('[data-admin-sidebar]')) {
+        initAdminUi();
+    }
+
     initFormStates();
+
+    if (document.querySelector('[data-file-upload]')) {
+        import('./modules/file-upload').then(({ initFileUploads }) => {
+            initFileUploads();
+        });
+    }
+
     if (document.querySelector('[data-rich-text]')) {
         import('./modules/rich-text').then(({ initRichTextEditors }) => {
             initRichTextEditors();

@@ -67,11 +67,6 @@ class Post extends Model
         return $this->belongsTo(User::class, 'author_id')->withTrashed();
     }
 
-    public function updatedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by')->withTrashed();
-    }
-
     public function images(): HasMany
     {
         return $this->hasMany(PostImage::class)->orderBy('sort_order')->orderBy('id');

@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\PublicationStatus;
 use App\Enums\UserRole;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
@@ -14,6 +15,11 @@ use Tests\TestCase;
 final class ApplicationQualityTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_lazy_loading_is_blocked_outside_production(): void
+    {
+        self::assertTrue(Model::preventsLazyLoading());
+    }
 
     public function test_public_responses_include_baseline_security_headers(): void
     {

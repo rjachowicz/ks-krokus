@@ -156,6 +156,5 @@
         </form>
     </dialog>
 
-    @stack('scripts')
 </body>
 </html>

@@ -112,7 +112,11 @@ final class SportEventController extends Controller
 
         return view('admin.events.edit', array_merge(
             $this->formOptions($sportEvent),
-            ['event' => $sportEvent],
+            [
+                'event' => $sportEvent,
+                'firstEventCompetitionId' => $sportEvent->competitions
+                    ->first()?->pivot?->getAttribute('id'),
+            ],
         ));
     }
 

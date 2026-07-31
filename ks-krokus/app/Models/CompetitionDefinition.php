@@ -6,7 +6,6 @@ namespace App\Models;
 
 use App\Enums\CompetitionSystem;
 use App\Enums\Discipline;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -35,28 +34,8 @@ class CompetitionDefinition extends Model
         ];
     }
 
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query
-            ->where('is_active', true)
-            ->orderBy('competition_system')
-            ->orderBy('discipline')
-            ->orderBy('sort_order')
-            ->orderBy('name');
-    }
-
     public function eventCompetitions(): HasMany
     {
         return $this->hasMany(EventCompetition::class);
-    }
-
-    public function label(): string
-    {
-        return sprintf(
-            '%s / %s / %s',
-            $this->competition_system->label(),
-            $this->discipline->label(),
-            $this->name,
-        );
     }
 }

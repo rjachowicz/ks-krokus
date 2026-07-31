@@ -14,8 +14,5 @@
 </main>
 
 @include('partials.footer')
-
-@stack('modals')
-@stack('scripts')
 </body>
 </html>
