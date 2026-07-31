@@ -120,6 +120,8 @@
       <excludeFolder url="file://$MODULE_DIR$/ks-krokus/vendor/voku/portable-ascii" />
       <excludeFolder url="file://$MODULE_DIR$/ks-krokus/storage/app" />
       <excludeFolder url="file://$MODULE_DIR$/ks-krokus/storage/framework" />
+      <excludeFolder url="file://$MODULE_DIR$/ks-krokus/vendor/_laravel_idea" />
+      <excludeFolder url="file://$MODULE_DIR$/ks-krokus/vendor/symfony/html-sanitizer" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
