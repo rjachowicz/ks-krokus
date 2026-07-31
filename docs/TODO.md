@@ -6,7 +6,8 @@
 - [x] Skonfigurować osobną bazę PostgreSQL dla testów.
 - [x] Uruchomić wszystkie migracje na lokalnym PostgreSQL.
 - [x] Przenieść istniejące dane aplikacyjne i zsynchronizować sekwencje.
-- [ ] Usunąć lokalną kopię SQLite po ręcznym potwierdzeniu działania.
+- [x] Ograniczyć konfigurację runtime wyłącznie do PostgreSQL.
+- [x] Usunąć lokalną kopię SQLite po ręcznym potwierdzeniu działania.
 
 ## P0 — błędy i bezpieczeństwo
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -12,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $config = $this->app->make(ConfigRepository::class);
+        $pgsql = $config->get('database.connections.pgsql');
+
+        $config->set('database.connections', ['pgsql' => $pgsql]);
     }
 
     public function boot(): void
