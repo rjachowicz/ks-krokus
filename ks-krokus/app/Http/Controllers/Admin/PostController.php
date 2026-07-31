@@ -13,7 +13,9 @@ use App\Support\UniqueSlug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
@@ -22,22 +24,31 @@ final class PostController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = $request->validate(
+            [
+                'q' => ['nullable', 'string', 'max:100'],
+                'status' => ['nullable', Rule::enum(PublicationStatus::class)],
+            ],
+            [],
+            ['q' => 'wyszukiwana fraza', 'status' => 'status publikacji'],
+        );
+
         $query = Post::query()
             ->with('author')
             ->latest();
 
-        if ($request->filled('q')) {
-            $search = trim((string) $request->string('q'));
+        if (filled($filters['q'] ?? null)) {
+            $search = trim((string) $filters['q']);
 
             $query->where(function ($builder) use ($search): void {
                 $builder
-                    ->where('title', 'like', "%{$search}%")
-                    ->orWhere('excerpt', 'like', "%{$search}%");
+                    ->where('title', 'ilike', "%{$search}%")
+                    ->orWhere('excerpt', 'ilike', "%{$search}%");
             });
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', (string) $request->string('status'));
+        if (filled($filters['status'] ?? null)) {
+            $query->where('status', $filters['status']);
         }
 
         $posts = $query->paginate(20)->withQueryString();
@@ -95,9 +106,7 @@ final class PostController extends Controller
                 return $post;
             });
         } catch (Throwable $exception) {
-            Storage::disk(config('content.media_disk'))->delete(
-                array_filter([$coverPath, ...$galleryPaths]),
-            );
+            $this->deleteFiles(array_filter([$coverPath, ...$galleryPaths]));
 
             throw $exception;
         }
@@ -174,14 +183,12 @@ final class PostController extends Controller
                 return array_values(array_unique($pathsToDelete));
             });
         } catch (Throwable $exception) {
-            Storage::disk(config('content.media_disk'))->delete(
-                array_filter([$newCoverPath, ...$galleryPaths]),
-            );
+            $this->deleteFiles(array_filter([$newCoverPath, ...$galleryPaths]));
 
             throw $exception;
         }
 
-        Storage::disk(config('content.media_disk'))->delete($pathsToDelete);
+        $this->deleteFiles($pathsToDelete);
 
         return redirect()
             ->route('admin.posts.edit', $post)
@@ -248,7 +255,15 @@ final class PostController extends Controller
         string $directory,
         string $field,
     ): string {
-        $path = $file?->store($directory, config('content.media_disk'));
+        try {
+            $path = $file?->store($directory, config('content.media_disk'));
+        } catch (Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                $field => 'Nie udało się zapisać zdjęcia. Spróbuj ponownie później.',
+            ]);
+        }
 
         if (! is_string($path) || $path === '') {
             throw ValidationException::withMessages([
@@ -257,6 +272,33 @@ final class PostController extends Controller
         }
 
         return $path;
+    }
+
+    /**
+     * @param  array<array-key, string|null>  $paths
+     */
+    private function deleteFiles(array $paths): void
+    {
+        $paths = array_values(array_filter($paths));
+
+        if ($paths === []) {
+            return;
+        }
+
+        try {
+            $deleted = Storage::disk(config('content.media_disk'))->delete($paths);
+
+            if (! $deleted) {
+                Log::warning('Nie wszystkie nieużywane pliki aktualności zostały usunięte.', [
+                    'paths' => $paths,
+                ]);
+            }
+        } catch (Throwable $exception) {
+            report($exception);
+            Log::warning('Nie udało się usunąć nieużywanych plików aktualności.', [
+                'paths' => $paths,
+            ]);
+        }
     }
 
     private function updateExistingImages(

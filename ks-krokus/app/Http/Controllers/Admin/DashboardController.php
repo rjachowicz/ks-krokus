@@ -23,7 +23,7 @@ final class DashboardController extends Controller
 
         if ($user->canManageContent()) {
             $metrics = [
-                'users' => User::query()->count(),
+                'users' => $user->isAdmin() ? User::query()->count() : null,
                 'posts' => Post::query()->count(),
                 'published_posts' => Post::query()
                     ->where('status', PublicationStatus::Published->value)

@@ -29,38 +29,40 @@
     <div class="span-full"><h3 class="admin-section-title">Podstawowe informacje</h3></div>
     <label class="span-full">
         Nazwa wydarzenia
-        <input type="text" name="title" value="{{ old('title', $event->title ?? '') }}" autocomplete="off" required autofocus>
-        @error('title') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="event-title" type="text" name="title" value="{{ old('title', $event->title ?? '') }}" autocomplete="off" required autofocus
+            @error('title') aria-invalid="true" aria-describedby="event-title-error" @enderror>
+        @error('title') <span id="event-title-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Rodzaj
-        <select name="event_type" required>
+        <select id="event-type" name="event_type" required @error('event_type') aria-invalid="true" aria-describedby="event-type-error" @enderror>
             @foreach ($eventTypes as $value => $label)
                 <option value="{{ $value }}" @selected($currentType === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        @error('event_type') <span class="form-error">{{ $message }}</span> @enderror
+        @error('event_type') <span id="event-type-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Status publikacji
-        <select name="status" required>
+        <select id="event-status" name="status" required @error('status') aria-invalid="true" aria-describedby="event-status-error" @enderror>
             @foreach ($statuses as $value => $label)
                 <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        @error('status') <span class="form-error">{{ $message }}</span> @enderror
+        @error('status') <span id="event-status-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="admin-check-option">
         <input type="hidden" name="is_public" value="0">
-        <input type="checkbox" name="is_public" value="1" @checked(old('is_public', $event->is_public ?? true))>
+        <input id="event-public" type="checkbox" name="is_public" value="1" @checked(old('is_public', $event->is_public ?? true))
+            @error('is_public') aria-invalid="true" aria-describedby="event-public-error" @enderror>
         <span>
             <strong>Wydarzenie publiczne</strong><br>
             Widoczne w kalendarzu strony.
         </span>
-        @error('is_public') <span class="form-error">{{ $message }}</span> @enderror
+        @error('is_public') <span id="event-public-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">
@@ -71,32 +73,39 @@
         Początek
         <input
             type="datetime-local"
+            id="event-start-at"
             name="start_at"
             value="{{ old('start_at', isset($event) ? $event->start_at->format('Y-m-d\TH:i') : '') }}"
             required
+            @error('start_at') aria-invalid="true" aria-describedby="event-start-at-error" @enderror
         >
-        @error('start_at') <span class="form-error">{{ $message }}</span> @enderror
+        @error('start_at') <span id="event-start-at-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Koniec
         <input
             type="datetime-local"
+            id="event-end-at"
             name="end_at"
             value="{{ old('end_at', isset($event) && $event->end_at ? $event->end_at->format('Y-m-d\TH:i') : '') }}"
+            @error('end_at') aria-invalid="true" aria-describedby="event-end-at-error" @enderror
         >
-        @error('end_at') <span class="form-error">{{ $message }}</span> @enderror
+        @error('end_at') <span id="event-end-at-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Link do rejestracji
         <input
             type="url"
+            id="event-registration-url"
             name="registration_url"
             value="{{ old('registration_url', $event->registration_url ?? '') }}"
             placeholder="https://..."
+            autocomplete="url"
+            @error('registration_url') aria-invalid="true" aria-describedby="event-registration-url-error" @enderror
         >
-        @error('registration_url') <span class="form-error">{{ $message }}</span> @enderror
+        @error('registration_url') <span id="event-registration-url-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">
@@ -105,42 +114,45 @@
 
     <label>
         Nazwa miejsca
-        <input type="text" name="location_name" value="{{ old('location_name', $event->location_name ?? '') }}" required>
-        @error('location_name') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="event-location" type="text" name="location_name" value="{{ old('location_name', $event->location_name ?? '') }}" required
+            @error('location_name') aria-invalid="true" aria-describedby="event-location-error" @enderror>
+        @error('location_name') <span id="event-location-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-2">
         Adres
-        <input type="text" name="address" value="{{ old('address', $event->address ?? '') }}" autocomplete="street-address">
-        @error('address') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="event-address" type="text" name="address" value="{{ old('address', $event->address ?? '') }}" autocomplete="street-address"
+            @error('address') aria-invalid="true" aria-describedby="event-address-error" @enderror>
+        @error('address') <span id="event-address-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Główna dyscyplina
-        <select name="discipline">
+        <select id="event-discipline" name="discipline" @error('discipline') aria-invalid="true" aria-describedby="event-discipline-error" @enderror>
             <option value="">Wydarzenie mieszane</option>
             @foreach ($disciplines as $value => $label)
                 <option value="{{ $value }}" @selected($currentDiscipline === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        @error('discipline') <span class="form-error">{{ $message }}</span> @enderror
+        @error('discipline') <span id="event-discipline-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Główny system
-        <select name="competition_system">
+        <select id="event-system" name="competition_system" @error('competition_system') aria-invalid="true" aria-describedby="event-system-error" @enderror>
             <option value="">Wydarzenie mieszane</option>
             @foreach ($systems as $value => $label)
                 <option value="{{ $value }}" @selected($currentSystem === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        @error('competition_system') <span class="form-error">{{ $message }}</span> @enderror
+        @error('competition_system') <span id="event-system-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
         Opis
-        <textarea name="description" rows="10">{{ old('description', $event->description ?? '') }}</textarea>
-        @error('description') <span class="form-error">{{ $message }}</span> @enderror
+        <textarea id="event-description" name="description" rows="10"
+            @error('description') aria-invalid="true" aria-describedby="event-description-error" @enderror>{{ old('description', $event->description ?? '') }}</textarea>
+        @error('description') <span id="event-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">

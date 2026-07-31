@@ -128,6 +128,7 @@
             </header>
 
             <main id="admin-main-content" class="admin-content" tabindex="-1">
+                <x-form-errors />
                 @yield('content')
             </main>
         </div>

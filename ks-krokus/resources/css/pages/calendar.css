@@ -32,6 +32,10 @@
 }
 @media (max-width: 680px) {
     .calendar-filters { margin-bottom: 20px; }
+    .calendar-toolbar, .calendar-picker { min-width: 0; }
+    .calendar-picker { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); }
+    .calendar-picker select { width: 100%; min-width: 0; }
+    .calendar-picker .btn { grid-column: 1 / -1; }
     .month-calendar { overflow: visible; border: 0; background: transparent; box-shadow: none; }
     .month-calendar__weekdays { display: none; }
     .month-calendar__grid { display: grid; gap: 10px; }

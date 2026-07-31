@@ -8,14 +8,15 @@ use App\Enums\CompetitionSystem;
 use App\Enums\Discipline;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Public\ResultsFilterRequest;
 use App\Models\SportEvent;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 final class ResultsController extends Controller
 {
-    public function index(Request $request): View
+    public function index(ResultsFilterRequest $request): View
     {
+        $validated = $request->validated();
         $query = SportEvent::query()
             ->publiclyVisible()
             ->where('event_type', EventType::Competition->value)
@@ -23,8 +24,8 @@ final class ResultsController extends Controller
             ->withCount('results')
             ->latest('start_at');
 
-        if ($request->filled('discipline')) {
-            $discipline = (string) $request->string('discipline');
+        if (filled($validated['discipline'] ?? null)) {
+            $discipline = (string) $validated['discipline'];
 
             $query->where(function ($builder) use ($discipline): void {
                 $builder
@@ -39,8 +40,8 @@ final class ResultsController extends Controller
             });
         }
 
-        if ($request->filled('competition_system')) {
-            $system = (string) $request->string('competition_system');
+        if (filled($validated['competition_system'] ?? null)) {
+            $system = (string) $validated['competition_system'];
 
             $query->where(function ($builder) use ($system): void {
                 $builder
@@ -55,10 +56,10 @@ final class ResultsController extends Controller
             });
         }
 
-        if ($request->filled('q')) {
-            $search = trim((string) $request->string('q'));
+        if (filled($validated['q'] ?? null)) {
+            $search = trim((string) $validated['q']);
 
-            $query->where('title', 'like', "%{$search}%");
+            $query->where('title', 'ilike', "%{$search}%");
         }
 
         $events = $query->paginate(12)->withQueryString();

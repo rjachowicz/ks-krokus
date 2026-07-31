@@ -104,4 +104,40 @@ final class PublicContentTest extends TestCase
             ->assertSeeText('Tylko trening')
             ->assertDontSeeText('Tylko zawody');
     }
+
+    public function test_multiday_event_is_shown_on_each_day_of_its_range(): void
+    {
+        SportEvent::query()->create([
+            'title' => 'Trzydniowe zawody',
+            'slug' => 'trzydniowe-zawody',
+            'event_type' => EventType::Competition,
+            'start_at' => '2026-06-30 10:00:00',
+            'end_at' => '2026-07-03 16:00:00',
+            'location_name' => 'Strzelnica',
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+
+        $response = $this->get(route('calendar.index', [
+            'month' => 7,
+            'year' => 2026,
+        ]))->assertOk();
+
+        self::assertSame(4, substr_count($response->getContent(), 'Trzydniowe zawody'));
+    }
+
+    public function test_calendar_rejects_unknown_filters_with_polish_error(): void
+    {
+        $response = $this->get(route('calendar.index', [
+            'month' => 7,
+            'year' => 2026,
+            'event_type' => 'unknown',
+        ]));
+
+        $response->assertSessionHasErrors('event_type');
+        self::assertStringNotContainsString(
+            'validation.',
+            session('errors')->first('event_type'),
+        );
+    }
 }

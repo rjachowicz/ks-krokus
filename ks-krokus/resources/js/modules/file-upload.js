@@ -10,13 +10,49 @@ export function initFileUploads() {
     document.querySelectorAll('[data-file-upload]').forEach((upload) => {
         const input = upload.querySelector('input[type="file"]');
         const preview = upload.querySelector('[data-file-preview]');
+        const error = upload.querySelector('[data-file-error]');
 
         if (!input || !preview) {
             return;
         }
 
+        if (error) {
+            const errorId = error.id || `${input.name.replace(/[^a-z0-9]+/gi, '-')}-client-error`;
+            const describedBy = input.getAttribute('aria-describedby');
+            error.id = errorId;
+            input.setAttribute(
+                'aria-describedby',
+                [describedBy, errorId].filter(Boolean).join(' '),
+            );
+        }
+
+        const validate = () => {
+            const files = [...input.files];
+            const maxFiles = Number.parseInt(upload.dataset.maxFiles || '0', 10);
+            const maxSizeKb = Number.parseInt(upload.dataset.maxSizeKb || '0', 10);
+            let message = '';
+
+            if (maxFiles > 0 && files.length > maxFiles) {
+                message = `Możesz wybrać maksymalnie ${maxFiles} ${maxFiles === 1 ? 'plik' : 'plików'}.`;
+            } else if (maxSizeKb > 0 && files.some((file) => file.size > maxSizeKb * 1024)) {
+                message = `Każdy plik może mieć maksymalnie ${formatBytes(maxSizeKb * 1024)}.`;
+            } else if (files.some((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) {
+                message = 'Wybierz wyłącznie obrazy JPG, PNG lub WebP.';
+            }
+
+            input.setCustomValidity(message);
+
+            if (error) {
+                error.textContent = message;
+                error.hidden = message === '';
+            }
+
+            upload.classList.toggle('is-invalid', message !== '');
+        };
+
         const render = () => {
             preview.replaceChildren();
+            validate();
 
             [...input.files].forEach((file, index) => {
                 const item = document.createElement('article');

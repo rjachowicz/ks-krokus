@@ -15,7 +15,8 @@
     <div class="span-full"><h3 class="admin-section-title">Wydarzenie i zawodnik</h3></div>
     <label class="span-full">
         Wydarzenie i konkurencja
-        <select name="event_competition_id" required autofocus>
+        <select id="result-event-competition" name="event_competition_id" required autofocus
+            @error('event_competition_id') aria-invalid="true" aria-describedby="result-event-competition-error" @enderror>
             <option value="">Wybierz</option>
             @foreach ($eventCompetitions as $eventCompetition)
                 <option
@@ -28,12 +29,13 @@
                 </option>
             @endforeach
         </select>
-        @error('event_competition_id') <span class="form-error">{{ $message }}</span> @enderror
+        @error('event_competition_id') <span id="result-event-competition-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Powiązany użytkownik
-        <select name="user_id">
+        <select id="result-user" name="user_id" aria-describedby="result-user-help @error('user_id') result-user-error @enderror"
+            @error('user_id') aria-invalid="true" @enderror>
             <option value="">Zawodnik zewnętrzny / bez konta</option>
             @foreach ($users as $user)
                 <option value="{{ $user->id }}" @selected((string) $currentUserId === (string) $user->id)>
@@ -41,19 +43,23 @@
                 </option>
             @endforeach
         </select>
-        <span class="form-help">Przy wybranym użytkowniku system automatycznie zapisze jego aktualne imię i nazwisko.</span>
-        @error('user_id') <span class="form-error">{{ $message }}</span> @enderror
+        <span id="result-user-help" class="form-help">Przy wybranym użytkowniku system automatycznie zapisze jego aktualne imię i nazwisko.</span>
+        @error('user_id') <span id="result-user-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Imię i nazwisko zawodnika zewnętrznego
         <input
             type="text"
+            id="result-participant-name"
             name="participant_name"
             value="{{ old('participant_name', $result->participant_name ?? '') }}"
+            autocomplete="name"
+            aria-describedby="result-participant-help @error('participant_name') result-participant-error @enderror"
+            @error('participant_name') aria-invalid="true" @enderror
         >
-        <span class="form-help">Wymagane tylko wtedy, gdy nie wybierzesz użytkownika.</span>
-        @error('participant_name') <span class="form-error">{{ $message }}</span> @enderror
+        <span id="result-participant-help" class="form-help">Wymagane tylko wtedy, gdy nie wybierzesz użytkownika.</span>
+        @error('participant_name') <span id="result-participant-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">
@@ -62,53 +68,59 @@
 
     <label>
         Klub
-        <input type="text" name="club_name" value="{{ old('club_name', $result->club_name ?? '') }}">
-        @error('club_name') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="result-club" type="text" name="club_name" value="{{ old('club_name', $result->club_name ?? '') }}" autocomplete="organization"
+            @error('club_name') aria-invalid="true" aria-describedby="result-club-error" @enderror>
+        @error('club_name') <span id="result-club-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Kategoria
-        <input type="text" name="category" value="{{ old('category', $result->category ?? '') }}" placeholder="np. Senior, Lady, Junior">
-        @error('category') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="result-category" type="text" name="category" value="{{ old('category', $result->category ?? '') }}" placeholder="np. Senior, Lady, Junior"
+            @error('category') aria-invalid="true" aria-describedby="result-category-error" @enderror>
+        @error('category') <span id="result-category-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Wynik
-        <input type="text" name="score" value="{{ old('score', $result->score ?? '') }}" required placeholder="np. 245.14, 89%, DNF">
-        @error('score') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="result-score" type="text" name="score" value="{{ old('score', $result->score ?? '') }}" required placeholder="np. 245.14, 89%, DNF"
+            @error('score') aria-invalid="true" aria-describedby="result-score-error" @enderror>
+        @error('score') <span id="result-score-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Miejsce
-        <input type="number" name="place" min="1" value="{{ old('place', $result->place ?? '') }}">
-        @error('place') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="result-place" type="number" name="place" min="1" value="{{ old('place', $result->place ?? '') }}"
+            @error('place') aria-invalid="true" aria-describedby="result-place-error" @enderror>
+        @error('place') <span id="result-place-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Klasyfikacja
         <input
             type="text"
+            id="result-classification"
             name="classification"
             value="{{ old('classification', $result->classification ?? '') }}"
             placeholder="np. Open, Production, Standard"
+            @error('classification') aria-invalid="true" aria-describedby="result-classification-error" @enderror
         >
-        @error('classification') <span class="form-error">{{ $message }}</span> @enderror
+        @error('classification') <span id="result-classification-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Status
-        <select name="status" required>
+        <select id="result-status" name="status" required @error('status') aria-invalid="true" aria-describedby="result-status-error" @enderror>
             @foreach ($statuses as $value => $label)
                 <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        @error('status') <span class="form-error">{{ $message }}</span> @enderror
+        @error('status') <span id="result-status-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
         Uwagi
-        <textarea name="notes">{{ old('notes', $result->notes ?? '') }}</textarea>
-        @error('notes') <span class="form-error">{{ $message }}</span> @enderror
+        <textarea id="result-notes" name="notes" @error('notes') aria-invalid="true" aria-describedby="result-notes-error" @enderror>{{ old('notes', $result->notes ?? '') }}</textarea>
+        @error('notes') <span id="result-notes-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 </div>
 

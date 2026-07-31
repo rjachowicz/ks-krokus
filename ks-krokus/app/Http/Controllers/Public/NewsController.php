@@ -13,19 +13,25 @@ final class NewsController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = $request->validate(
+            ['q' => ['nullable', 'string', 'max:100']],
+            [],
+            ['q' => 'wyszukiwana fraza'],
+        );
+
         $query = Post::query()
             ->published()
             ->with('author')
             ->latest('published_at');
 
-        if ($request->filled('q')) {
-            $search = trim((string) $request->string('q'));
+        if (filled($filters['q'] ?? null)) {
+            $search = trim((string) $filters['q']);
 
             $query->where(function ($builder) use ($search): void {
                 $builder
-                    ->where('title', 'like', "%{$search}%")
-                    ->orWhere('excerpt', 'like', "%{$search}%")
-                    ->orWhere('content', 'like', "%{$search}%");
+                    ->where('title', 'ilike', "%{$search}%")
+                    ->orWhere('excerpt', 'ilike', "%{$search}%")
+                    ->orWhere('content', 'ilike', "%{$search}%");
             });
         }
 

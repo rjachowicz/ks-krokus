@@ -10,6 +10,13 @@ use Illuminate\Validation\Rules\Password;
 
 class StoreUserRequest extends AdminFormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => mb_strtolower(trim((string) $this->input('email'))),
+        ]);
+    }
+
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;

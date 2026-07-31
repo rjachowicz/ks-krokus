@@ -16,6 +16,7 @@ use App\Support\UniqueSlug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -23,25 +24,39 @@ final class SportEventController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = $request->validate(
+            [
+                'q' => ['nullable', 'string', 'max:100'],
+                'event_type' => ['nullable', Rule::enum(EventType::class)],
+                'status' => ['nullable', Rule::enum(PublicationStatus::class)],
+            ],
+            [],
+            [
+                'q' => 'wyszukiwana fraza',
+                'event_type' => 'rodzaj wydarzenia',
+                'status' => 'status publikacji',
+            ],
+        );
+
         $query = SportEvent::query()
             ->withCount(['eventCompetitions', 'results'])
             ->latest('start_at');
 
-        if ($request->filled('event_type')) {
-            $query->where('event_type', (string) $request->string('event_type'));
+        if (filled($filters['event_type'] ?? null)) {
+            $query->where('event_type', $filters['event_type']);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', (string) $request->string('status'));
+        if (filled($filters['status'] ?? null)) {
+            $query->where('status', $filters['status']);
         }
 
-        if ($request->filled('q')) {
-            $search = trim((string) $request->string('q'));
+        if (filled($filters['q'] ?? null)) {
+            $search = trim((string) $filters['q']);
 
             $query->where(function ($builder) use ($search): void {
                 $builder
-                    ->where('title', 'like', "%{$search}%")
-                    ->orWhere('location_name', 'like', "%{$search}%");
+                    ->where('title', 'ilike', "%{$search}%")
+                    ->orWhere('location_name', 'ilike', "%{$search}%");
             });
         }
 
@@ -94,7 +109,7 @@ final class SportEventController extends Controller
         $sportEvent->load('competitions');
 
         return view('admin.events.edit', array_merge(
-            $this->formOptions(),
+            $this->formOptions($sportEvent),
             ['event' => $sportEvent],
         ));
     }
@@ -178,15 +193,27 @@ final class SportEventController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function formOptions(): array
+    private function formOptions(?SportEvent $event = null): array
     {
+        $linkedCompetitionIds = $event?->competitions->modelKeys() ?? [];
+
         return [
             'eventTypes' => EventType::options(),
             'disciplines' => Discipline::options(),
             'systems' => CompetitionSystem::options(),
             'statuses' => PublicationStatus::options(),
             'competitionDefinitions' => CompetitionDefinition::query()
-                ->active()
+                ->where(function ($query) use ($linkedCompetitionIds): void {
+                    $query->where('is_active', true);
+
+                    if ($linkedCompetitionIds !== []) {
+                        $query->orWhereKey($linkedCompetitionIds);
+                    }
+                })
+                ->orderBy('competition_system')
+                ->orderBy('discipline')
+                ->orderBy('sort_order')
+                ->orderBy('name')
                 ->get()
                 ->groupBy(fn (CompetitionDefinition $definition): string => (
                     $definition->competition_system->label()

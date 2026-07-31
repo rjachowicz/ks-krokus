@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -114,6 +115,83 @@ final class PostUploadTest extends TestCase
         foreach (session('errors')->all() as $message) {
             self::assertStringNotContainsString('validation.', $message);
         }
+    }
+
+    public function test_php_upload_limit_error_is_polish_and_keeps_existing_cover(): void
+    {
+        Storage::fake('public');
+        $moderator = User::factory()->create([
+            'role' => UserRole::Moderator,
+            'is_active' => true,
+        ]);
+        $post = Post::query()->create([
+            'title' => 'Aktualność z okładką',
+            'slug' => 'aktualnosc-z-okladka',
+            'content' => 'Treść',
+            'cover_image_path' => 'news/covers/stara.jpg',
+            'status' => PublicationStatus::Draft,
+        ]);
+        Storage::disk('public')->put($post->cover_image_path, 'stare zdjęcie');
+
+        $failedUpload = new UploadedFile(
+            __FILE__,
+            'za-duze.jpg',
+            'image/jpeg',
+            UPLOAD_ERR_INI_SIZE,
+            true,
+        );
+
+        $this->actingAs($moderator)
+            ->put(route('admin.posts.update', $post), [
+                'title' => $post->title,
+                'content' => $post->content,
+                'status' => PublicationStatus::Draft->value,
+                'cover_image' => $failedUpload,
+            ])
+            ->assertSessionHasErrors([
+                'cover_image' => 'Nie udało się przesłać zdjęcia głównego. Pojedynczy plik może mieć maksymalnie 6 MB.',
+            ]);
+
+        self::assertSame('news/covers/stara.jpg', $post->fresh()->cover_image_path);
+        Storage::disk('public')->assertExists('news/covers/stara.jpg');
+    }
+
+    public function test_server_limits_leave_room_for_laravel_validation(): void
+    {
+        $configuration = file_get_contents(public_path('.user.ini'));
+        $composerConfiguration = file_get_contents(base_path('composer.json'));
+
+        self::assertIsString($configuration);
+        self::assertIsString($composerConfiguration);
+        self::assertStringContainsString('upload_max_filesize = 8M', $configuration);
+        self::assertStringContainsString('post_max_size = 85M', $configuration);
+        self::assertStringContainsString('max_file_uploads = 20', $configuration);
+        self::assertStringContainsString(
+            'php -d upload_max_filesize=8M -d post_max_size=85M -d max_file_uploads=20 -S',
+            $composerConfiguration,
+        );
+        self::assertStringContainsString('-t public server.php', $composerConfiguration);
+        self::assertFileExists(base_path('server.php'));
+        self::assertStringNotContainsString('upload_max_filesize=8M -d post_max_size=85M artisan serve', $composerConfiguration);
+        self::assertSame(6144, config('content.image_max_size_kb'));
+        self::assertSame(12, config('content.gallery_max_images'));
+    }
+
+    public function test_configured_media_disk_is_writable_and_publicly_available(): void
+    {
+        $disk = Storage::disk(config('content.media_disk'));
+        $path = 'healthchecks/'.Str::uuid().'.txt';
+
+        try {
+            self::assertTrue($disk->put($path, 'KS Krokus'));
+            self::assertTrue($disk->exists($path));
+            self::assertStringContainsString('/storage/healthchecks/', $disk->url($path));
+            self::assertTrue(is_dir(public_path('storage')));
+        } finally {
+            $disk->delete($path);
+        }
+
+        self::assertFalse($disk->exists($path));
     }
 
     public function test_new_files_are_removed_when_database_transaction_fails(): void

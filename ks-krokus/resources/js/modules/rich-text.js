@@ -40,6 +40,12 @@ export function initRichTextEditors() {
                 attributes: {
                     'aria-label': 'Treść aktualności',
                     'aria-multiline': 'true',
+                    ...(textarea.getAttribute('aria-describedby')
+                        ? { 'aria-describedby': textarea.getAttribute('aria-describedby') }
+                        : {}),
+                    ...(textarea.getAttribute('aria-invalid') === 'true'
+                        ? { 'aria-invalid': 'true' }
+                        : {}),
                 },
             },
             onUpdate: ({ editor: currentEditor }) => {

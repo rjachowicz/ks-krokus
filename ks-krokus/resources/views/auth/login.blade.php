@@ -16,6 +16,7 @@
 
         <form method="POST" action="{{ route('login.store') }}" class="auth-form">
             @csrf
+            <x-form-errors />
 
             <label for="login-email">
                 Adres e-mail

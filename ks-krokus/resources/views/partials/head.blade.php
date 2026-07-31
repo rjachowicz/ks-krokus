@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 
 @php
     $pageTitle = trim($__env->yieldContent(
@@ -20,7 +21,13 @@
 <script>
     (() => {
         const storageKey = 'ks-krokus-theme';
-        const savedTheme = localStorage.getItem(storageKey);
+        let savedTheme = null;
+
+        try {
+            savedTheme = localStorage.getItem(storageKey);
+        } catch (error) {
+            // Tryb prywatny lub polityka przeglądarki może blokować storage.
+        }
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
             ? 'dark'
             : 'light';

@@ -8,22 +8,17 @@ use App\Enums\CompetitionSystem;
 use App\Enums\Discipline;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Public\CalendarFilterRequest;
 use App\Models\SportEvent;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 final class CalendarController extends Controller
 {
-    public function index(Request $request): View
+    public function index(CalendarFilterRequest $request): View
     {
-        $validated = $request->validate([
-            'month' => ['nullable', 'integer', 'between:1,12'],
-            'year' => ['nullable', 'integer', 'between:2000,2100'],
-            'event_type' => ['nullable', 'string'],
-            'discipline' => ['nullable', 'string'],
-            'competition_system' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $displayDate = Carbon::create(
             (int) ($validated['year'] ?? now()->year),
@@ -94,7 +89,11 @@ final class CalendarController extends Controller
 
         return view('calendar.index', [
             'events' => $events,
-            'eventsByDate' => $events->groupBy(fn (SportEvent $event): string => $event->start_at->toDateString()),
+            'eventsByDate' => $this->mapEventsToCalendarDays(
+                $events,
+                $calendarStart,
+                $calendarEnd,
+            ),
             'days' => $days,
             'displayDate' => $displayDate,
             'previousMonth' => $displayDate->copy()->subMonth(),
@@ -121,5 +120,36 @@ final class CalendarController extends Controller
         ]);
 
         return view('calendar.show', compact('sportEvent'));
+    }
+
+    /**
+     * @param  Collection<int, SportEvent>  $events
+     * @return Collection<string, Collection<int, SportEvent>>
+     */
+    private function mapEventsToCalendarDays(
+        Collection $events,
+        Carbon $calendarStart,
+        Carbon $calendarEnd,
+    ): Collection {
+        $eventsByDate = collect();
+
+        foreach ($events as $event) {
+            $eventStart = $event->start_at->copy()->startOfDay();
+            $eventEnd = ($event->end_at ?? $event->start_at)->copy()->startOfDay();
+            $visibleStart = $eventStart->max($calendarStart);
+            $visibleEnd = $eventEnd->min($calendarEnd);
+
+            for ($day = $visibleStart->copy(); $day->lte($visibleEnd); $day->addDay()) {
+                $key = $day->toDateString();
+
+                if (! $eventsByDate->has($key)) {
+                    $eventsByDate->put($key, collect());
+                }
+
+                $eventsByDate->get($key)->push($event);
+            }
+        }
+
+        return $eventsByDate;
     }
 }

@@ -4,97 +4,63 @@
 
 - [x] Przełączyć środowisko lokalne z SQLite na PostgreSQL.
 - [x] Skonfigurować osobną bazę PostgreSQL dla testów.
-- [x] Uruchomić wszystkie migracje na lokalnym PostgreSQL.
-- [x] Przenieść istniejące dane aplikacyjne i zsynchronizować sekwencje.
-- [x] Ograniczyć konfigurację runtime wyłącznie do PostgreSQL.
-- [x] Usunąć lokalną kopię SQLite po ręcznym potwierdzeniu działania.
+- [x] Uruchomić migracje i ograniczyć runtime wyłącznie do PostgreSQL.
+- [x] Dodać indeks zakresowy dla wydarzeń wielodniowych.
 
-## P0 — błędy i bezpieczeństwo
+## P0 — uploady i wdrożenie
 
-- [ ] Naprawić `validation.uploaded`.
-- [ ] Sprawdzić limity PHP i Railway.
-- [ ] Sprawdzić `multipart/form-data`.
-- [ ] Sprawdzić zapis, podmianę i usuwanie plików.
-- [ ] Upewnić się, że błędny upload nie usuwa poprzedniego pliku.
-- [ ] Dodać polskie tłumaczenia.
-- [ ] Dodać `messages()` i `attributes()`.
-- [ ] Zweryfikować autoryzację.
-- [ ] Dodać testy uploadów i uprawnień.
+- [x] Usunąć przyczynę `validation.uploaded`.
+- [x] Uzgodnić limity Laravela i PHP.
+- [x] Zweryfikować `multipart/form-data`, nazwy pól i dysk publiczny.
+- [x] Przetestować zapis, podmianę, usuwanie i rollback plików.
+- [x] Zachować poprzednie zdjęcie przy błędzie uploadu.
+- [x] Dodać polskie komunikaty i testy regresyjne.
+- [x] Udokumentować wdrożenie Railway.
+- [ ] Podpiąć na Railway wolumen do `/app/storage/app/public`.
+- [ ] Wykonać produkcyjny smoke test zdjęcia 1 MB, 3 MB, 6 MB i ponad 6 MB.
 
-## P1 — formularze
+## P1 — formularze i panel
 
-- [ ] Audyt aktualności.
-- [ ] Audyt wydarzenia.
-- [ ] Audyt wyniku.
-- [ ] Audyt użytkownika.
-- [ ] Audyt funkcji klubowej.
-- [ ] Audyt konkurencji.
-- [ ] Ujednolicić błędy.
-- [ ] Ujednolicić checkboxy.
-- [ ] Ujednolicić selecty.
-- [ ] Ujednolicić daty i czas.
-- [ ] Dodać autocomplete.
-- [ ] Dodać ARIA.
-- [ ] Sprawdzić `old()`.
-- [ ] Dodać wymagania uploadu i podgląd.
+- [x] Przeprowadzić audyt wszystkich zasobów panelu.
+- [x] Ujednolicić błędy, checkboxy, selecty, daty i przyciski.
+- [x] Uzupełnić `old()`, `attributes()`, `messages()` i autocomplete.
+- [x] Dodać serwerowe ARIA i podsumowanie błędów bez zależności od JavaScriptu.
+- [x] Dodać wymagania uploadu, podgląd i usuwanie wybranych plików.
+- [x] Zweryfikować autoryzację i ochronę ostatniego administratora.
 
-## P1 — motyw
+## P1 — motyw i kontakt
 
-- [ ] Przełącznik light/dark.
-- [ ] `localStorage`.
-- [ ] `prefers-color-scheme`.
-- [ ] Brak migotania.
-- [ ] Test wszystkich ekranów w obu motywach.
+- [x] Przełącznik light/dark, `prefers-color-scheme` i brak migotania.
+- [x] Bezpieczna obsługa niedostępnego `localStorage`.
+- [x] POST `/kontakt`, Form Request, Mailable, rate limiting i honeypot.
+- [x] Polskie komunikaty i testy `Mail::fake()`.
+- [ ] Sprawdzić rzeczywiste SMTP w środowisku produkcyjnym.
+- [ ] Wykonać ręczną kontrolę wszystkich ekranów w obu motywach.
 
-## P1 — kontakt
+## P2 — kalendarz, UX i dostępność
 
-- [ ] POST `/kontakt`.
-- [ ] `ContactMessageRequest`.
-- [ ] Mailable.
-- [ ] Konfiguracja odbiorcy.
-- [ ] Rate limiting.
-- [ ] Honeypot.
-- [ ] Komunikaty.
-- [ ] Testy Mail fake.
-
-## P2 — kalendarz
-
-- [ ] Walidować filtry enumami.
-- [ ] Sprawdzić błędny miesiąc/rok.
-- [ ] Obsłużyć wydarzenia wielodniowe.
-- [ ] Sprawdzić mobile.
-- [ ] Testy zakresów i filtrów.
-- [ ] Sprawdzić N+1.
-
-## P2 — UX i dostępność
-
-- [ ] Kolejność TAB.
-- [ ] Focus-visible.
-- [ ] Kontrast.
-- [ ] Czytnik ekranu.
-- [ ] Puste stany.
-- [ ] Komunikaty sukcesu.
-- [ ] Dostępne toasty.
-- [ ] Potwierdzenia usuwania.
+- [x] Walidować filtry enumami i zakres miesiąca/roku.
+- [x] Obsłużyć wydarzenia wielodniowe bez duplikowania danych.
+- [x] Sprawdzić N+1, mobile, puste stany, sukcesy, błędy i potwierdzenia.
+- [x] Zapewnić focus-visible, etykiety, ARIA, skip link i obsługę klawiatury.
+- [x] Dodać polskie strony błędów HTTP.
+- [ ] Przeprowadzić końcowy test z NVDA/VoiceOver i audyt kontrastu narzędziem
+  na środowisku wdrożeniowym.
 
 ## P2 — responsywność
 
-- [ ] 320 px.
-- [ ] 375 px.
-- [ ] 768 px.
-- [ ] 1024 px.
-- [ ] 1366 px.
-- [ ] 1920 px.
-- [ ] Brak poziomego scrolla.
-- [ ] Tabele.
-- [ ] Długie formularze.
-- [ ] Sidebar i topbar.
+- [x] Sprawdzić 320, 375, 768, 1024, 1366 i 1920 px.
+- [x] Usunąć poziomy scroll części publicznej i panelu.
+- [x] Sprawdzić tabele, formularze, sidebar, topbar, galerie i kalendarz.
 
-## P3 — porządki
+## P3 — dalszy rozwój
 
-- [ ] Martwy CSS.
-- [ ] Martwy JS.
-- [ ] Nieużywane importy.
-- [ ] Duplikacja komponentów.
-- [ ] Testy regresyjne.
-- [ ] Dokumentacja wdrożenia.
+- [x] Usunąć wykryty martwy CSS, przykładowy kod i puste zasoby.
+- [x] Zweryfikować importy JS, komponenty Blade i zależności.
+- [x] Dodać testy regresyjne i dokumentację wdrożenia.
+- [ ] Dodać przywracanie kosza lub cykliczne trwałe czyszczenie zdjęć
+  miękko usuniętych aktualności.
+- [ ] Dostarczyć brakujący `public/files/Uchwala_kolekcjonerska.pdf`.
+- [ ] Rozważyć `pg_trgm` i indeksy wyszukiwania po wzroście liczby rekordów.
+- [ ] Dodać automatyczne skalowanie/kompresję zdjęć i generowanie miniatur.
+- [ ] Skonfigurować monitoring błędów, alerty, backup PostgreSQL i test odtwarzania.

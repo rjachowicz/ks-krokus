@@ -14,6 +14,7 @@ return [
     'confirmed' => 'Potwierdzenie pola :attribute nie jest zgodne.',
     'date' => 'Podaj prawidłową datę w polu :attribute.',
     'distinct' => 'Pole :attribute zawiera powtarzające się wartości.',
+    'dimensions' => 'Obraz w polu :attribute ma nieprawidłowe wymiary.',
     'email' => 'Podaj prawidłowy adres e-mail.',
     'exists' => 'Wybrana wartość pola :attribute jest nieprawidłowa.',
     'enum' => 'Wybrana wartość pola :attribute jest nieprawidłowa.',

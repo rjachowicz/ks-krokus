@@ -17,37 +17,43 @@
     <div class="span-full"><h3 class="admin-section-title">Dane funkcji</h3></div>
     <label>
         Nazwa funkcji
-        <input type="text" name="name" value="{{ old('name', $position->name ?? '') }}" autocomplete="off" required autofocus>
-        @error('name') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="position-name" type="text" name="name" value="{{ old('name', $position->name ?? '') }}" autocomplete="off" required autofocus
+            @error('name') aria-invalid="true" aria-describedby="position-name-error" @enderror>
+        @error('name') <span id="position-name-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Identyfikator URL
-        <input type="text" name="slug" value="{{ old('slug', $position->slug ?? '') }}" placeholder="np. prezes">
-        <span class="form-help">Możesz pozostawić puste — system utworzy slug z nazwy.</span>
-        @error('slug') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="position-slug" type="text" name="slug" value="{{ old('slug', $position->slug ?? '') }}" placeholder="np. prezes"
+            aria-describedby="position-slug-help @error('slug') position-slug-error @enderror"
+            @error('slug') aria-invalid="true" @enderror>
+        <span id="position-slug-help" class="form-help">Możesz pozostawić puste — system utworzy slug z nazwy.</span>
+        @error('slug') <span id="position-slug-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Kolejność
-        <input type="number" name="sort_order" min="0" value="{{ old('sort_order', $position->sort_order ?? 0) }}" required>
-        @error('sort_order') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="position-order" type="number" name="sort_order" min="0" value="{{ old('sort_order', $position->sort_order ?? 0) }}" required
+            @error('sort_order') aria-invalid="true" aria-describedby="position-order-error" @enderror>
+        @error('sort_order') <span id="position-order-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="admin-check-option">
         <input type="hidden" name="is_active" value="0">
-        <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $position->is_active ?? true))>
+        <input id="position-active" type="checkbox" name="is_active" value="1" @checked(old('is_active', $position->is_active ?? true))
+            @error('is_active') aria-invalid="true" aria-describedby="position-active-error" @enderror>
         <span>
             <strong>Funkcja aktywna</strong><br>
             Widoczna na publicznej stronie kontaktowej.
         </span>
-        @error('is_active') <span class="form-error">{{ $message }}</span> @enderror
+        @error('is_active') <span id="position-active-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
         Opis
-        <textarea name="description">{{ old('description', $position->description ?? '') }}</textarea>
-        @error('description') <span class="form-error">{{ $message }}</span> @enderror
+        <textarea id="position-description" name="description"
+            @error('description') aria-invalid="true" aria-describedby="position-description-error" @enderror>{{ old('description', $position->description ?? '') }}</textarea>
+        @error('description') <span id="position-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">
@@ -80,12 +86,17 @@
                     <label class="admin-inline-order">
                         Kolejność:
                         <input
+                            id="position-user-{{ $user->id }}-order"
                             type="number"
                             name="user_sort_orders[{{ $user->id }}]"
                             min="0"
                             max="9999"
                             value="{{ $userSortOrders[$user->id] ?? $loop->iteration }}"
+                            @error("user_sort_orders.{$user->id}") aria-invalid="true" aria-describedby="position-user-{{ $user->id }}-order-error" @enderror
                         >
+                        @error("user_sort_orders.{$user->id}")
+                            <span id="position-user-{{ $user->id }}-order-error" class="form-error">{{ $message }}</span>
+                        @enderror
                     </label>
                 </div>
             </div>

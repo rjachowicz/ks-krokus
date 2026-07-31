@@ -16,15 +16,18 @@
     <div class="span-full"><h3 class="admin-section-title">Treść aktualności</h3></div>
     <label class="span-full">
         Tytuł
-        <input type="text" name="title" value="{{ old('title', $post->title ?? '') }}" autocomplete="off" required autofocus>
-        @error('title') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="post-title" type="text" name="title" value="{{ old('title', $post->title ?? '') }}" autocomplete="off" required autofocus
+            @error('title') aria-invalid="true" aria-describedby="post-title-error" @enderror>
+        @error('title') <span id="post-title-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
         Krótkie streszczenie
-        <textarea name="excerpt" rows="3">{{ old('excerpt', $post->excerpt ?? '') }}</textarea>
-        <span class="form-help">Widoczne na listach aktualności i jako wprowadzenie do artykułu.</span>
-        @error('excerpt') <span class="form-error">{{ $message }}</span> @enderror
+        <textarea id="post-excerpt" name="excerpt" rows="3"
+            aria-describedby="post-excerpt-help @error('excerpt') post-excerpt-error @enderror"
+            @error('excerpt') aria-invalid="true" @enderror>{{ old('excerpt', $post->excerpt ?? '') }}</textarea>
+        <span id="post-excerpt-help" class="form-help">Widoczne na listach aktualności i jako wprowadzenie do artykułu.</span>
+        @error('excerpt') <span id="post-excerpt-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
@@ -49,19 +52,21 @@
 
     <label>
         Status
-        <select name="status" required>
+        <select id="post-status" name="status" required @error('status') aria-invalid="true" aria-describedby="post-status-error" @enderror>
             @foreach ($statuses as $value => $label)
                 <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
             @endforeach
         </select>
-        @error('status') <span class="form-error">{{ $message }}</span> @enderror
+        @error('status') <span id="post-status-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Data publikacji
-        <input type="datetime-local" name="published_at" value="{{ $publishedAt }}">
-        <span class="form-help">Przy statusie „Opublikowane” puste pole zostanie ustawione na bieżący czas.</span>
-        @error('published_at') <span class="form-error">{{ $message }}</span> @enderror
+        <input id="post-published-at" type="datetime-local" name="published_at" value="{{ $publishedAt }}"
+            aria-describedby="post-published-at-help @error('published_at') post-published-at-error @enderror"
+            @error('published_at') aria-invalid="true" @enderror>
+        <span id="post-published-at-help" class="form-help">Przy statusie „Opublikowane” puste pole zostanie ustawione na bieżący czas.</span>
+        @error('published_at') <span id="post-published-at-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">
@@ -73,14 +78,21 @@
             <img src="{{ $post->coverUrl() }}" alt="{{ $post->cover_image_alt ?: $post->title }}">
             <div class="image-edit-card__body">
                 <label class="form-check">
-                    <input type="checkbox" name="remove_cover" value="1">
+                    <input id="post-remove-cover" type="checkbox" name="remove_cover" value="1"
+                        @error('remove_cover') aria-invalid="true" aria-describedby="post-remove-cover-error" @enderror>
                     Usuń obecne zdjęcie główne
+                    @error('remove_cover') <span id="post-remove-cover-error" class="form-error">{{ $message }}</span> @enderror
                 </label>
             </div>
         </div>
     @endif
 
-    <div class="file-upload" data-file-upload>
+    <div
+        class="file-upload"
+        data-file-upload
+        data-max-files="1"
+        data-max-size-kb="{{ config('content.image_max_size_kb') }}"
+    >
         <label class="file-upload__dropzone">
             <strong>Nowe zdjęcie główne</strong>
             <span>Przeciągnij obraz tutaj lub wybierz plik</span>
@@ -90,24 +102,33 @@
             @error('cover_image') <span id="cover-image-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
+        <p class="form-error" data-file-error aria-live="assertive" hidden></p>
     </div>
 
     <label>
         Tekst alternatywny zdjęcia
         <input
             type="text"
+            id="post-cover-alt"
             name="cover_image_alt"
             value="{{ old('cover_image_alt', $post->cover_image_alt ?? '') }}"
+            aria-describedby="post-cover-alt-help @error('cover_image_alt') post-cover-alt-error @enderror"
+            @error('cover_image_alt') aria-invalid="true" @enderror
         >
-        <span class="form-help">Krótki opis dla dostępności i wyszukiwarek.</span>
-        @error('cover_image_alt') <span class="form-error">{{ $message }}</span> @enderror
+        <span id="post-cover-alt-help" class="form-help">Krótki opis dla dostępności i wyszukiwarek.</span>
+        @error('cover_image_alt') <span id="post-cover-alt-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">
         <h3 class="admin-section-title">Galeria zdjęć</h3>
     </div>
 
-    <div class="file-upload span-full" data-file-upload>
+    <div
+        class="file-upload span-full"
+        data-file-upload
+        data-max-files="{{ config('content.gallery_max_images') }}"
+        data-max-size-kb="{{ config('content.image_max_size_kb') }}"
+    >
         <label class="file-upload__dropzone">
             <strong>Dodaj zdjęcia do galerii</strong>
             <span>Przeciągnij obrazy tutaj lub wybierz pliki</span>
@@ -117,14 +138,15 @@
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 @if ($errors->has('gallery_images') || $errors->has('gallery_images.*'))
-                    aria-invalid="true" aria-describedby="gallery-images-error"
+                    aria-invalid="true" aria-describedby="gallery-images-error gallery-image-items-error"
                 @endif
             >
             <small>Łącznie maksymalnie 12 zdjęć, każde do 6 MB.</small>
             @error('gallery_images') <span id="gallery-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-            @error('gallery_images.*') <span id="gallery-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+            @error('gallery_images.*') <span id="gallery-image-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
+        <p class="form-error" data-file-error aria-live="assertive" hidden></p>
     </div>
 
     @if (isset($post) && $post->images->isNotEmpty())
@@ -137,36 +159,42 @@
                         <label>
                             Tekst alternatywny
                             <input
+                                id="post-image-{{ $image->id }}-alt"
                                 type="text"
                                 name="existing_images[{{ $image->id }}][alt_text]"
                                 value="{{ old("existing_images.{$image->id}.alt_text", $image->alt_text) }}"
+                                @error("existing_images.{$image->id}.alt_text") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-alt-error" @enderror
                             >
                             @error("existing_images.{$image->id}.alt_text")
-                                <span class="form-error" role="alert">{{ $message }}</span>
+                                <span id="post-image-{{ $image->id }}-alt-error" class="form-error">{{ $message }}</span>
                             @enderror
                         </label>
 
                         <label>
                             Podpis
                             <textarea
+                                id="post-image-{{ $image->id }}-caption"
                                 name="existing_images[{{ $image->id }}][caption]"
                                 rows="3"
+                                @error("existing_images.{$image->id}.caption") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-caption-error" @enderror
                             >{{ old("existing_images.{$image->id}.caption", $image->caption) }}</textarea>
                             @error("existing_images.{$image->id}.caption")
-                                <span class="form-error" role="alert">{{ $message }}</span>
+                                <span id="post-image-{{ $image->id }}-caption-error" class="form-error">{{ $message }}</span>
                             @enderror
                         </label>
 
                         <label>
                             Kolejność
                             <input
+                                id="post-image-{{ $image->id }}-order"
                                 type="number"
                                 name="existing_images[{{ $image->id }}][sort_order]"
                                 min="0"
                                 value="{{ old("existing_images.{$image->id}.sort_order", $image->sort_order) }}"
+                                @error("existing_images.{$image->id}.sort_order") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-order-error" @enderror
                             >
                             @error("existing_images.{$image->id}.sort_order")
-                                <span class="form-error" role="alert">{{ $message }}</span>
+                                <span id="post-image-{{ $image->id }}-order-error" class="form-error">{{ $message }}</span>
                             @enderror
                         </label>
 

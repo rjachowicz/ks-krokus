@@ -528,6 +528,11 @@
     background: var(--gold-soft);
 }
 
+.file-upload.is-invalid .file-upload__dropzone {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
 .file-upload__dropzone input[type="file"] {
     width: min(100%, 360px);
     min-height: auto;

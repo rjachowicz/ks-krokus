@@ -252,12 +252,14 @@
                 </div>
 
                 <x-slot:footer>
-                    <a href="{{ asset($club['documents']['collectors_resolution']) }}"
-                       class="btn-action"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                        POBIERZ UCHWAŁĘ KOLEKCJONERSKĄ →
-                    </a>
+                    @if (is_file(public_path($club['documents']['collectors_resolution'])))
+                        <a href="{{ asset($club['documents']['collectors_resolution']) }}"
+                           class="btn-action"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            POBIERZ UCHWAŁĘ KOLEKCJONERSKĄ →
+                        </a>
+                    @endif
 
                     <a href="{{ $club['firearm_permit']['wpa_url'] }}"
                        class="btn-action"

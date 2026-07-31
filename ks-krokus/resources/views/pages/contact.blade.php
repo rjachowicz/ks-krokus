@@ -161,6 +161,7 @@
 
         <form method="POST" action="{{ route('contact.send') }}" class="contact-form">
             @csrf
+            <x-form-errors />
 
             <div class="contact-form__grid">
                 <label for="contact-name">
@@ -203,6 +204,11 @@
                 <label for="contact-website">Strona internetowa</label>
                 <input id="contact-website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
             </div>
+
+            <p class="contact-form__privacy">
+                Wysyłając formularz, przekazujesz dane w celu obsługi wiadomości.
+                Szczegóły znajdziesz w <a href="{{ route('rodo') }}">klauzuli RODO</a>.
+            </p>
 
             <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
         </form>

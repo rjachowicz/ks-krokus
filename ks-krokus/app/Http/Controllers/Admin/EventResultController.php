@@ -20,6 +20,20 @@ final class EventResultController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = $request->validate(
+            [
+                'q' => ['nullable', 'string', 'max:100'],
+                'event_id' => ['nullable', 'integer', 'exists:sport_events,id'],
+                'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            ],
+            [],
+            [
+                'q' => 'wyszukiwana fraza',
+                'event_id' => 'wydarzenie',
+                'user_id' => 'użytkownik',
+            ],
+        );
+
         $query = EventResult::query()
             ->with([
                 'eventCompetition.event',
@@ -28,8 +42,8 @@ final class EventResultController extends Controller
             ])
             ->latest();
 
-        if ($request->filled('event_id')) {
-            $eventId = (int) $request->integer('event_id');
+        if (filled($filters['event_id'] ?? null)) {
+            $eventId = (int) $filters['event_id'];
 
             $query->whereHas(
                 'eventCompetition',
@@ -40,14 +54,14 @@ final class EventResultController extends Controller
             );
         }
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->integer('user_id'));
+        if (filled($filters['user_id'] ?? null)) {
+            $query->where('user_id', (int) $filters['user_id']);
         }
 
-        if ($request->filled('q')) {
-            $search = trim((string) $request->string('q'));
+        if (filled($filters['q'] ?? null)) {
+            $search = trim((string) $filters['q']);
 
-            $query->where('participant_name', 'like', "%{$search}%");
+            $query->where('participant_name', 'ilike', "%{$search}%");
         }
 
         $results = $query->paginate(30)->withQueryString();

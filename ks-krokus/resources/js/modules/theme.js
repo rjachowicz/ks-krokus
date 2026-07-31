@@ -2,7 +2,13 @@ const STORAGE_KEY = 'ks-krokus-theme';
 const THEMES = new Set(['light', 'dark']);
 
 function getPreferredTheme() {
-    const savedTheme = localStorage.getItem(STORAGE_KEY);
+    let savedTheme = null;
+
+    try {
+        savedTheme = localStorage.getItem(STORAGE_KEY);
+    } catch (error) {
+        // Preferencja systemowa pozostaje bezpiecznym ustawieniem awaryjnym.
+    }
 
     if (THEMES.has(savedTheme)) {
         return savedTheme;
@@ -17,7 +23,11 @@ function applyTheme(theme, button = null) {
     const normalizedTheme = THEMES.has(theme) ? theme : 'light';
 
     document.documentElement.dataset.theme = normalizedTheme;
-    localStorage.setItem(STORAGE_KEY, normalizedTheme);
+    try {
+        localStorage.setItem(STORAGE_KEY, normalizedTheme);
+    } catch (error) {
+        // Motyw nadal działa w bieżącej karcie bez trwałego zapisu.
+    }
 
     button?.setAttribute(
         'aria-label',

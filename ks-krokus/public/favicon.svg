@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="KS Krokus">
+    <rect width="64" height="64" rx="12" fill="#10151d"/>
+    <rect x="4" y="4" width="56" height="56" rx="9" fill="none" stroke="#d8aa52" stroke-width="3"/>
+    <text x="32" y="40" fill="#f4d58c" font-family="Arial, sans-serif" font-size="25" font-weight="700" text-anchor="middle">KS</text>
+</svg>

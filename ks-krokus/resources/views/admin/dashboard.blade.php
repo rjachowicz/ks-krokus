@@ -25,10 +25,12 @@
 
     @if ($metrics !== null)
         <section class="admin-metrics" aria-label="Statystyki panelu">
-            <article class="admin-metric">
-                <span class="admin-metric__value">{{ $metrics['users'] }}</span>
-                <span class="admin-metric__label">Użytkownicy</span>
-            </article>
+            @if ($metrics['users'] !== null)
+                <article class="admin-metric">
+                    <span class="admin-metric__value">{{ $metrics['users'] }}</span>
+                    <span class="admin-metric__label">Użytkownicy</span>
+                </article>
+            @endif
             <article class="admin-metric">
                 <span class="admin-metric__value">{{ $metrics['posts'] }}</span>
                 <span class="admin-metric__label">Aktualności</span>

@@ -11,6 +11,8 @@ use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -18,25 +20,39 @@ final class UserController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = $request->validate(
+            [
+                'q' => ['nullable', 'string', 'max:100'],
+                'role' => ['nullable', Rule::enum(UserRole::class)],
+                'active' => ['nullable', Rule::in(['0', '1'])],
+            ],
+            [],
+            [
+                'q' => 'wyszukiwana fraza',
+                'role' => 'rola systemowa',
+                'active' => 'status konta',
+            ],
+        );
+
         $query = User::query()->latest();
 
-        if ($request->filled('q')) {
-            $search = trim((string) $request->string('q'));
+        if (filled($filters['q'] ?? null)) {
+            $search = trim((string) $filters['q']);
 
             $query->where(function ($builder) use ($search): void {
                 $builder
-                    ->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
+                    ->where('name', 'ilike', "%{$search}%")
+                    ->orWhere('email', 'ilike', "%{$search}%")
+                    ->orWhere('phone', 'ilike', "%{$search}%");
             });
         }
 
-        if ($request->filled('role')) {
-            $query->where('role', (string) $request->string('role'));
+        if (filled($filters['role'] ?? null)) {
+            $query->where('role', $filters['role']);
         }
 
-        if ($request->filled('active')) {
-            $query->where('is_active', $request->boolean('active'));
+        if (array_key_exists('active', $filters) && $filters['active'] !== null) {
+            $query->where('is_active', $filters['active'] === '1');
         }
 
         $users = $query->paginate(20)->withQueryString();
@@ -88,8 +104,6 @@ final class UserController extends Controller
 
         $newIsActive = $request->boolean('is_active');
 
-        $this->guardLastAdmin($user, $data['role'], $newIsActive);
-
         $data['email'] = mb_strtolower($data['email']);
         $data['is_active'] = $newIsActive;
         $data['is_trainer'] = $request->boolean('is_trainer');
@@ -101,7 +115,10 @@ final class UserController extends Controller
             unset($data['password']);
         }
 
-        $user->update($data);
+        DB::transaction(function () use ($user, $data, $newIsActive): void {
+            $this->guardLastAdmin($user, $data['role'], $newIsActive);
+            $user->update($data);
+        });
 
         return back()->with('success', 'Dane użytkownika zostały zapisane.');
     }
@@ -114,9 +131,10 @@ final class UserController extends Controller
             ]);
         }
 
-        $this->guardLastAdmin($user, UserRole::User->value, false);
-
-        $user->delete();
+        DB::transaction(function () use ($user): void {
+            $this->guardLastAdmin($user, UserRole::User->value, false);
+            $user->delete();
+        });
 
         return redirect()
             ->route('admin.users.index')
@@ -140,6 +158,8 @@ final class UserController extends Controller
             && User::query()
                 ->where('role', UserRole::Admin->value)
                 ->where('is_active', true)
+                ->lockForUpdate()
+                ->get(['id'])
                 ->count() <= 1
         ) {
             throw ValidationException::withMessages([

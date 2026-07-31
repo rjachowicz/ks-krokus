@@ -11,26 +11,39 @@ use App\Http\Requests\Admin\CompetitionDefinitionRequest;
 use App\Models\CompetitionDefinition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 final class CompetitionDefinitionController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = $request->validate(
+            [
+                'discipline' => ['nullable', Rule::enum(Discipline::class)],
+                'competition_system' => ['nullable', Rule::enum(CompetitionSystem::class)],
+            ],
+            [],
+            [
+                'discipline' => 'dyscyplina',
+                'competition_system' => 'system rozgrywek',
+            ],
+        );
+
         $query = CompetitionDefinition::query()
             ->orderBy('competition_system')
             ->orderBy('discipline')
             ->orderBy('sort_order')
             ->orderBy('name');
 
-        if ($request->filled('discipline')) {
-            $query->where('discipline', (string) $request->string('discipline'));
+        if (filled($filters['discipline'] ?? null)) {
+            $query->where('discipline', $filters['discipline']);
         }
 
-        if ($request->filled('competition_system')) {
+        if (filled($filters['competition_system'] ?? null)) {
             $query->where(
                 'competition_system',
-                (string) $request->string('competition_system'),
+                $filters['competition_system'],
             );
         }
 
