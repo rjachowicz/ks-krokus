@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Enums\ResultStatus;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class EventResultRequest extends FormRequest
+class EventResultRequest extends AdminFormRequest
 {
     public function authorize(): bool
     {

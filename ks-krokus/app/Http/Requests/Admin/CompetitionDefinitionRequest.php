@@ -7,10 +7,9 @@ namespace App\Http\Requests\Admin;
 use App\Enums\CompetitionSystem;
 use App\Enums\Discipline;
 use App\Models\CompetitionDefinition;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class CompetitionDefinitionRequest extends FormRequest
+class CompetitionDefinitionRequest extends AdminFormRequest
 {
     public function authorize(): bool
     {

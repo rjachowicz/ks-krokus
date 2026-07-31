@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Models\ClubPosition;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ClubPositionRequest extends FormRequest
+class ClubPositionRequest extends AdminFormRequest
 {
     public function authorize(): bool
     {

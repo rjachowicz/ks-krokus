@@ -12,6 +12,7 @@
 @endphp
 
 <div class="admin-form-grid">
+    <div class="span-full"><h3 class="admin-section-title">Zawodnik i rezultat</h3></div>
     <label class="span-full">
         Wydarzenie i konkurencja
         <select name="event_competition_id" required>

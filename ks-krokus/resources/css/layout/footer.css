@@ -1,5 +1,15 @@
+.public-body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.public-main {
+    flex: 1 0 auto;
+}
+
 .site-footer {
-    margin-top: 96px;
+    margin-top: clamp(48px, 7vw, 96px);
     padding: 42px 0;
     border-top: 1px solid var(--line);
     background: var(--header-bg);

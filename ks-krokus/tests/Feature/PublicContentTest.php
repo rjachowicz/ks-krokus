@@ -51,4 +51,57 @@ final class PublicContentTest extends TestCase
             ->assertOk()
             ->assertSeeText('Trening pistoletowy');
     }
+
+    public function test_month_calendar_displays_only_events_from_selected_month(): void
+    {
+        $visibleEvent = SportEvent::query()->create([
+            'title' => 'Zawody lipcowe',
+            'slug' => 'zawody-lipcowe',
+            'event_type' => EventType::Competition,
+            'start_at' => '2026-07-18 10:00:00',
+            'location_name' => 'Strzelnica',
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+
+        SportEvent::query()->create([
+            'title' => 'Trening sierpniowy',
+            'slug' => 'trening-sierpniowy',
+            'event_type' => EventType::Training,
+            'start_at' => '2026-08-02 09:00:00',
+            'location_name' => 'Strzelnica',
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+
+        $this->get(route('calendar.index', ['month' => 7, 'year' => 2026]))
+            ->assertOk()
+            ->assertSeeText($visibleEvent->title)
+            ->assertDontSeeText('Trening sierpniowy')
+            ->assertSeeText('Lipiec 2026');
+    }
+
+    public function test_month_calendar_keeps_event_type_filter(): void
+    {
+        foreach (EventType::cases() as $type) {
+            SportEvent::query()->create([
+                'title' => $type === EventType::Training ? 'Tylko trening' : 'Tylko zawody',
+                'slug' => $type->value,
+                'event_type' => $type,
+                'start_at' => '2026-07-18 10:00:00',
+                'location_name' => 'Strzelnica',
+                'status' => PublicationStatus::Published,
+                'is_public' => true,
+            ]);
+        }
+
+        $this->get(route('calendar.index', [
+            'month' => 7,
+            'year' => 2026,
+            'event_type' => EventType::Training->value,
+        ]))
+            ->assertOk()
+            ->assertSeeText('Tylko trening')
+            ->assertDontSeeText('Tylko zawody');
+    }
 }

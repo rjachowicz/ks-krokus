@@ -4,6 +4,7 @@
 @endphp
 
 <div class="admin-form-grid">
+    <div class="span-full"><h3 class="admin-section-title">Dane konta</h3></div>
     <label>
         Imię i nazwisko
         <input type="text" name="name" value="{{ old('name', $editedUser->name ?? '') }}" required>
@@ -41,6 +42,7 @@
     <label>
         Powtórz hasło
         <input type="password" name="password_confirmation" {{ $isEdit ? '' : 'required' }} autocomplete="new-password">
+        @error('password_confirmation') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <div class="span-full">

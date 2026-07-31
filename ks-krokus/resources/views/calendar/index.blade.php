@@ -1,109 +1,120 @@
 @extends('layouts.app')
 
 @section('title', 'Kalendarz zawodów i treningów — KS Krokus')
-@section('meta_description', 'Kalendarz zawodów, treningów i wydarzeń strzeleckich KS Krokus z podziałem na ISSF, IPSC, pistolet, karabin i strzelbę.')
+@section('meta_description', 'Miesięczny kalendarz zawodów, treningów i wydarzeń strzeleckich KS Krokus.')
+
+@php
+    $filterQuery = request()->only(['event_type', 'discipline', 'competition_system']);
+    $monthNames = [
+        1 => 'Styczeń', 2 => 'Luty', 3 => 'Marzec', 4 => 'Kwiecień',
+        5 => 'Maj', 6 => 'Czerwiec', 7 => 'Lipiec', 8 => 'Sierpień',
+        9 => 'Wrzesień', 10 => 'Październik', 11 => 'Listopad', 12 => 'Grudzień',
+    ];
+@endphp
 
 @section('content')
     <x-page-hero id="calendar-title" eyebrow="TERMINARZ SPORTOWY" class="content-hero">
-        <x-slot:title>
-            Kalendarz <span class="highlight">zawodów i treningów</span>
-        </x-slot:title>
-
+        <x-slot:title>Kalendarz <span class="highlight">zawodów i treningów</span></x-slot:title>
         <x-slot:description>
-            <p>
-                Terminy, miejsca i konkurencje wydarzeń klubowych z możliwością filtrowania według rodzaju,
-                dyscypliny i systemu sportowego.
-            </p>
+            <p>Pełny terminarz klubowy. Na telefonie kalendarz automatycznie zmienia się w czytelną agendę.</p>
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section" aria-labelledby="calendar-list-title">
-        <x-section-heading id="calendar-list-title" title="Wydarzenia" meta="SPORT_EVENTS" />
-
-        <form method="GET" class="content-toolbar">
-            <label>
-                Rodzaj
+    <section class="features-section calendar-section" aria-labelledby="calendar-month-title">
+        <form method="GET" class="content-toolbar calendar-filters" aria-label="Filtry kalendarza">
+            <input type="hidden" name="month" value="{{ $displayDate->month }}">
+            <input type="hidden" name="year" value="{{ $displayDate->year }}">
+            <label>Rodzaj
                 <select name="event_type">
                     <option value="">Wszystkie</option>
                     @foreach ($eventTypes as $value => $label)
-                        <option value="{{ $value }}" @selected(request('event_type') === $value)>
-                            {{ $label }}
-                        </option>
+                        <option value="{{ $value }}" @selected(request('event_type') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
             </label>
-
-            <label>
-                Dyscyplina
+            <label>Dyscyplina
                 <select name="discipline">
                     <option value="">Wszystkie</option>
                     @foreach ($disciplines as $value => $label)
-                        <option value="{{ $value }}" @selected(request('discipline') === $value)>
-                            {{ $label }}
-                        </option>
+                        <option value="{{ $value }}" @selected(request('discipline') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
             </label>
-
-            <label>
-                System
+            <label>System
                 <select name="competition_system">
                     <option value="">Wszystkie</option>
                     @foreach ($systems as $value => $label)
-                        <option value="{{ $value }}" @selected(request('competition_system') === $value)>
-                            {{ $label }}
-                        </option>
+                        <option value="{{ $value }}" @selected(request('competition_system') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
             </label>
-
-            <label class="form-check">
-                <input type="checkbox" name="past" value="1" @checked(request()->boolean('past'))>
-                Pokaż archiwalne
-            </label>
-
             <button type="submit" class="btn btn-primary">Filtruj</button>
-            <a href="{{ route('calendar.index') }}" class="btn btn-secondary">Wyczyść</a>
+            <a href="{{ route('calendar.index', ['month' => $displayDate->month, 'year' => $displayDate->year]) }}" class="btn btn-secondary">Wyczyść</a>
         </form>
 
-        @if ($events->isEmpty())
-            <div class="content-empty">Brak wydarzeń spełniających wybrane kryteria.</div>
-        @else
-            <div class="event-grid">
-                @foreach ($events as $event)
-                    <x-content-card class="event-card">
-                        <div class="event-card__meta">
-                            <span>{{ $event->event_type->label() }}</span>
-                            <span>{{ $event->start_at->format('d.m.Y H:i') }}</span>
-                        </div>
-
-                        <h3>{{ $event->title }}</h3>
-
-                        <p>
-                            <strong>{{ $event->location_name }}</strong>
-                            @if ($event->address)
-                                <br>{{ $event->address }}
-                            @endif
-                        </p>
-
-                        @if ($event->description)
-                            <p>{{ \Illuminate\Support\Str::limit($event->description, 160) }}</p>
-                        @endif
-
-                        <x-slot:footer>
-                            <span class="card-status">
-                                {{ $event->competition_system?->label() }}
-                                {{ $event->discipline?->label() }}
-                            </span>
-                            <a href="{{ route('calendar.show', $event) }}" class="card-link">
-                                Szczegóły →
-                            </a>
-                        </x-slot:footer>
-                    </x-content-card>
-                @endforeach
+        <div class="calendar-toolbar">
+            <div class="calendar-navigation">
+                <a class="btn btn-secondary" aria-label="Poprzedni miesiąc" href="{{ route('calendar.index', [...$filterQuery, 'month' => $previousMonth->month, 'year' => $previousMonth->year]) }}">←</a>
+                <a class="btn btn-secondary" href="{{ route('calendar.index', $filterQuery) }}">Dzisiaj</a>
+                <a class="btn btn-secondary" aria-label="Następny miesiąc" href="{{ route('calendar.index', [...$filterQuery, 'month' => $nextMonth->month, 'year' => $nextMonth->year]) }}">→</a>
             </div>
 
-            {{ $events->links() }}
-        @endif
+            <h2 id="calendar-month-title">{{ $monthNames[$displayDate->month] }} {{ $displayDate->year }}</h2>
+
+            <form method="GET" class="calendar-picker">
+                @foreach ($filterQuery as $name => $value)
+                    <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                @endforeach
+                <label class="sr-only" for="calendar-month">Miesiąc</label>
+                <select id="calendar-month" name="month">
+                    @foreach ($monthNames as $number => $name)
+                        <option value="{{ $number }}" @selected($displayDate->month === $number)>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <label class="sr-only" for="calendar-year">Rok</label>
+                <select id="calendar-year" name="year">
+                    @foreach (range(now()->year - 5, now()->year + 5) as $year)
+                        <option value="{{ $year }}" @selected($displayDate->year === $year)>{{ $year }}</option>
+                    @endforeach
+                </select>
+                <button class="btn btn-primary" type="submit">Pokaż</button>
+            </form>
+        </div>
+
+        <div class="calendar-legend" aria-label="Legenda">
+            <span><i class="calendar-legend__dot calendar-legend__dot--competition"></i> Zawody</span>
+            <span><i class="calendar-legend__dot calendar-legend__dot--training"></i> Treningi</span>
+        </div>
+
+        <div class="month-calendar">
+            <div class="month-calendar__weekdays" aria-hidden="true">
+                @foreach (['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'] as $weekday)
+                    <span>{{ $weekday }}</span>
+                @endforeach
+            </div>
+            <div class="month-calendar__grid">
+                @foreach ($days as $day)
+                    @php($dayEvents = $eventsByDate->get($day->toDateString(), collect()))
+                    <section class="calendar-day {{ $day->month !== $displayDate->month ? 'calendar-day--outside' : '' }} {{ $day->isToday() ? 'calendar-day--today' : '' }}" aria-label="{{ $day->translatedFormat('l, j F Y') }}">
+                        <header>
+                            <span class="calendar-day__weekday">{{ ucfirst($day->translatedFormat('D')) }}</span>
+                            <time datetime="{{ $day->toDateString() }}">{{ $day->day }}</time>
+                        </header>
+                        <div class="calendar-day__events">
+                            @foreach ($dayEvents as $event)
+                                <a class="calendar-event calendar-event--{{ $event->event_type->value }}" href="{{ route('calendar.show', $event) }}">
+                                    <time datetime="{{ $event->start_at->toIso8601String() }}">{{ $event->start_at->format('H:i') }}</time>
+                                    <strong>{{ $event->title }}</strong>
+                                    @if ($event->location_name)<span>{{ $event->location_name }}</span>@endif
+                                </a>
+                            @endforeach
+                            @if ($dayEvents->isEmpty())
+                                <span class="calendar-day__empty">Brak wydarzeń</span>
+                            @endif
+                        </div>
+                    </section>
+                @endforeach
+            </div>
+        </div>
     </section>
 @endsection

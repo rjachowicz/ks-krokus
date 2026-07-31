@@ -14,6 +14,7 @@
 @endphp
 
 <div class="admin-form-grid">
+    <div class="span-full"><h3 class="admin-section-title">Dane funkcji</h3></div>
     <label>
         Nazwa funkcji
         <input type="text" name="name" value="{{ old('name', $position->name ?? '') }}" required>
