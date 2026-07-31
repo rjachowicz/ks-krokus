@@ -10,6 +10,7 @@ use App\Models\ClubPosition;
 use App\Models\User;
 use App\Support\UniqueSlug;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class ClubPositionController extends Controller
@@ -46,9 +47,12 @@ final class ClubPositionController extends Controller
         );
         $data['is_active'] = $request->boolean('is_active');
 
-        $position = ClubPosition::query()->create($data);
+        $position = DB::transaction(function () use ($data, $userIds, $userSortOrders): ClubPosition {
+            $position = ClubPosition::query()->create($data);
+            $this->syncUsers($position, $userIds, $userSortOrders);
 
-        $this->syncUsers($position, $userIds, $userSortOrders);
+            return $position;
+        });
 
         return redirect()
             ->route('admin.positions.edit', $position)
@@ -82,9 +86,14 @@ final class ClubPositionController extends Controller
         );
         $data['is_active'] = $request->boolean('is_active');
 
-        $clubPosition->update($data);
-
-        $this->syncUsers($clubPosition, $userIds, $userSortOrders);
+        DB::transaction(function () use ($clubPosition, $data, $userIds, $userSortOrders): void {
+            $lockedPosition = ClubPosition::query()
+                ->whereKey($clubPosition->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $lockedPosition->update($data);
+            $this->syncUsers($lockedPosition, $userIds, $userSortOrders);
+        });
 
         return back()->with('success', 'Funkcja klubowa została zapisana.');
     }

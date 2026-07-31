@@ -55,6 +55,13 @@ class Post extends Model
             ->where('published_at', '<=', now());
     }
 
+    public function isPubliclyVisible(): bool
+    {
+        return $this->status === PublicationStatus::Published
+            && $this->published_at !== null
+            && $this->published_at->lte(now());
+    }
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id')->withTrashed();

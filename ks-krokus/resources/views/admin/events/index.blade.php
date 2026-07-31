@@ -16,27 +16,31 @@
     <form method="GET" class="admin-filter">
         <label>
             Szukaj
-            <input type="search" name="q" value="{{ request('q') }}" placeholder="Nazwa lub miejsce">
+            <input id="event-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Nazwa lub miejsce" autocomplete="off"
+                @error('q') aria-invalid="true" aria-describedby="event-filter-query-error" @enderror>
+            @error('q') <span id="event-filter-query-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Rodzaj
-            <select name="event_type">
+            <select id="event-filter-type" name="event_type" @error('event_type') aria-invalid="true" aria-describedby="event-filter-type-error" @enderror>
                 <option value="">Wszystkie</option>
                 @foreach ($eventTypes as $value => $label)
                     <option value="{{ $value }}" @selected(request('event_type') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            @error('event_type') <span id="event-filter-type-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Status
-            <select name="status">
+            <select id="event-filter-status" name="status" @error('status') aria-invalid="true" aria-describedby="event-filter-status-error" @enderror>
                 <option value="">Wszystkie</option>
                 @foreach ($statuses as $value => $label)
                     <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            @error('status') <span id="event-filter-status-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>

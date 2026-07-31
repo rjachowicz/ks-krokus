@@ -16,12 +16,14 @@
     <form method="GET" class="admin-filter">
         <label>
             Szukaj zawodnika
-            <input type="search" name="q" value="{{ request('q') }}">
+            <input id="result-filter-query" type="search" name="q" value="{{ request('q') }}" autocomplete="off"
+                @error('q') aria-invalid="true" aria-describedby="result-filter-query-error" @enderror>
+            @error('q') <span id="result-filter-query-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Wydarzenie
-            <select name="event_id">
+            <select id="result-filter-event" name="event_id" @error('event_id') aria-invalid="true" aria-describedby="result-filter-event-error" @enderror>
                 <option value="">Wszystkie</option>
                 @foreach ($events as $event)
                     <option value="{{ $event->id }}" @selected((string) request('event_id') === (string) $event->id)>
@@ -29,11 +31,12 @@
                     </option>
                 @endforeach
             </select>
+            @error('event_id') <span id="result-filter-event-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Użytkownik
-            <select name="user_id">
+            <select id="result-filter-user" name="user_id" @error('user_id') aria-invalid="true" aria-describedby="result-filter-user-error" @enderror>
                 <option value="">Wszyscy</option>
                 @foreach ($users as $user)
                     <option value="{{ $user->id }}" @selected((string) request('user_id') === (string) $user->id)>
@@ -41,6 +44,7 @@
                     </option>
                 @endforeach
             </select>
+            @error('user_id') <span id="result-filter-user-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>

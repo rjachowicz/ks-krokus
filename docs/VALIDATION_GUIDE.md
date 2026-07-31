@@ -26,7 +26,7 @@ public function attributes(): array
 Sprawdź:
 - `config/app.php`,
 - `.env.example`,
-- `lang/pl/validation.php`.
+- `resources/lang/pl/validation.php`.
 
 Rekomendowane:
 
@@ -66,6 +66,11 @@ Sprawdź:
 8. storage link,
 9. prawa zapisu.
 
+Na Railway z Railpack/FrankenPHP limity ustawiaj w głównym `php.ini` katalogu
+aplikacji. `public/.user.ini` działa tylko w trybie CGI/FastCGI i nie może być
+jedyną konfiguracją produkcyjną. Koperta PHP musi być większa od łącznego
+limitu plików Laravela, aby żądanie dotarło do Form Requestu.
+
 Przykład:
 
 ```php
@@ -90,6 +95,10 @@ Sprawdź:
 ## Blade
 
 Dodawaj `aria-invalid`, `aria-describedby` i komunikat pod polem. Na górze może być podsumowanie, ale nie zamiast komunikatów przy polach.
+
+Pamiętaj, że `old()` może zawierać złośliwie przesłaną tablicę także dla pola
+tekstowego. Błędne dane należy bezpiecznie przygotować do ponownego wyświetlenia,
+aby formularz zwrócił błąd walidacji zamiast błędu renderowania 500.
 
 ## Zakres audytu
 

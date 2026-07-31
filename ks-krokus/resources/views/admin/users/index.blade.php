@@ -16,26 +16,30 @@
     <form method="GET" class="admin-filter">
         <label>
             Szukaj
-            <input type="search" name="q" value="{{ request('q') }}" placeholder="Imię, e-mail lub telefon">
+            <input id="user-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Imię, e-mail lub telefon" autocomplete="off"
+                @error('q') aria-invalid="true" aria-describedby="user-filter-query-error" @enderror>
+            @error('q') <span id="user-filter-query-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Rola
-            <select name="role">
+            <select id="user-filter-role" name="role" @error('role') aria-invalid="true" aria-describedby="user-filter-role-error" @enderror>
                 <option value="">Wszystkie</option>
                 @foreach ($roles as $value => $label)
                     <option value="{{ $value }}" @selected(request('role') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            @error('role') <span id="user-filter-role-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Status konta
-            <select name="active">
+            <select id="user-filter-active" name="active" @error('active') aria-invalid="true" aria-describedby="user-filter-active-error" @enderror>
                 <option value="">Wszystkie</option>
                 <option value="1" @selected(request('active') === '1')>Aktywne</option>
                 <option value="0" @selected(request('active') === '0')>Wyłączone</option>
             </select>
+            @error('active') <span id="user-filter-active-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>

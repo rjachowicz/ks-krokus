@@ -3,7 +3,9 @@
 ## Usługa aplikacji
 
 1. Ustaw katalog główny usługi na `/ks-krokus`.
-2. Użyj automatycznego buildera Railway dla Laravel/PHP 8.4.
+2. Użyj automatycznego buildera Railpack dla Laravel/PHP 8.4. Railpack
+   rozpoznaje Laravel i uruchamia aplikację przez FrankenPHP z katalogiem
+   dokumentów `/app/public`.
 3. Jako build command ustaw:
 
    ```bash
@@ -17,6 +19,9 @@
    ```
 
 5. Healthcheck kieruj na `/up`.
+6. Ustaw `RAILPACK_SKIP_MIGRATIONS=true`. W przeciwnym razie wygenerowany przez
+   Railpack start command ponownie uruchomi migracje i seeder po wykonaniu
+   własnego pre-deploy command.
 
 Skrypt pre-deploy wykonuje wyłącznie migracje. Link `public/storage` i cache
 niezależne od danych powstają wcześniej w obrazie aplikacji. Wolumen nie jest
@@ -38,7 +43,12 @@ dysku `public`, a `storage:link` udostępnia pliki pod `/storage/...`.
 
 ## Limity uploadu
 
-`public/.user.ini` ustawia dla PHP-FPM:
+Repozytorium zawiera dwa warianty konfiguracji serwera:
+
+- główny `php.ini` — używany przez Railpack/FrankenPHP na Railway,
+- `public/.user.ini` — awaryjny wariant dla hostingów CGI/FastCGI.
+
+Oba ustawiają:
 
 - `upload_max_filesize=8M`,
 - `post_max_size=85M`,
@@ -47,7 +57,9 @@ dysku `public`, a `storage:link` udostępnia pliki pod `/storage/...`.
 Laravel przyjmuje maksymalnie 6 MB na zdjęcie, do 12 zdjęć galerii i jedno
 zdjęcie główne. Wyższy limit PHP jest celowy: pozwala Laravelowi zwrócić
 naturalny polski błąd walidacji zamiast odrzucić plik przed uruchomieniem
-aplikacji.
+aplikacji. `.user.ini` nie jest odczytywany przez FrankenPHP, dlatego sam plik
+w katalogu `public` nie wystarczał do zagwarantowania limitów na Railway.
+Lokalny `composer dev` przekazuje te same limity bezpośrednio do procesu PHP.
 
 ## Minimalne zmienne środowiskowe
 
@@ -71,6 +83,7 @@ CACHE_STORE=database
 QUEUE_CONNECTION=database
 FILESYSTEM_DISK=local
 MEDIA_DISK=public
+RAILPACK_SKIP_MIGRATIONS=true
 
 LOG_CHANNEL=stderr
 LOG_LEVEL=warning
@@ -90,11 +103,11 @@ Dla starszej konfiguracji `CONTACT_TO_ADDRESS` nadal działa jako wartość
 awaryjna, ale nowe środowiska powinny używać `CONTACT_RECIPIENT_EMAIL`.
 Nie zapisuj sekretów ani prawdziwego `APP_KEY` w repozytorium.
 
-Jeżeli usługa nadal korzysta ze starszego Nixpacks i nie rozpoznaje katalogu
-publicznego Laravel, ustaw dodatkowo:
+Jeżeli automatyczne wykrywanie aplikacji Laravel nie ustawi katalogu publicznego,
+ustaw dodatkowo:
 
 ```env
-NIXPACKS_PHP_ROOT_DIR=/app/public
+RAILPACK_PHP_ROOT_DIR=/app/public
 ```
 
 ## Kontrola po wdrożeniu

@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\CompetitionDefinitionRequest;
 use App\Models\CompetitionDefinition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -68,7 +69,6 @@ final class CompetitionDefinitionController extends Controller
         CompetitionDefinitionRequest $request,
     ): RedirectResponse {
         $data = $request->validated();
-        $data['code'] = mb_strtoupper($data['code']);
         $data['is_active'] = $request->boolean('is_active');
 
         $definition = CompetitionDefinition::query()->create($data);
@@ -93,7 +93,6 @@ final class CompetitionDefinitionController extends Controller
         CompetitionDefinition $competitionDefinition,
     ): RedirectResponse {
         $data = $request->validated();
-        $data['code'] = mb_strtoupper($data['code']);
         $data['is_active'] = $request->boolean('is_active');
 
         $competitionDefinition->update($data);
@@ -104,13 +103,26 @@ final class CompetitionDefinitionController extends Controller
     public function destroy(
         CompetitionDefinition $competitionDefinition,
     ): RedirectResponse {
-        if ($competitionDefinition->eventCompetitions()->exists()) {
+        $deleted = DB::transaction(function () use ($competitionDefinition): bool {
+            $lockedDefinition = CompetitionDefinition::query()
+                ->whereKey($competitionDefinition->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedDefinition->eventCompetitions()->exists()) {
+                return false;
+            }
+
+            $lockedDefinition->delete();
+
+            return true;
+        });
+
+        if (! $deleted) {
             return back()->withErrors([
                 'competition' => 'Nie można usunąć konkurencji użytej w kalendarzu lub wynikach. Wyłącz ją zamiast usuwać.',
             ]);
         }
-
-        $competitionDefinition->delete();
 
         return redirect()
             ->route('admin.competitions.index')

@@ -85,6 +85,8 @@ final class SportEventController extends Controller
 
             unset($data['competition_ids']);
 
+            $this->lockAvailableCompetitionDefinitions($competitionIds);
+
             $data['slug'] = UniqueSlug::for(
                 SportEvent::class,
                 $data['title'].' '.$data['start_at'],
@@ -119,6 +121,12 @@ final class SportEventController extends Controller
         SportEvent $sportEvent,
     ): RedirectResponse {
         DB::transaction(function () use ($request, $sportEvent): void {
+            $lockedEvent = SportEvent::query()
+                ->whereKey($sportEvent->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $lockedEvent->eventCompetitions()->lockForUpdate()->get();
+
             $data = $request->validated();
             $competitionIds = array_map(
                 'intval',
@@ -127,8 +135,17 @@ final class SportEventController extends Controller
 
             unset($data['competition_ids']);
 
+            $linkedCompetitionIds = $lockedEvent->eventCompetitions()
+                ->pluck('competition_definition_id')
+                ->map(static fn (mixed $id): int => (int) $id)
+                ->all();
+            $this->lockAvailableCompetitionDefinitions(
+                $competitionIds,
+                $linkedCompetitionIds,
+            );
+
             $this->guardResultIntegrity(
-                event: $sportEvent,
+                event: $lockedEvent,
                 newEventType: $data['event_type'],
                 selectedCompetitionIds: $competitionIds,
             );
@@ -136,8 +153,8 @@ final class SportEventController extends Controller
             $data['is_public'] = $request->boolean('is_public');
             $data['updated_by'] = $request->user()->getKey();
 
-            $sportEvent->update($data);
-            $sportEvent->competitions()->sync($competitionIds);
+            $lockedEvent->update($data);
+            $lockedEvent->competitions()->sync($competitionIds);
         });
 
         return redirect()
@@ -147,7 +164,13 @@ final class SportEventController extends Controller
 
     public function destroy(SportEvent $sportEvent): RedirectResponse
     {
-        $sportEvent->delete();
+        DB::transaction(function () use ($sportEvent): void {
+            $lockedEvent = SportEvent::query()
+                ->whereKey($sportEvent->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $lockedEvent->delete();
+        });
 
         return redirect()
             ->route('admin.events.index')
@@ -185,7 +208,43 @@ final class SportEventController extends Controller
 
         if ($removedCompetitionIds !== []) {
             throw ValidationException::withMessages([
-                'competition_ids' => 'Nie można odpiąć konkurencji, dla których zapisano już wyniki. Najpierw usuń lub przenieś te wyniki.',
+                'competition_ids' => 'Nie można odpiąć konkurencji, dla których zapisano wyniki. Najpierw usuń lub przenieś te wyniki.',
+            ]);
+        }
+    }
+
+    /**
+     * @param  list<int>  $selectedCompetitionIds
+     * @param  list<int>  $alreadyLinkedCompetitionIds
+     */
+    private function lockAvailableCompetitionDefinitions(
+        array $selectedCompetitionIds,
+        array $alreadyLinkedCompetitionIds = [],
+    ): void {
+        $selectedCompetitionIds = array_values(array_unique(
+            $selectedCompetitionIds,
+        ));
+
+        if ($selectedCompetitionIds === []) {
+            return;
+        }
+
+        $availableDefinitions = CompetitionDefinition::query()
+            ->whereIn('id', $selectedCompetitionIds)
+            ->where(function ($query) use ($alreadyLinkedCompetitionIds): void {
+                $query->where('is_active', true);
+
+                if ($alreadyLinkedCompetitionIds !== []) {
+                    $query->orWhereIn('id', $alreadyLinkedCompetitionIds);
+                }
+            })
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get(['id']);
+
+        if ($availableDefinitions->count() !== count($selectedCompetitionIds)) {
+            throw ValidationException::withMessages([
+                'competition_ids' => 'Co najmniej jedna wybrana konkurencja nie jest już dostępna. Odśwież formularz.',
             ]);
         }
     }
@@ -207,7 +266,7 @@ final class SportEventController extends Controller
                     $query->where('is_active', true);
 
                     if ($linkedCompetitionIds !== []) {
-                        $query->orWhereKey($linkedCompetitionIds);
+                        $query->orWhereIn('id', $linkedCompetitionIds);
                     }
                 })
                 ->orderBy('competition_system')

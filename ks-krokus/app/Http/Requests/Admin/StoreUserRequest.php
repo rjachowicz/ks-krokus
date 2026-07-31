@@ -12,8 +12,14 @@ class StoreUserRequest extends AdminFormRequest
 {
     protected function prepareForValidation(): void
     {
+        $email = $this->input('email');
+
+        if (! is_string($email)) {
+            return;
+        }
+
         $this->merge([
-            'email' => mb_strtolower(trim((string) $this->input('email'))),
+            'email' => mb_strtolower(trim($email)),
         ]);
     }
 

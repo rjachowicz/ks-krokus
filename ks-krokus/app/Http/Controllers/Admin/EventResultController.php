@@ -14,6 +14,8 @@ use App\Models\SportEvent;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 final class EventResultController extends Controller
@@ -91,13 +93,15 @@ final class EventResultController extends Controller
     public function store(
         EventResultRequest $request,
     ): RedirectResponse {
-        $data = $this->normalizeData($request);
+        $result = DB::transaction(function () use ($request): EventResult {
+            $data = $this->normalizeData($request);
 
-        $result = EventResult::query()->create([
-            ...$data,
-            'entered_by' => $request->user()->getKey(),
-            'updated_by' => $request->user()->getKey(),
-        ]);
+            return EventResult::query()->create([
+                ...$data,
+                'entered_by' => $request->user()->getKey(),
+                'updated_by' => $request->user()->getKey(),
+            ]);
+        });
 
         return redirect()
             ->route('admin.results.edit', $result)
@@ -113,7 +117,7 @@ final class EventResultController extends Controller
         ]);
 
         return view('admin.results.edit', array_merge(
-            $this->formOptions(),
+            $this->formOptions($eventResult),
             ['result' => $eventResult],
         ));
     }
@@ -122,10 +126,27 @@ final class EventResultController extends Controller
         EventResultRequest $request,
         EventResult $eventResult,
     ): RedirectResponse {
-        $data = $this->normalizeData($request, $eventResult);
-        $data['updated_by'] = $request->user()->getKey();
+        DB::transaction(function () use ($request, $eventResult): void {
+            $data = $this->normalizeData($request, $eventResult);
+            $lockedResult = EventResult::query()
+                ->whereKey($eventResult->getKey())
+                ->lockForUpdate()
+                ->first();
 
-        $eventResult->update($data);
+            if (
+                $lockedResult === null
+                || $lockedResult->event_competition_id
+                    !== $eventResult->event_competition_id
+            ) {
+                throw ValidationException::withMessages([
+                    'event_competition_id' => 'Wynik został w międzyczasie zmieniony. Odśwież formularz i spróbuj ponownie.',
+                ]);
+            }
+
+            $data['updated_by'] = $request->user()->getKey();
+
+            $lockedResult->update($data);
+        });
 
         return back()->with('success', 'Wynik został zapisany.');
     }
@@ -143,16 +164,30 @@ final class EventResultController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function formOptions(): array
+    private function formOptions(?EventResult $currentResult = null): array
     {
+        $currentEventCompetitionId = $currentResult?->event_competition_id;
+        $currentUserId = $currentResult?->user_id;
+
         $eventCompetitions = EventCompetition::query()
-            ->whereHas(
-                'event',
-                fn ($query) => $query->where(
-                    'event_type',
-                    EventType::Competition->value,
-                ),
-            )
+            ->where(function ($query) use ($currentEventCompetitionId): void {
+                $query->whereHas(
+                    'event',
+                    fn ($eventQuery) => $eventQuery
+                        ->whereNull('sport_events.deleted_at')
+                        ->where(
+                            'event_type',
+                            EventType::Competition->value,
+                        ),
+                );
+
+                if ($currentEventCompetitionId !== null) {
+                    $query->orWhere(
+                        'event_competitions.id',
+                        $currentEventCompetitionId,
+                    );
+                }
+            })
             ->with(['event', 'competition'])
             ->get()
             ->sortByDesc(
@@ -161,7 +196,16 @@ final class EventResultController extends Controller
 
         return [
             'eventCompetitions' => $eventCompetitions,
-            'users' => User::query()->orderBy('name')->get(),
+            'users' => User::withTrashed()
+                ->where(function ($query) use ($currentUserId): void {
+                    $query->whereNull('deleted_at');
+
+                    if ($currentUserId !== null) {
+                        $query->orWhere('id', $currentUserId);
+                    }
+                })
+                ->orderBy('name')
+                ->get(),
             'statuses' => ResultStatus::options(),
         ];
     }
@@ -174,20 +218,76 @@ final class EventResultController extends Controller
         ?EventResult $existingResult = null,
     ): array {
         $data = $request->validated();
+        $targetCompetitionId = (int) $data['event_competition_id'];
+        $competitionIds = array_values(array_unique(array_filter([
+            $targetCompetitionId,
+            $existingResult?->event_competition_id,
+        ])));
+        $candidates = EventCompetition::query()
+            ->whereIn('id', $competitionIds)
+            ->get(['id', 'sport_event_id'])
+            ->keyBy('id');
+        $targetCandidate = $candidates->get($targetCompetitionId);
 
-        $eventCompetition = EventCompetition::query()
-            ->with('event')
-            ->findOrFail($data['event_competition_id']);
+        if (! $targetCandidate instanceof EventCompetition) {
+            throw ValidationException::withMessages([
+                'event_competition_id' => 'Wybrana konkurencja nie jest już dostępna. Odśwież formularz.',
+            ]);
+        }
 
-        abort_unless(
-            $eventCompetition->event->event_type === EventType::Competition,
-            422,
-            'Wyniki mogą być przypisywane wyłącznie do zawodów.',
-        );
+        $events = SportEvent::withTrashed()
+            ->whereIn('id', $candidates->pluck('sport_event_id')->all())
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+        $lockedCompetitions = EventCompetition::query()
+            ->whereIn('id', $competitionIds)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+        $eventCompetition = $lockedCompetitions->get($targetCompetitionId);
+        $event = $eventCompetition instanceof EventCompetition
+            ? $events->get($eventCompetition->sport_event_id)
+            : null;
+
+        if (
+            ! $eventCompetition instanceof EventCompetition
+            || ! $event instanceof SportEvent
+        ) {
+            throw ValidationException::withMessages([
+                'event_competition_id' => 'Wybrana konkurencja nie jest już dostępna. Odśwież formularz.',
+            ]);
+        }
+
+        $eventCompetition->setRelation('event', $event);
+
+        $keepsCurrentCompetition = $existingResult?->event_competition_id
+            === $eventCompetition->getKey();
+
+        if (
+            $eventCompetition->event->event_type !== EventType::Competition
+            || ($eventCompetition->event->trashed() && ! $keepsCurrentCompetition)
+        ) {
+            throw ValidationException::withMessages([
+                'event_competition_id' => 'Wybierz konkurencję należącą do istniejących zawodów.',
+            ]);
+        }
 
         if (! empty($data['user_id'])) {
-            $user = User::query()->findOrFail($data['user_id']);
-            $sameLinkedUser = $existingResult?->user_id === $user->getKey();
+            $user = User::withTrashed()
+                ->whereKey($data['user_id'])
+                ->lockForUpdate()
+                ->first();
+            $sameLinkedUser = $user !== null
+                && $existingResult?->user_id === $user->getKey();
+
+            if ($user === null || ($user->trashed() && ! $sameLinkedUser)) {
+                throw ValidationException::withMessages([
+                    'user_id' => 'Wybrany użytkownik nie istnieje lub został usunięty.',
+                ]);
+            }
 
             $data['participant_name'] = $sameLinkedUser
                 && filled($existingResult?->participant_name)

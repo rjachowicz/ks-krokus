@@ -24,16 +24,16 @@ final class AdminUserSeeder extends Seeder
             return;
         }
 
-        $user = User::withTrashed()->firstOrNew([
-            'email' => mb_strtolower((string) $email),
-        ]);
+        $normalizedEmail = mb_strtolower(trim((string) $email));
+        $user = User::withTrashed()->firstOrNew(['email' => $normalizedEmail]);
 
         if ($user->trashed()) {
             $user->restore();
         }
 
         $user->fill([
-            'name' => env('ADMIN_NAME', 'Administrator KS Krokus'),
+            'name' => trim((string) env('ADMIN_NAME', 'Administrator KS Krokus')),
+            'email' => $normalizedEmail,
             'password' => Hash::make((string) $password),
             'role' => UserRole::Admin,
             'is_active' => true,

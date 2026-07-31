@@ -10,6 +10,16 @@
             ? $post->published_at->format('Y-m-d\TH:i')
             : '',
     );
+
+    $selectedImageIds = old('delete_images', []);
+    $selectedImageIds = is_array($selectedImageIds)
+        ? array_map('intval', $selectedImageIds)
+        : [];
+
+    $galleryErrorIds = implode(' ', array_filter([
+        $errors->has('gallery_images') ? 'gallery-images-error' : null,
+        $errors->has('gallery_images.*') ? 'gallery-image-items-error' : null,
+    ]));
 @endphp
 
 <div class="admin-form-grid">
@@ -23,7 +33,7 @@
 
     <label class="span-full">
         Krótkie streszczenie
-        <textarea id="post-excerpt" name="excerpt" rows="3"
+        <textarea id="post-excerpt" name="excerpt" rows="3" autocomplete="off"
             aria-describedby="post-excerpt-help @error('excerpt') post-excerpt-error @enderror"
             @error('excerpt') aria-invalid="true" @enderror>{{ old('excerpt', $post->excerpt ?? '') }}</textarea>
         <span id="post-excerpt-help" class="form-help">Widoczne na listach aktualności i jako wprowadzenie do artykułu.</span>
@@ -34,13 +44,16 @@
         Treść
         <input type="hidden" name="content_format" value="html">
         <textarea
+            id="post-content"
             name="content"
             rows="16"
             required
             data-rich-text
-            @error('content') aria-invalid="true" aria-describedby="post-content-error" @enderror
+            autocomplete="off"
+            aria-describedby="post-content-help @error('content') post-content-error @enderror"
+            @error('content') aria-invalid="true" @enderror
         >{{ old('content', $post->content ?? '') }}</textarea>
-        <span class="form-help">
+        <span id="post-content-help" class="form-help">
             Użyj paska narzędzi do formatowania nagłówków, list i wyróżnień.
         </span>
         @error('content') <span id="post-content-error" class="form-error" role="alert">{{ $message }}</span> @enderror
@@ -79,6 +92,7 @@
             <div class="image-edit-card__body">
                 <label class="form-check">
                     <input id="post-remove-cover" type="checkbox" name="remove_cover" value="1"
+                        @checked(old('remove_cover', false))
                         @error('remove_cover') aria-invalid="true" aria-describedby="post-remove-cover-error" @enderror>
                     Usuń obecne zdjęcie główne
                     @error('remove_cover') <span id="post-remove-cover-error" class="form-error">{{ $message }}</span> @enderror
@@ -96,9 +110,10 @@
         <label class="file-upload__dropzone">
             <strong>Nowe zdjęcie główne</strong>
             <span>Przeciągnij obraz tutaj lub wybierz plik</span>
-            <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
-                @error('cover_image') aria-invalid="true" aria-describedby="cover-image-error" @enderror>
-            <small>JPG, PNG lub WebP, maksymalnie 6 MB.</small>
+            <input id="post-cover-image" type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
+                aria-describedby="post-cover-image-help @error('cover_image') cover-image-error @enderror"
+                @error('cover_image') aria-invalid="true" @enderror>
+            <small id="post-cover-image-help">JPG, PNG lub WebP, maksymalnie 6 MB.</small>
             @error('cover_image') <span id="cover-image-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
@@ -112,6 +127,7 @@
             id="post-cover-alt"
             name="cover_image_alt"
             value="{{ old('cover_image_alt', $post->cover_image_alt ?? '') }}"
+            autocomplete="off"
             aria-describedby="post-cover-alt-help @error('cover_image_alt') post-cover-alt-error @enderror"
             @error('cover_image_alt') aria-invalid="true" @enderror
         >
@@ -134,14 +150,16 @@
             <span>Przeciągnij obrazy tutaj lub wybierz pliki</span>
             <input
                 type="file"
+                id="post-gallery-images"
                 name="gallery_images[]"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
-                @if ($errors->has('gallery_images') || $errors->has('gallery_images.*'))
-                    aria-invalid="true" aria-describedby="gallery-images-error gallery-image-items-error"
+                aria-describedby="post-gallery-images-help{{ $galleryErrorIds !== '' ? ' '.$galleryErrorIds : '' }}"
+                @if ($galleryErrorIds !== '')
+                    aria-invalid="true"
                 @endif
             >
-            <small>Łącznie maksymalnie 12 zdjęć, każde do 6 MB.</small>
+            <small id="post-gallery-images-help">Łącznie maksymalnie 12 zdjęć, każde do 6 MB.</small>
             @error('gallery_images') <span id="gallery-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
             @error('gallery_images.*') <span id="gallery-image-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         </label>
@@ -150,7 +168,20 @@
     </div>
 
     @if (isset($post) && $post->images->isNotEmpty())
-        <div class="image-preview-grid span-full">
+        @error('existing_images')
+            <span id="post-existing-images-error" class="form-error span-full" role="alert">{{ $message }}</span>
+        @enderror
+        @error('delete_images.*')
+            <span id="post-delete-images-error" class="form-error span-full" role="alert">{{ $message }}</span>
+        @enderror
+
+        <div
+            class="image-preview-grid span-full"
+            @if ($errors->has('existing_images') || $errors->has('delete_images.*'))
+                aria-invalid="true"
+                aria-describedby="@error('existing_images') post-existing-images-error @enderror @error('delete_images.*') post-delete-images-error @enderror"
+            @endif
+        >
             @foreach ($post->images as $image)
                 <article class="image-edit-card">
                     <img src="{{ $image->url() }}" alt="{{ $image->alt_text ?: $post->title }}">
@@ -163,6 +194,7 @@
                                 type="text"
                                 name="existing_images[{{ $image->id }}][alt_text]"
                                 value="{{ old("existing_images.{$image->id}.alt_text", $image->alt_text) }}"
+                                autocomplete="off"
                                 @error("existing_images.{$image->id}.alt_text") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-alt-error" @enderror
                             >
                             @error("existing_images.{$image->id}.alt_text")
@@ -176,6 +208,7 @@
                                 id="post-image-{{ $image->id }}-caption"
                                 name="existing_images[{{ $image->id }}][caption]"
                                 rows="3"
+                                autocomplete="off"
                                 @error("existing_images.{$image->id}.caption") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-caption-error" @enderror
                             >{{ old("existing_images.{$image->id}.caption", $image->caption) }}</textarea>
                             @error("existing_images.{$image->id}.caption")
@@ -199,7 +232,15 @@
                         </label>
 
                         <label class="form-check">
-                            <input type="checkbox" name="delete_images[]" value="{{ $image->id }}">
+                            <input
+                                type="checkbox"
+                                name="delete_images[]"
+                                value="{{ $image->id }}"
+                                @checked(in_array($image->id, $selectedImageIds, true))
+                                @if ($errors->has('delete_images.*'))
+                                    aria-invalid="true" aria-describedby="post-delete-images-error"
+                                @endif
+                            >
                             Usuń zdjęcie
                         </label>
                     </div>

@@ -16,22 +16,24 @@
     <form method="GET" class="admin-filter">
         <label>
             System
-            <select name="competition_system">
+            <select id="competition-filter-system" name="competition_system" @error('competition_system') aria-invalid="true" aria-describedby="competition-filter-system-error" @enderror>
                 <option value="">Wszystkie</option>
                 @foreach ($systems as $value => $label)
                     <option value="{{ $value }}" @selected(request('competition_system') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            @error('competition_system') <span id="competition-filter-system-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Dyscyplina
-            <select name="discipline">
+            <select id="competition-filter-discipline" name="discipline" @error('discipline') aria-invalid="true" aria-describedby="competition-filter-discipline-error" @enderror>
                 <option value="">Wszystkie</option>
                 @foreach ($disciplines as $value => $label)
                     <option value="{{ $value }}" @selected(request('discipline') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            @error('discipline') <span id="competition-filter-discipline-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>

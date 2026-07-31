@@ -4,10 +4,76 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 abstract class LocalizedFormRequest extends FormRequest
 {
+    /**
+     * Prevent malformed array values from breaking Blade when they are flashed
+     * back and rendered through old() in scalar form controls.
+     */
+    protected function failedValidation(Validator $validator): void
+    {
+        $input = $this->input();
+        $arrayFields = $this->oldInputArrayFields();
+
+        foreach ($input as $field => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+
+            $input[$field] = in_array($field, $arrayFields, true)
+                ? $this->sanitizeArrayForOldInput($field, $value)
+                : '';
+        }
+
+        $this->replace($input);
+        request()->replace($input);
+
+        parent::failedValidation($validator);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function oldInputArrayFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $values
+     * @return array<array-key, mixed>
+     */
+    private function sanitizeArrayForOldInput(
+        string $field,
+        array $values,
+    ): array {
+        foreach ($values as $key => $value) {
+            if ($field === 'existing_images' && is_array($value)) {
+                foreach ($value as $attribute => $attributeValue) {
+                    if (
+                        ! is_scalar($attributeValue)
+                        && $attributeValue !== null
+                    ) {
+                        $value[$attribute] = '';
+                    }
+                }
+
+                $values[$key] = $value;
+
+                continue;
+            }
+
+            if (! is_scalar($value) && $value !== null) {
+                $values[$key] = '';
+            }
+        }
+
+        return $values;
+    }
+
     public function messages(): array
     {
         return [

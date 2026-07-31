@@ -9,7 +9,7 @@
 
     <label>
         Nazwa
-        <input id="competition-name" type="text" name="name" value="{{ old('name', $definition->name ?? '') }}" required
+        <input id="competition-name" type="text" name="name" value="{{ old('name', $definition->name ?? '') }}" autocomplete="off" required
             @error('name') aria-invalid="true" aria-describedby="competition-name-error" @enderror>
         @error('name') <span id="competition-name-error" class="form-error">{{ $message }}</span> @enderror
     </label>
@@ -66,7 +66,7 @@
 
     <label class="span-full">
         Opis
-        <textarea id="competition-description" name="description"
+        <textarea id="competition-description" name="description" autocomplete="off"
             @error('description') aria-invalid="true" aria-describedby="competition-description-error" @enderror>{{ old('description', $definition->description ?? '') }}</textarea>
         @error('description') <span id="competition-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>

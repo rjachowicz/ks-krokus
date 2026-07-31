@@ -3,6 +3,14 @@
         'competition_ids',
         isset($event) ? $event->competitions->pluck('id')->all() : [],
     );
+    $selectedCompetitionIds = is_array($selectedCompetitionIds)
+        ? array_map('intval', $selectedCompetitionIds)
+        : [];
+
+    $competitionErrorIds = implode(' ', array_filter([
+        $errors->has('competition_ids') ? 'event-competitions-error' : null,
+        $errors->has('competition_ids.*') ? 'event-competition-items-error' : null,
+    ]));
 
     $currentType = old(
         'event_type',
@@ -114,7 +122,7 @@
 
     <label>
         Nazwa miejsca
-        <input id="event-location" type="text" name="location_name" value="{{ old('location_name', $event->location_name ?? '') }}" required
+        <input id="event-location" type="text" name="location_name" value="{{ old('location_name', $event->location_name ?? '') }}" autocomplete="organization" required
             @error('location_name') aria-invalid="true" aria-describedby="event-location-error" @enderror>
         @error('location_name') <span id="event-location-error" class="form-error">{{ $message }}</span> @enderror
     </label>
@@ -150,7 +158,7 @@
 
     <label class="span-full">
         Opis
-        <textarea id="event-description" name="description" rows="10"
+        <textarea id="event-description" name="description" rows="10" autocomplete="off"
             @error('description') aria-invalid="true" aria-describedby="event-description-error" @enderror>{{ old('description', $event->description ?? '') }}</textarea>
         @error('description') <span id="event-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
@@ -161,8 +169,8 @@
             Dla treningów możesz wybrać ćwiczone konkurencje. Dla zawodów wybór definiuje pozycje dostępne
             przy dodawaniu wyników.
         </p>
-        @error('competition_ids') <span class="form-error" role="alert">{{ $message }}</span> @enderror
-        @error('competition_ids.*') <span class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('competition_ids') <span id="event-competitions-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('competition_ids.*') <span id="event-competition-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
     </div>
 
     <div class="admin-check-grid span-full">
@@ -176,7 +184,10 @@
                             type="checkbox"
                             name="competition_ids[]"
                             value="{{ $definition->id }}"
-                            @checked(in_array($definition->id, array_map('intval', $selectedCompetitionIds), true))
+                            @checked(in_array($definition->id, $selectedCompetitionIds, true))
+                            @if ($competitionErrorIds !== '')
+                                aria-invalid="true" aria-describedby="{{ $competitionErrorIds }}"
+                            @endif
                         >
                         <span>
                             <strong>{{ $definition->name }}</strong><br>

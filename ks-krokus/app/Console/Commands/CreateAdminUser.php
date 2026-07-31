@@ -22,8 +22,8 @@ final class CreateAdminUser extends Command
 
     public function handle(): int
     {
-        $name = (string) ($this->option('name') ?: $this->ask('Imię i nazwisko'));
-        $email = (string) ($this->option('email') ?: $this->ask('Adres e-mail'));
+        $name = trim((string) ($this->option('name') ?: $this->ask('Imię i nazwisko')));
+        $email = mb_strtolower(trim((string) ($this->option('email') ?: $this->ask('Adres e-mail'))));
         $password = (string) ($this->option('password') ?: $this->secret('Hasło'));
 
         $validator = Validator::make(
@@ -43,7 +43,7 @@ final class CreateAdminUser extends Command
             return self::FAILURE;
         }
 
-        $user = User::withTrashed()->firstOrNew(['email' => mb_strtolower($email)]);
+        $user = User::withTrashed()->firstOrNew(['email' => $email]);
 
         if ($user->trashed()) {
             $user->restore();
@@ -51,7 +51,7 @@ final class CreateAdminUser extends Command
 
         $user->fill([
             'name' => $name,
-            'email' => mb_strtolower($email),
+            'email' => $email,
             'password' => Hash::make($password),
             'role' => UserRole::Admin,
             'is_active' => true,

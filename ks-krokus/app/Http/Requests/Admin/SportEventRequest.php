@@ -8,6 +8,8 @@ use App\Enums\CompetitionSystem;
 use App\Enums\Discipline;
 use App\Enums\EventType;
 use App\Enums\PublicationStatus;
+use App\Models\SportEvent;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 
 class SportEventRequest extends AdminFormRequest
@@ -19,6 +21,26 @@ class SportEventRequest extends AdminFormRequest
 
     public function rules(): array
     {
+        /** @var SportEvent|null $event */
+        $event = $this->route('sportEvent');
+        $linkedCompetitionIds = $event?->competitions()
+            ->pluck('competition_definitions.id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all() ?? [];
+
+        $availableCompetition = Rule::exists(
+            'competition_definitions',
+            'id',
+        )->where(function (Builder $query) use ($linkedCompetitionIds): void {
+            $query->where(function (Builder $availability) use ($linkedCompetitionIds): void {
+                $availability->where('is_active', true);
+
+                if ($linkedCompetitionIds !== []) {
+                    $availability->orWhereIn('id', $linkedCompetitionIds);
+                }
+            });
+        });
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'event_type' => ['required', Rule::enum(EventType::class)],
@@ -36,7 +58,7 @@ class SportEventRequest extends AdminFormRequest
             'competition_ids.*' => [
                 'integer',
                 'distinct',
-                'exists:competition_definitions,id',
+                $availableCompetition,
             ],
         ];
     }

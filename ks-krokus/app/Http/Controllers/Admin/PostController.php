@@ -98,6 +98,8 @@ final class PostController extends Controller
 
                 if ($coverPath !== null) {
                     $data['cover_image_path'] = $coverPath;
+                } else {
+                    $data['cover_image_alt'] = null;
                 }
 
                 $post = Post::query()->create($data);
@@ -140,13 +142,20 @@ final class PostController extends Controller
             $this->storeUploadedFiles($request, $galleryPaths);
 
             $pathsToDelete = DB::transaction(function () use ($request, $post, $newCoverPath, $galleryPaths): array {
+                $lockedPost = Post::query()
+                    ->whereKey($post->getKey())
+                    ->lockForUpdate()
+                    ->firstOrFail();
+                $lockedPost->images()->lockForUpdate()->get();
+                $this->guardGalleryLimit($request, $lockedPost, count($galleryPaths));
+
                 $data = $request->validated();
                 $data['updated_by'] = $request->user()->getKey();
-                $data['content_format'] = $data['content_format'] ?? $post->content_format;
+                $data['content_format'] = $data['content_format'] ?? $lockedPost->content_format;
                 $data['published_at'] = $this->resolvePublishedAt(
                     $data['status'],
                     $data['published_at'] ?? null,
-                    $post,
+                    $lockedPost,
                 );
 
                 unset(
@@ -159,26 +168,27 @@ final class PostController extends Controller
 
                 $pathsToDelete = [];
 
-                if ($request->boolean('remove_cover') && $post->cover_image_path) {
-                    $pathsToDelete[] = $post->cover_image_path;
+                if ($newCoverPath !== null) {
+                    if ($lockedPost->cover_image_path) {
+                        $pathsToDelete[] = $lockedPost->cover_image_path;
+                    }
+
+                    $data['cover_image_path'] = $newCoverPath;
+                } elseif ($request->boolean('remove_cover') && $lockedPost->cover_image_path) {
+                    $pathsToDelete[] = $lockedPost->cover_image_path;
                     $data['cover_image_path'] = null;
+                    $data['cover_image_alt'] = null;
+                } elseif (! $lockedPost->cover_image_path) {
                     $data['cover_image_alt'] = null;
                 }
 
-                if ($newCoverPath !== null) {
-                    if ($post->cover_image_path) {
-                        $pathsToDelete[] = $post->cover_image_path;
-                    }
-                    $data['cover_image_path'] = $newCoverPath;
-                }
-
-                $post->update($data);
-                $this->updateExistingImages($request, $post);
+                $lockedPost->update($data);
+                $this->updateExistingImages($request, $lockedPost);
                 $pathsToDelete = [
                     ...$pathsToDelete,
-                    ...$this->deleteSelectedImages($request, $post),
+                    ...$this->deleteSelectedImages($request, $lockedPost),
                 ];
-                $this->createGalleryImages($post, $galleryPaths);
+                $this->createGalleryImages($lockedPost, $galleryPaths);
 
                 return array_values(array_unique($pathsToDelete));
             });
@@ -197,7 +207,13 @@ final class PostController extends Controller
 
     public function destroy(Post $post): RedirectResponse
     {
-        $post->delete();
+        DB::transaction(function () use ($post): void {
+            $lockedPost = Post::query()
+                ->whereKey($post->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $lockedPost->delete();
+        });
 
         return redirect()
             ->route('admin.posts.index')
@@ -246,6 +262,32 @@ final class PostController extends Controller
                 'path' => $path,
                 'alt_text' => $post->title,
                 'sort_order' => $nextOrder++,
+            ]);
+        }
+    }
+
+    private function guardGalleryLimit(
+        Request $request,
+        Post $post,
+        int $newImagesCount,
+    ): void {
+        $deleteImageIds = $request->input('delete_images', []);
+
+        if (! is_array($deleteImageIds)) {
+            $deleteImageIds = [];
+        }
+
+        $deletedImagesCount = $post->images()
+            ->whereKey($deleteImageIds)
+            ->count();
+        $remainingImagesCount = $post->images()->count()
+            - $deletedImagesCount
+            + $newImagesCount;
+        $maxGalleryImages = (int) config('content.gallery_max_images');
+
+        if ($remainingImagesCount > $maxGalleryImages) {
+            throw ValidationException::withMessages([
+                'gallery_images' => "Galeria może zawierać maksymalnie {$maxGalleryImages} zdjęć.",
             ]);
         }
     }

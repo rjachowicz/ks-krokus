@@ -39,7 +39,7 @@
             <option value="">Zawodnik zewnętrzny / bez konta</option>
             @foreach ($users as $user)
                 <option value="{{ $user->id }}" @selected((string) $currentUserId === (string) $user->id)>
-                    {{ $user->name }} — {{ $user->email }}
+                    {{ $user->name }} — {{ $user->email }}{{ $user->trashed() ? ' — konto usunięte' : '' }}
                 </option>
             @endforeach
         </select>
@@ -75,14 +75,14 @@
 
     <label>
         Kategoria
-        <input id="result-category" type="text" name="category" value="{{ old('category', $result->category ?? '') }}" placeholder="np. Senior, Lady, Junior"
+        <input id="result-category" type="text" name="category" value="{{ old('category', $result->category ?? '') }}" placeholder="np. Senior, Lady, Junior" autocomplete="off"
             @error('category') aria-invalid="true" aria-describedby="result-category-error" @enderror>
         @error('category') <span id="result-category-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Wynik
-        <input id="result-score" type="text" name="score" value="{{ old('score', $result->score ?? '') }}" required placeholder="np. 245.14, 89%, DNF"
+        <input id="result-score" type="text" name="score" value="{{ old('score', $result->score ?? '') }}" required placeholder="np. 245.14, 89%, DNF" autocomplete="off"
             @error('score') aria-invalid="true" aria-describedby="result-score-error" @enderror>
         @error('score') <span id="result-score-error" class="form-error">{{ $message }}</span> @enderror
     </label>
@@ -102,6 +102,7 @@
             name="classification"
             value="{{ old('classification', $result->classification ?? '') }}"
             placeholder="np. Open, Production, Standard"
+            autocomplete="off"
             @error('classification') aria-invalid="true" aria-describedby="result-classification-error" @enderror
         >
         @error('classification') <span id="result-classification-error" class="form-error">{{ $message }}</span> @enderror
@@ -119,7 +120,7 @@
 
     <label class="span-full">
         Uwagi
-        <textarea id="result-notes" name="notes" @error('notes') aria-invalid="true" aria-describedby="result-notes-error" @enderror>{{ old('notes', $result->notes ?? '') }}</textarea>
+        <textarea id="result-notes" name="notes" autocomplete="off" @error('notes') aria-invalid="true" aria-describedby="result-notes-error" @enderror>{{ old('notes', $result->notes ?? '') }}</textarea>
         @error('notes') <span id="result-notes-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 </div>

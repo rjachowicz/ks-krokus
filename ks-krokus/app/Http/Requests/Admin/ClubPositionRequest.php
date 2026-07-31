@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Models\ClubPosition;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 
 class ClubPositionRequest extends AdminFormRequest
@@ -31,7 +32,13 @@ class ClubPositionRequest extends AdminFormRequest
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['nullable', 'boolean'],
             'user_ids' => ['nullable', 'array'],
-            'user_ids.*' => ['integer', 'distinct', 'exists:users,id'],
+            'user_ids.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('users', 'id')->where(
+                    fn (Builder $query) => $query->whereNull('deleted_at'),
+                ),
+            ],
             'user_sort_orders' => ['nullable', 'array'],
             'user_sort_orders.*' => ['nullable', 'integer', 'min:0', 'max:9999'],
         ];

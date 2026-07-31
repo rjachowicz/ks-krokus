@@ -3,6 +3,10 @@
         'user_ids',
         isset($position) ? $position->users->pluck('id')->all() : [],
     );
+    $selectedUsers = is_array($selectedUsers)
+        ? array_map('intval', $selectedUsers)
+        : [];
+
     $userSortOrders = old(
         'user_sort_orders',
         isset($position)
@@ -11,6 +15,12 @@
             )->all()
             : [],
     );
+    $userSortOrders = is_array($userSortOrders) ? $userSortOrders : [];
+
+    $userSelectionErrorIds = implode(' ', array_filter([
+        $errors->has('user_ids') ? 'position-users-error' : null,
+        $errors->has('user_ids.*') ? 'position-user-items-error' : null,
+    ]));
 @endphp
 
 <div class="admin-form-grid">
@@ -24,7 +34,7 @@
 
     <label>
         Identyfikator URL
-        <input id="position-slug" type="text" name="slug" value="{{ old('slug', $position->slug ?? '') }}" placeholder="np. prezes"
+        <input id="position-slug" type="text" name="slug" value="{{ old('slug', $position->slug ?? '') }}" placeholder="np. prezes" autocomplete="off"
             aria-describedby="position-slug-help @error('slug') position-slug-error @enderror"
             @error('slug') aria-invalid="true" @enderror>
         <span id="position-slug-help" class="form-help">Możesz pozostawić puste — system utworzy slug z nazwy.</span>
@@ -51,7 +61,7 @@
 
     <label class="span-full">
         Opis
-        <textarea id="position-description" name="description"
+        <textarea id="position-description" name="description" autocomplete="off"
             @error('description') aria-invalid="true" aria-describedby="position-description-error" @enderror>{{ old('description', $position->description ?? '') }}</textarea>
         @error('description') <span id="position-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
@@ -62,9 +72,9 @@
             Zaznacz osoby i ustaw ich kolejność. Niższa liczba oznacza wcześniejsze miejsce.
             Dane kontaktowe są pokazywane zgodnie z ustawieniami profilu użytkownika.
         </p>
-        @error('user_ids') <span class="form-error" role="alert">{{ $message }}</span> @enderror
-        @error('user_ids.*') <span class="form-error" role="alert">{{ $message }}</span> @enderror
-        @error('user_sort_orders.*') <span class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('user_ids') <span id="position-users-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('user_ids.*') <span id="position-user-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('user_sort_orders.*') <span id="position-user-orders-error" class="form-error" role="alert">{{ $message }}</span> @enderror
     </div>
 
     <div class="admin-check-grid span-full">
@@ -75,7 +85,10 @@
                     type="checkbox"
                     name="user_ids[]"
                     value="{{ $user->id }}"
-                    @checked(in_array($user->id, array_map('intval', $selectedUsers), true))
+                    @checked(in_array($user->id, $selectedUsers, true))
+                    @if ($userSelectionErrorIds !== '')
+                        aria-invalid="true" aria-describedby="{{ $userSelectionErrorIds }}"
+                    @endif
                 >
                 <div class="admin-check-option__body">
                     <label for="position-user-{{ $user->id }}">

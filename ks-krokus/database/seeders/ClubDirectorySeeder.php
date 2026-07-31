@@ -114,7 +114,7 @@ final class ClubDirectorySeeder extends Seeder
         bool $showPhone,
     ): User {
         $realEmail = filled($email)
-            ? mb_strtolower((string) $email)
+            ? mb_strtolower(trim((string) $email))
             : null;
 
         $query = User::withTrashed();
@@ -133,7 +133,7 @@ final class ClubDirectorySeeder extends Seeder
                 'password' => Hash::make(Str::random(64)),
                 'role' => UserRole::User,
                 'phone' => $phone,
-                'is_active' => false,
+                'is_active' => true,
                 'show_email_publicly' => $showEmail && $realEmail !== null,
                 'show_phone_publicly' => $showPhone && filled($phone),
             ]);
@@ -148,6 +148,7 @@ final class ClubDirectorySeeder extends Seeder
         $user->fill([
             'name' => $name,
             'phone' => $user->phone ?: $phone,
+            'is_active' => true,
             'show_email_publicly' => $user->show_email_publicly || ($showEmail && $realEmail !== null),
             'show_phone_publicly' => $user->show_phone_publicly || ($showPhone && filled($phone)),
         ])->save();

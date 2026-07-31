@@ -4,7 +4,107 @@
 
 `main`
 
-## Bieżąca sesja — 2026-07-31
+## Bieżąca sesja — 2026-07-31 — ponowny pełny audyt backendu i panelu
+
+### Cel
+
+Ponownie przejść cały CRUD aktualności, wydarzeń, wyników, użytkowników,
+funkcji klubowych i konkurencji, sprawdzić logi oraz rzeczywisty przepływ
+uploadu, a następnie naprawić wszystkie potwierdzone problemy funkcjonalne.
+
+### Najważniejsze potwierdzone przyczyny
+
+- Logi wykazały błąd 500 przy edycji wydarzenia z konkurencją:
+  `Builder::orWhereKey()` nie istnieje. Dotychczasowe testy nie otwierały tego
+  wariantu formularza.
+- Lokalne PHP CLI nadal ma `upload_max_filesize=2M`. `public/.user.ini` działa
+  wyłącznie w CGI/FastCGI, więc nie steruje FrankenPHP używanym obecnie przez
+  Railway Railpack. Laravel dopuszcza 6 MB, a całe żądanie galerii może mieć
+  około 78 MB.
+- Wynik można było spreparowanym żądaniem przypisać do treningu, usuniętego
+  wydarzenia albo usuniętego użytkownika. Formularz tworzenia pokazywał również
+  konkurencje miękko usuniętych wydarzeń.
+- Kod konkurencji był zamieniany na wielkie litery dopiero po walidacji
+  unikalności. `abc` mogło przejść walidację przy istniejącym `ABC`, po czym
+  zakończyć się wyjątkiem unikalności bazy.
+- Przy jednoczesnym zaznaczeniu usunięcia starej okładki i dodaniu nowej
+  zapisywał się nowy plik, ale ginął jego tekst alternatywny. Identyfikatory
+  zdjęć innej aktualności przechodziły regułę `exists`.
+- Tablica przesłana celowo w zwykłym polu tekstowym dawała poprawny błąd
+  walidacji, lecz po przekierowaniu `old()` powodowało błąd 500 w Blade.
+- Profile utworzone przez `ClubDirectorySeeder` były nieaktywne, a publiczne
+  zapytania celowo pokazują tylko aktywne osoby; świeżo zasilony katalog był
+  przez to pusty.
+
+### Wykonane
+
+- [x] Naprawiono edycję wydarzeń i dodano test regresyjny otwierający formularz
+  z przypisaną konkurencją.
+- [x] Ograniczono konkurencje wydarzeń do aktywnych definicji, zachowując już
+  przypisane definicje nieaktywne także podczas aktualizacji.
+- [x] Wyniki przyjmują wyłącznie konkurencje istniejących zawodów. Edycja
+  historycznego wyniku nadal zachowuje jego usunięte wydarzenie lub konto,
+  natomiast nowy wynik nie może się do nich odwołać.
+- [x] Ujednolicono kolejność blokad i transakcje dla wydarzeń, wyników,
+  aktualności, funkcji klubowych i usuwania definicji konkurencji. Ponowne
+  równoległe zapisy nie gubią okładek ani nie przekraczają limitu galerii.
+- [x] Kod konkurencji i adresy e-mail są normalizowane przed walidacją
+  unikalności. Komenda administratora i seedery używają tej samej postaci.
+- [x] Naprawiono wymianę/usunięcie okładki, czyszczenie osieroconego opisu,
+  kontrolę własności zdjęć galerii i zachowanie checkboxów przez `old()`.
+- [x] Ukryto niedziałający podgląd publiczny aktualności zaplanowanej na
+  przyszłość.
+- [x] Dodano bezpieczne flashowanie błędnych danych wejściowych, dzięki czemu
+  tablice w polach skalarnych kończą się błędem formularza, a nie błędem 500.
+- [x] Uzupełniono polskie komunikaty i nazwy pól, `old()`, autocomplete,
+  `aria-invalid`, `aria-describedby` oraz dostępne błędy filtrów wszystkich
+  zasobów.
+- [x] Rozszerzono macierz autoryzacji o wszystkie operacje CRUD dostępne
+  wyłącznie administratorowi.
+- [x] Dodano główny `php.ini` dla Railpack/FrankenPHP: 8 MB na plik, 85 MB na
+  żądanie i 20 plików. Zachowano `.user.ini` dla CGI/FastCGI oraz opcje
+  bezpośredniego serwera PHP w `composer dev`.
+- [x] Zaktualizowano wdrożenie Railway o trwały wolumen, katalog publiczny i
+  `RAILPACK_SKIP_MIGRATIONS=true`, aby własny pre-deploy nie był dublowany
+  automatycznym uruchomieniem migracji i seedera.
+- [x] Profile katalogu klubowego są tworzone i synchronizowane jako aktywne;
+  publiczny kontakt i lista trenerów zostały objęte testem seedera.
+
+### Testy i kontrole
+
+- [x] `composer test` — 55 testów, 413 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — build Vite zakończony poprawnie.
+- [x] Rzeczywisty HTTP multipart — JPEG 3 146 483 B, zapis HTTP 200 po
+  przekierowaniu i publiczny plik HTTP 200; dane oraz plik testowy usunięto.
+- [x] `php -c php.ini` potwierdza `8M|85M|20`.
+- [x] `composer validate --strict`, `composer audit --locked` i
+  `npm audit --audit-level=moderate` — poprawne, 0 znanych podatności.
+- [x] Cache konfiguracji, zdarzeń, tras i widoków — poprawny; po kontroli cache
+  wyczyszczono dla lokalnego trybu deweloperskiego.
+- [x] Lokalny PostgreSQL — wszystkie 10 migracji ma status `Ran`.
+
+### Migracje i zmienne środowiskowe
+
+- Nie dodano migracji ani nie zmieniono schematu bazy.
+- Nowa zmienna wdrożeniowa: `RAILPACK_SKIP_MIGRATIONS=true` na Railway, ponieważ
+  migracje wykonuje już `railway/init-app.sh` w pre-deploy.
+- `RAILPACK_PHP_ROOT_DIR=/app/public` pozostaje opcją awaryjną, gdy automatyczne
+  wykrywanie Laravel nie ustawi katalogu dokumentów.
+
+### Pozostałe czynności zależne od środowiska
+
+- Na Railway nadal trzeba podpiąć trwały wolumen do
+  `/app/storage/app/public`, ustawić `RAILPACK_SKIP_MIGRATIONS=true` i wykonać
+  produkcyjny smoke test po wdrożeniu.
+- Bazy zasilone starszą wersją `ClubDirectorySeeder` wymagają jednorazowego
+  ponownego uruchomienia tego seedera, aby uaktywnić profile katalogowe.
+- Usunięcie aktualności pozostaje miękkie, więc jej pliki są przechowywane do
+  czasu wdrożenia przywracania lub trwałego czyszczenia kosza.
+- Rzeczywiste SMTP, wolumen Railway oraz test NVDA/VoiceOver wymagają dostępu do
+  środowiska produkcyjnego.
+
+## Poprzednia sesja — 2026-07-31
 
 ### Cel
 

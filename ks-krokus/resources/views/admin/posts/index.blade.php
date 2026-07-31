@@ -16,17 +16,20 @@
     <form method="GET" class="admin-filter">
         <label>
             Szukaj
-            <input type="search" name="q" value="{{ request('q') }}" placeholder="Tytuł lub opis">
+            <input id="post-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Tytuł lub opis" autocomplete="off"
+                @error('q') aria-invalid="true" aria-describedby="post-filter-query-error" @enderror>
+            @error('q') <span id="post-filter-query-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <label>
             Status
-            <select name="status">
+            <select id="post-filter-status" name="status" @error('status') aria-invalid="true" aria-describedby="post-filter-status-error" @enderror>
                 <option value="">Wszystkie</option>
                 @foreach ($statuses as $value => $label)
                     <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            @error('status') <span id="post-filter-status-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>
@@ -62,7 +65,7 @@
                             <div class="admin-table__actions">
                                 <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn-secondary">Edytuj</a>
 
-                                @if ($post->status === \App\Enums\PublicationStatus::Published)
+                                @if ($post->isPubliclyVisible())
                                     <a
                                         href="{{ route('news.show', $post) }}"
                                         class="btn btn-secondary"

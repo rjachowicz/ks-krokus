@@ -150,6 +150,7 @@ final class UserController extends Controller
             && User::query()
                 ->where('role', UserRole::Admin->value)
                 ->where('is_active', true)
+                ->orderBy('id')
                 ->lockForUpdate()
                 ->get(['id'])
                 ->count() <= 1

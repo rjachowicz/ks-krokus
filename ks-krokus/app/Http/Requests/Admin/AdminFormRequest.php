@@ -8,6 +8,21 @@ use App\Http\Requests\LocalizedFormRequest;
 
 abstract class AdminFormRequest extends LocalizedFormRequest
 {
+    /**
+     * @return list<string>
+     */
+    protected function oldInputArrayFields(): array
+    {
+        return [
+            'competition_ids',
+            'delete_images',
+            'existing_images',
+            'gallery_images',
+            'user_ids',
+            'user_sort_orders',
+        ];
+    }
+
     public function messages(): array
     {
         return [
@@ -46,10 +61,13 @@ abstract class AdminFormRequest extends LocalizedFormRequest
             'published_at' => 'data publikacji', 'cover_image' => 'zdjęcie główne',
             'cover_image_alt' => 'tekst alternatywny zdjęcia', 'gallery_images' => 'galeria zdjęć',
             'gallery_images.*' => 'zdjęcie w galerii',
+            'existing_images' => 'edytowane zdjęcia',
+            'existing_images.*' => 'edytowane zdjęcie',
             'existing_images.*.alt_text' => 'tekst alternatywny zdjęcia',
             'existing_images.*.caption' => 'podpis zdjęcia',
             'existing_images.*.sort_order' => 'kolejność zdjęcia',
-            'delete_images.*' => 'usuwane zdjęcie', 'event_competition_id' => 'wydarzenie i konkurencja',
+            'delete_images' => 'usuwane zdjęcia', 'delete_images.*' => 'usuwane zdjęcie',
+            'event_competition_id' => 'wydarzenie i konkurencja',
             'user_id' => 'powiązany użytkownik', 'participant_name' => 'imię i nazwisko zawodnika',
             'club_name' => 'klub', 'category' => 'kategoria', 'score' => 'wynik',
             'place' => 'miejsce', 'classification' => 'klasyfikacja', 'notes' => 'uwagi',

@@ -11,6 +11,19 @@ use Illuminate\Validation\Rule;
 
 class CompetitionDefinitionRequest extends AdminFormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $code = $this->input('code');
+
+        if (! is_string($code)) {
+            return;
+        }
+
+        $this->merge([
+            'code' => mb_strtoupper(trim($code)),
+        ]);
+    }
+
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() === true;

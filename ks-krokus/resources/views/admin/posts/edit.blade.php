@@ -10,7 +10,7 @@
             <p>{{ $post->status->label() }}</p>
         </div>
 
-        @if ($post->status === \App\Enums\PublicationStatus::Published)
+        @if ($post->isPubliclyVisible())
             <a
                 href="{{ route('news.show', $post) }}"
                 class="btn btn-secondary"

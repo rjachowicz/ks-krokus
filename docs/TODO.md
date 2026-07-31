@@ -17,7 +17,12 @@
 - [x] Zachować poprzednie zdjęcie przy błędzie uploadu.
 - [x] Dodać polskie komunikaty i testy regresyjne.
 - [x] Udokumentować wdrożenie Railway.
+- [x] Dodać główny `php.ini` dla Railway Railpack/FrankenPHP, niezależny od
+  `public/.user.ini`.
+- [x] Powtórzyć rzeczywisty lokalny upload HTTP pliku większego niż 2 MB.
 - [ ] Podpiąć na Railway wolumen do `/app/storage/app/public`.
+- [ ] Ustawić na Railway `RAILPACK_SKIP_MIGRATIONS=true` przy własnym
+  pre-deploy command.
 - [ ] Wykonać produkcyjny smoke test zdjęcia 1 MB, 3 MB, 6 MB i ponad 6 MB.
 
 ## P1 — formularze i panel
@@ -31,6 +36,15 @@
 - [x] Naprawić relację wyników z definicjami konkurencji i pokryć publiczne wyniki,
   CRUD panelu oraz dashboard testami regresyjnymi.
 - [x] Uzależnić opis trenera od statusu trenera w interfejsie, walidacji i zapisie.
+- [x] Naprawić błąd 500 edycji wydarzenia z przypisaną konkurencją.
+- [x] Ograniczyć wyniki do istniejących zawodów i zachować historyczne relacje
+  usuniętych wydarzeń oraz użytkowników podczas edycji.
+- [x] Walidować własność zdjęć galerii i aktywność nowych konkurencji wydarzenia.
+- [x] Zabezpieczyć wieloetapowe zapisy CRUD transakcjami i blokadami rekordów.
+- [x] Obsłużyć złośliwe tablice w polach skalarnych bez błędu renderowania 500.
+- [x] Pokryć pełne CREATE/READ/UPDATE/DELETE sześciu zasobów testami regresyjnymi.
+- [ ] Na istniejących środowiskach uruchomić jednorazowo
+  `ClubDirectorySeeder`, jeśli profile katalogowe utworzono jako nieaktywne.
 
 ## P1 — motyw i kontakt
 
