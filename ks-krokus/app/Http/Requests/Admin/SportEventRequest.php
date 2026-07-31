@@ -40,4 +40,16 @@ class SportEventRequest extends AdminFormRequest
             ],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            ...parent::messages(),
+            'title.required' => 'Podaj nazwę wydarzenia.',
+            'event_type.required' => 'Wybierz rodzaj wydarzenia.',
+            'start_at.required' => 'Podaj datę rozpoczęcia wydarzenia.',
+            'location_name.required' => 'Podaj miejsce wydarzenia.',
+            'status.required' => 'Wybierz status publikacji.',
+        ];
+    }
 }

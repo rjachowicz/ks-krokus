@@ -76,11 +76,11 @@
                                 <form
                                     method="POST"
                                     action="{{ route('admin.posts.destroy', $post) }}"
-                                    onsubmit="return confirm('Usunąć aktualność?');"
+                                    data-confirm="Przenieść aktualność do kosza?"
                                 >
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-secondary">Usuń</button>
+                                    <button type="submit" class="btn btn-danger-outline">Usuń</button>
                                 </form>
                             </div>
                         </td>

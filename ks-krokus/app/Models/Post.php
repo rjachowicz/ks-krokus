@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\PublicationStatus;
+use App\Support\PostContentSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +25,7 @@ class Post extends Model
         'slug',
         'excerpt',
         'content',
+        'content_format',
         'cover_image_path',
         'cover_image_alt',
         'status',
@@ -75,5 +77,27 @@ class Post extends Model
         }
 
         return Storage::disk(config('content.media_disk'))->url($this->cover_image_path);
+    }
+
+    public function safeContentHtml(): string
+    {
+        if ($this->content_format === 'html') {
+            return app(PostContentSanitizer::class)->sanitize($this->content);
+        }
+
+        return nl2br(e($this->content));
+    }
+
+    public function plainTextContent(): string
+    {
+        if ($this->content_format === 'html') {
+            return trim(preg_replace(
+                '/\s+/u',
+                ' ',
+                html_entity_decode(strip_tags($this->content)),
+            ) ?? '');
+        }
+
+        return $this->content;
     }
 }

@@ -26,10 +26,10 @@
 @endphp
 
 <div class="admin-form-grid admin-form-grid--3">
-    <div class="span-full"><h3 class="admin-section-title">Informacje, termin i miejsce</h3></div>
+    <div class="span-full"><h3 class="admin-section-title">Podstawowe informacje</h3></div>
     <label class="span-full">
         Nazwa wydarzenia
-        <input type="text" name="title" value="{{ old('title', $event->title ?? '') }}" required>
+        <input type="text" name="title" value="{{ old('title', $event->title ?? '') }}" autocomplete="off" required autofocus>
         @error('title') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -60,7 +60,12 @@
             <strong>Wydarzenie publiczne</strong><br>
             Widoczne w kalendarzu strony.
         </span>
+        @error('is_public') <span class="form-error">{{ $message }}</span> @enderror
     </label>
+
+    <div class="span-full">
+        <h3 class="admin-section-title">Termin i zapisy</h3>
+    </div>
 
     <label>
         Początek
@@ -94,6 +99,10 @@
         @error('registration_url') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
+    <div class="span-full">
+        <h3 class="admin-section-title">Miejsce i klasyfikacja</h3>
+    </div>
+
     <label>
         Nazwa miejsca
         <input type="text" name="location_name" value="{{ old('location_name', $event->location_name ?? '') }}" required>
@@ -102,7 +111,7 @@
 
     <label class="span-2">
         Adres
-        <input type="text" name="address" value="{{ old('address', $event->address ?? '') }}">
+        <input type="text" name="address" value="{{ old('address', $event->address ?? '') }}" autocomplete="street-address">
         @error('address') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -140,6 +149,8 @@
             Dla treningów możesz wybrać ćwiczone konkurencje. Dla zawodów wybór definiuje pozycje dostępne
             przy dodawaniu wyników.
         </p>
+        @error('competition_ids') <span class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('competition_ids.*') <span class="form-error" role="alert">{{ $message }}</span> @enderror
     </div>
 
     <div class="admin-check-grid span-full">
@@ -166,7 +177,7 @@
     </div>
 </div>
 
-<div class="admin-actions">
+<div class="admin-form-actions">
     <button type="submit" class="btn btn-primary">Zapisz wydarzenie</button>
     <a href="{{ route('admin.events.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

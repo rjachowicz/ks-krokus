@@ -4,8 +4,11 @@
     @include('partials.head')
 </head>
 <body class="admin-body">
+    <a class="skip-link" href="#admin-main-content">Przejdź do treści</a>
+    @include('partials.toasts')
+
     <div class="admin-shell">
-        <aside class="admin-sidebar">
+        <aside id="admin-sidebar" class="admin-sidebar" data-admin-sidebar>
             <a href="{{ route('admin.dashboard') }}" class="admin-brand">
                 <span class="admin-brand__mark">KS</span>
                 <span>Panel Krokus</span>
@@ -15,6 +18,7 @@
                 <a
                     href="{{ route('admin.dashboard') }}"
                     class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+                    @if (request()->routeIs('admin.dashboard')) aria-current="page" @endif
                 >
                     Pulpit
                 </a>
@@ -25,6 +29,7 @@
                     <a
                         href="{{ route('admin.posts.index') }}"
                         class="{{ request()->routeIs('admin.posts.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.posts.*')) aria-current="page" @endif
                     >
                         Aktualności
                     </a>
@@ -32,6 +37,7 @@
                     <a
                         href="{{ route('admin.events.index') }}"
                         class="{{ request()->routeIs('admin.events.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.events.*')) aria-current="page" @endif
                     >
                         Kalendarz
                     </a>
@@ -39,6 +45,7 @@
                     <a
                         href="{{ route('admin.results.index') }}"
                         class="{{ request()->routeIs('admin.results.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.results.*')) aria-current="page" @endif
                     >
                         Wyniki
                     </a>
@@ -50,6 +57,7 @@
                     <a
                         href="{{ route('admin.users.index') }}"
                         class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.users.*')) aria-current="page" @endif
                     >
                         Użytkownicy
                     </a>
@@ -57,6 +65,7 @@
                     <a
                         href="{{ route('admin.positions.index') }}"
                         class="{{ request()->routeIs('admin.positions.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.positions.*')) aria-current="page" @endif
                     >
                         Funkcje klubowe
                     </a>
@@ -64,6 +73,7 @@
                     <a
                         href="{{ route('admin.competitions.index') }}"
                         class="{{ request()->routeIs('admin.competitions.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.competitions.*')) aria-current="page" @endif
                     >
                         Konkurencje
                     </a>
@@ -76,10 +86,21 @@
                 </a>
             </nav>
         </aside>
+        <button class="admin-sidebar-backdrop" type="button" aria-label="Zamknij menu panelu" data-admin-menu-backdrop></button>
 
         <div class="admin-main">
             <header class="admin-topbar">
-                <div>
+                <div class="admin-topbar__title">
+                    <button
+                        type="button"
+                        class="admin-menu-toggle"
+                        aria-label="Otwórz menu panelu"
+                        aria-controls="admin-sidebar"
+                        aria-expanded="false"
+                        data-admin-menu-toggle
+                    >
+                        <span></span><span></span><span></span>
+                    </button>
                     <strong>@yield('admin_title', 'Panel administracyjny')</strong>
                 </div>
 
@@ -89,6 +110,16 @@
                         {{ auth()->user()->role->label() }}
                     </span>
 
+                    <button
+                        class="admin-theme-toggle"
+                        type="button"
+                        aria-label="Przełącz motyw kolorystyczny"
+                        title="Przełącz motyw"
+                        data-theme-toggle
+                    >
+                        <span aria-hidden="true">◐</span>
+                    </button>
+
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="btn btn-secondary">Wyloguj</button>
@@ -96,26 +127,22 @@
                 </div>
             </header>
 
-            <main class="admin-content">
-                @if (session('success'))
-                    <div class="flash flash--success">{{ session('success') }}</div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="flash flash--error">
-                        <strong>Formularz zawiera błędy:</strong>
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
+            <main id="admin-main-content" class="admin-content" tabindex="-1">
                 @yield('content')
             </main>
         </div>
     </div>
+
+    <dialog class="confirm-dialog" data-confirm-dialog>
+        <form method="dialog">
+            <h2>Potwierdź operację</h2>
+            <p data-confirm-message></p>
+            <div class="confirm-dialog__actions">
+                <button type="submit" class="btn btn-secondary">Anuluj</button>
+                <button type="button" class="btn btn-danger" data-confirm-accept>Potwierdź</button>
+            </div>
+        </form>
+    </dialog>
 
     @stack('scripts')
 </body>

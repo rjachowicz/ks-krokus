@@ -78,14 +78,20 @@
 }
 
 .form-check input {
+    display: grid;
     width: 18px;
     min-height: auto;
     height: 18px;
+    appearance: none;
+    place-content: center;
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    background: var(--surface-solid);
 }
 
 .form-error {
     margin-top: 4px;
-    color: #c2413b;
+    color: var(--danger);
     font-size: 0.8rem;
 }
 

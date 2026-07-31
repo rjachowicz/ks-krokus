@@ -14,7 +14,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 final class PostController extends Controller
 {
@@ -55,36 +57,50 @@ final class PostController extends Controller
 
     public function store(PostRequest $request): RedirectResponse
     {
-        $post = DB::transaction(function () use ($request): Post {
-            $data = $request->validated();
-            $data['slug'] = UniqueSlug::for(Post::class, $data['title']);
-            $data['author_id'] = $request->user()->getKey();
-            $data['updated_by'] = $request->user()->getKey();
-            $data['published_at'] = $this->resolvePublishedAt(
-                $data['status'],
-                $data['published_at'] ?? null,
+        $coverPath = null;
+        $galleryPaths = [];
+
+        try {
+            $coverPath = $request->hasFile('cover_image')
+                ? $this->storeUploadedFile($request->file('cover_image'), 'news/covers', 'cover_image')
+                : null;
+            $this->storeUploadedFiles($request, $galleryPaths);
+
+            $post = DB::transaction(function () use ($request, $coverPath, $galleryPaths): Post {
+                $data = $request->validated();
+                $data['slug'] = UniqueSlug::for(Post::class, $data['title']);
+                $data['content_format'] = $data['content_format'] ?? 'plain';
+                $data['author_id'] = $request->user()->getKey();
+                $data['updated_by'] = $request->user()->getKey();
+                $data['published_at'] = $this->resolvePublishedAt(
+                    $data['status'],
+                    $data['published_at'] ?? null,
+                );
+
+                unset(
+                    $data['cover_image'],
+                    $data['gallery_images'],
+                    $data['remove_cover'],
+                    $data['existing_images'],
+                    $data['delete_images'],
+                );
+
+                if ($coverPath !== null) {
+                    $data['cover_image_path'] = $coverPath;
+                }
+
+                $post = Post::query()->create($data);
+                $this->createGalleryImages($post, $galleryPaths);
+
+                return $post;
+            });
+        } catch (Throwable $exception) {
+            Storage::disk(config('content.media_disk'))->delete(
+                array_filter([$coverPath, ...$galleryPaths]),
             );
 
-            unset(
-                $data['cover_image'],
-                $data['gallery_images'],
-                $data['remove_cover'],
-                $data['existing_images'],
-                $data['delete_images'],
-            );
-
-            if ($request->hasFile('cover_image')) {
-                $data['cover_image_path'] = $request
-                    ->file('cover_image')
-                    ->store('news/covers', config('content.media_disk'));
-            }
-
-            $post = Post::query()->create($data);
-
-            $this->storeGalleryImages($request, $post);
-
-            return $post;
-        });
+            throw $exception;
+        }
 
         return redirect()
             ->route('admin.posts.edit', $post)
@@ -105,49 +121,67 @@ final class PostController extends Controller
         PostRequest $request,
         Post $post,
     ): RedirectResponse {
-        DB::transaction(function () use ($request, $post): void {
-            $data = $request->validated();
-            $data['updated_by'] = $request->user()->getKey();
-            $data['published_at'] = $this->resolvePublishedAt(
-                $data['status'],
-                $data['published_at'] ?? null,
-                $post,
-            );
+        $newCoverPath = null;
+        $galleryPaths = [];
 
-            unset(
-                $data['cover_image'],
-                $data['gallery_images'],
-                $data['remove_cover'],
-                $data['existing_images'],
-                $data['delete_images'],
-            );
+        try {
+            $newCoverPath = $request->hasFile('cover_image')
+                ? $this->storeUploadedFile($request->file('cover_image'), 'news/covers', 'cover_image')
+                : null;
+            $this->storeUploadedFiles($request, $galleryPaths);
 
-            $disk = Storage::disk(config('content.media_disk'));
+            $pathsToDelete = DB::transaction(function () use ($request, $post, $newCoverPath, $galleryPaths): array {
+                $data = $request->validated();
+                $data['updated_by'] = $request->user()->getKey();
+                $data['content_format'] = $data['content_format'] ?? $post->content_format;
+                $data['published_at'] = $this->resolvePublishedAt(
+                    $data['status'],
+                    $data['published_at'] ?? null,
+                    $post,
+                );
 
-            if ($request->boolean('remove_cover') && $post->cover_image_path) {
-                $disk->delete($post->cover_image_path);
-                $data['cover_image_path'] = null;
-                $data['cover_image_alt'] = null;
-            }
+                unset(
+                    $data['cover_image'],
+                    $data['gallery_images'],
+                    $data['remove_cover'],
+                    $data['existing_images'],
+                    $data['delete_images'],
+                );
 
-            if ($request->hasFile('cover_image')) {
-                $newPath = $request
-                    ->file('cover_image')
-                    ->store('news/covers', config('content.media_disk'));
+                $pathsToDelete = [];
 
-                if ($post->cover_image_path) {
-                    $disk->delete($post->cover_image_path);
+                if ($request->boolean('remove_cover') && $post->cover_image_path) {
+                    $pathsToDelete[] = $post->cover_image_path;
+                    $data['cover_image_path'] = null;
+                    $data['cover_image_alt'] = null;
                 }
 
-                $data['cover_image_path'] = $newPath;
-            }
+                if ($newCoverPath !== null) {
+                    if ($post->cover_image_path) {
+                        $pathsToDelete[] = $post->cover_image_path;
+                    }
+                    $data['cover_image_path'] = $newCoverPath;
+                }
 
-            $post->update($data);
+                $post->update($data);
+                $this->updateExistingImages($request, $post);
+                $pathsToDelete = [
+                    ...$pathsToDelete,
+                    ...$this->deleteSelectedImages($request, $post),
+                ];
+                $this->createGalleryImages($post, $galleryPaths);
 
-            $this->updateExistingImages($request, $post);
-            $this->deleteSelectedImages($request, $post);
-            $this->storeGalleryImages($request, $post);
-        });
+                return array_values(array_unique($pathsToDelete));
+            });
+        } catch (Throwable $exception) {
+            Storage::disk(config('content.media_disk'))->delete(
+                array_filter([$newCoverPath, ...$galleryPaths]),
+            );
+
+            throw $exception;
+        }
+
+        Storage::disk(config('content.media_disk'))->delete($pathsToDelete);
 
         return redirect()
             ->route('admin.posts.edit', $post)
@@ -177,30 +211,52 @@ final class PostController extends Controller
             ?: now();
     }
 
-    private function storeGalleryImages(
-        Request $request,
-        Post $post,
-    ): void {
+    /**
+     * @param  list<string>  $paths
+     */
+    private function storeUploadedFiles(Request $request, array &$paths): void
+    {
         $files = $request->file('gallery_images', []);
 
         if (! is_array($files)) {
             return;
         }
 
+        foreach ($files as $file) {
+            $paths[] = $this->storeUploadedFile($file, 'news/gallery', 'gallery_images');
+        }
+    }
+
+    /**
+     * @param  list<string>  $paths
+     */
+    private function createGalleryImages(Post $post, array $paths): void
+    {
         $nextOrder = ((int) $post->images()->max('sort_order')) + 1;
 
-        foreach ($files as $file) {
-            $path = $file->store(
-                'news/gallery',
-                config('content.media_disk'),
-            );
-
+        foreach ($paths as $path) {
             $post->images()->create([
                 'path' => $path,
                 'alt_text' => $post->title,
                 'sort_order' => $nextOrder++,
             ]);
         }
+    }
+
+    private function storeUploadedFile(
+        mixed $file,
+        string $directory,
+        string $field,
+    ): string {
+        $path = $file?->store($directory, config('content.media_disk'));
+
+        if (! is_string($path) || $path === '') {
+            throw ValidationException::withMessages([
+                $field => 'Nie udało się zapisać przesłanego pliku. Spróbuj ponownie.',
+            ]);
+        }
+
+        return $path;
     }
 
     private function updateExistingImages(
@@ -228,22 +284,26 @@ final class PostController extends Controller
         }
     }
 
+    /**
+     * @return list<string>
+     */
     private function deleteSelectedImages(
         Request $request,
         Post $post,
-    ): void {
+    ): array {
         $ids = $request->input('delete_images', []);
 
         if (! is_array($ids) || $ids === []) {
-            return;
+            return [];
         }
 
         $images = $post->images()->whereKey($ids)->get();
-        $disk = Storage::disk(config('content.media_disk'));
+        $paths = $images->pluck('path')->all();
 
         foreach ($images as $image) {
-            $disk->delete($image->path);
             $image->delete();
         }
+
+        return $paths;
     }
 }

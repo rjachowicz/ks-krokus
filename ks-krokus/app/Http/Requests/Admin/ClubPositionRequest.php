@@ -36,4 +36,13 @@ class ClubPositionRequest extends AdminFormRequest
             'user_sort_orders.*' => ['nullable', 'integer', 'min:0', 'max:9999'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            ...parent::messages(),
+            'name.required' => 'Podaj nazwę funkcji klubowej.',
+            'sort_order.required' => 'Podaj kolejność funkcji.',
+        ];
+    }
 }

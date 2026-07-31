@@ -202,6 +202,33 @@
     }
 }
 
+@media (max-width: 380px) {
+    :root {
+        --page-gutter: 20px;
+    }
+
+    .hero h1 {
+        font-size: 2.15rem;
+        overflow-wrap: anywhere;
+    }
+
+    .category-tag {
+        font-size: .65rem;
+    }
+
+    .hero-description {
+        overflow-wrap: anywhere;
+    }
+
+    .auth-page {
+        padding: 12px;
+    }
+
+    .auth-card {
+        padding: 26px 18px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;

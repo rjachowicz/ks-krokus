@@ -79,6 +79,7 @@ class User extends Authenticatable
     public function scopeTrainers(Builder $query): Builder
     {
         return $query
+            ->where('is_active', true)
             ->where('is_trainer', true)
             ->orderBy('name');
     }
@@ -86,6 +87,7 @@ class User extends Authenticatable
     public function scopeRangeAccess(Builder $query): Builder
     {
         return $query
+            ->where('is_active', true)
             ->where('has_range_access', true)
             ->orderBy('name');
     }

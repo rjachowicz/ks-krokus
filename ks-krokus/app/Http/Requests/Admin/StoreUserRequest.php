@@ -35,4 +35,15 @@ class StoreUserRequest extends AdminFormRequest
             'trainer_bio' => ['nullable', 'string', 'max:5000'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            ...parent::messages(),
+            'name.required' => 'Podaj imię i nazwisko użytkownika.',
+            'email.required' => 'Podaj adres e-mail użytkownika.',
+            'password.required' => 'Podaj hasło użytkownika.',
+            'role.required' => 'Wybierz rolę systemową.',
+        ];
+    }
 }

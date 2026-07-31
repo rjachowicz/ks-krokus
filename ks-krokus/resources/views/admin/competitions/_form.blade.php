@@ -2,7 +2,7 @@
     <div class="span-full"><h3 class="admin-section-title">Dane konkurencji</h3></div>
     <label>
         Kod
-        <input type="text" name="code" value="{{ old('code', $definition->code ?? '') }}" required>
+        <input type="text" name="code" value="{{ old('code', $definition->code ?? '') }}" autocomplete="off" required autofocus>
         @error('code') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -55,6 +55,7 @@
             <strong>Konkurencja aktywna</strong><br>
             Dostępna na listach wyboru.
         </span>
+        @error('is_active') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
@@ -64,7 +65,7 @@
     </label>
 </div>
 
-<div class="admin-actions">
+<div class="admin-form-actions">
     <button type="submit" class="btn btn-primary">Zapisz konkurencję</button>
     <a href="{{ route('admin.competitions.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

@@ -38,6 +38,9 @@ Route::get('/wyniki/{sportEvent}', [ResultsController::class, 'show'])
 
 Route::get('/klub', ClubController::class)->name('club');
 Route::get('/kontakt', ContactController::class)->name('contact');
+Route::post('/kontakt', [ContactController::class, 'send'])
+    ->middleware('throttle:5,1')
+    ->name('contact.send');
 Route::view('/regulamin', 'pages.rules')->name('rules');
 Route::view('/rodo', 'pages.rodo')->name('rodo');
 

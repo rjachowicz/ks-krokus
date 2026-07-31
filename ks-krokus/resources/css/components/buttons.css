@@ -53,6 +53,18 @@
     color: var(--gold-strong);
 }
 
+.btn-danger-outline {
+    border-color: rgba(194, 65, 59, .45);
+    background: transparent;
+    color: var(--danger);
+}
+
+.btn-danger-outline:hover {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
 .btn-action {
     border-color: rgba(209, 169, 54, 0.64);
     background: var(--gold-soft);
