@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $post->title.' — KS Krokus')
-@section('meta_description', $post->excerpt ?: \Illuminate\Support\Str::limit($post->content, 155))
+@section('meta_description', $post->excerpt ?: \Illuminate\Support\Str::limit($post->plainTextContent(), 155))
 
 @section('content')
     <article class="article-shell">
@@ -28,7 +28,7 @@
         @endif
 
         <div class="article-body">
-            {!! nl2br(e($post->content)) !!}
+            {!! $post->safeContentHtml() !!}
         </div>
 
         @if ($post->images->isNotEmpty())
@@ -62,7 +62,7 @@
                         :href="route('news.show', $morePost)"
                         link-label="Czytaj dalej →"
                     >
-                        <p>{{ $morePost->excerpt ?: \Illuminate\Support\Str::limit($morePost->content, 150) }}</p>
+                        <p>{{ $morePost->excerpt ?: \Illuminate\Support\Str::limit($morePost->plainTextContent(), 150) }}</p>
                     </x-content-card>
                 @endforeach
             </div>

@@ -12,10 +12,10 @@
 @endphp
 
 <div class="admin-form-grid">
-    <div class="span-full"><h3 class="admin-section-title">Zawodnik i rezultat</h3></div>
+    <div class="span-full"><h3 class="admin-section-title">Wydarzenie i zawodnik</h3></div>
     <label class="span-full">
         Wydarzenie i konkurencja
-        <select name="event_competition_id" required>
+        <select name="event_competition_id" required autofocus>
             <option value="">Wybierz</option>
             @foreach ($eventCompetitions as $eventCompetition)
                 <option
@@ -55,6 +55,10 @@
         <span class="form-help">Wymagane tylko wtedy, gdy nie wybierzesz użytkownika.</span>
         @error('participant_name') <span class="form-error">{{ $message }}</span> @enderror
     </label>
+
+    <div class="span-full">
+        <h3 class="admin-section-title">Wynik i klasyfikacja</h3>
+    </div>
 
     <label>
         Klub
@@ -108,7 +112,7 @@
     </label>
 </div>
 
-<div class="admin-actions">
+<div class="admin-form-actions">
     <button type="submit" class="btn btn-primary">Zapisz wynik</button>
     <a href="{{ route('admin.results.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

@@ -22,7 +22,10 @@ final class PanelAuthorizationTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('admin.users.index'))
-            ->assertOk();
+            ->assertOk()
+            ->assertSee('data-theme-toggle', false)
+            ->assertSee('aria-current="page"', false)
+            ->assertSee('data-confirm-dialog', false);
     }
 
     public function test_moderator_cannot_open_user_management(): void

@@ -101,4 +101,27 @@ final class AdminDataIntegrityTest extends TestCase
             EventResult::query()->whereKey($eventCompetition->results()->firstOrFail()->id)->exists(),
         );
     }
+
+    public function test_user_form_returns_natural_polish_password_errors(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.store'), [
+                'name' => '',
+                'email' => 'niepoprawny-adres',
+                'password' => 'same-male-litery',
+                'password_confirmation' => 'same-male-litery',
+                'role' => UserRole::User->value,
+            ])
+            ->assertSessionHasErrors(['name', 'email', 'password']);
+
+        foreach (session('errors')->all() as $message) {
+            self::assertStringNotContainsString('validation.', $message);
+            self::assertStringNotContainsString('The ', $message);
+        }
+    }
 }

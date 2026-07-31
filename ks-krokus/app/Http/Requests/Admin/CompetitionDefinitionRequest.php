@@ -36,4 +36,15 @@ class CompetitionDefinitionRequest extends AdminFormRequest
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            ...parent::messages(),
+            'code.required' => 'Podaj kod konkurencji.',
+            'name.required' => 'Podaj nazwę konkurencji.',
+            'discipline.required' => 'Wybierz dyscyplinę.',
+            'competition_system.required' => 'Wybierz system rozgrywek.',
+        ];
+    }
 }

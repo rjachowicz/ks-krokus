@@ -7,13 +7,13 @@
     <div class="span-full"><h3 class="admin-section-title">Dane konta</h3></div>
     <label>
         Imię i nazwisko
-        <input type="text" name="name" value="{{ old('name', $editedUser->name ?? '') }}" required>
+        <input type="text" name="name" value="{{ old('name', $editedUser->name ?? '') }}" autocomplete="name" required autofocus>
         @error('name') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
         Adres e-mail
-        <input type="email" name="email" value="{{ old('email', $editedUser->email ?? '') }}" required>
+        <input type="email" name="email" value="{{ old('email', $editedUser->email ?? '') }}" autocomplete="email" required>
         @error('email') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -29,7 +29,7 @@
 
     <label>
         Numer telefonu
-        <input type="text" name="phone" value="{{ old('phone', $editedUser->phone ?? '') }}">
+        <input type="tel" name="phone" value="{{ old('phone', $editedUser->phone ?? '') }}" autocomplete="tel" inputmode="tel">
         @error('phone') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -56,6 +56,7 @@
             <strong>Konto aktywne</strong><br>
             Użytkownik może się logować.
         </span>
+        @error('is_active') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="admin-check-option">
@@ -65,6 +66,7 @@
             <strong>Trener</strong><br>
             Osoba pojawi się na publicznej liście trenerów.
         </span>
+        @error('is_trainer') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="admin-check-option">
@@ -74,6 +76,7 @@
             <strong>Dostęp do strzelnicy</strong><br>
             Osoba pojawi się na liście dostępu elektronicznego.
         </span>
+        @error('has_range_access') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="admin-check-option">
@@ -83,6 +86,7 @@
             <strong>Pokazuj e-mail publicznie</strong><br>
             Dotyczy stron kontaktowych i funkcji klubowych.
         </span>
+        @error('show_email_publicly') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="admin-check-option">
@@ -92,6 +96,7 @@
             <strong>Pokazuj telefon publicznie</strong><br>
             Dotyczy trenerów i osób funkcyjnych.
         </span>
+        @error('show_phone_publicly') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
@@ -102,7 +107,7 @@
     </label>
 </div>
 
-<div class="admin-actions">
+<div class="admin-form-actions">
     <button type="submit" class="btn btn-primary">Zapisz użytkownika</button>
     <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

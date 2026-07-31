@@ -156,6 +156,58 @@
         @endif
     </section>
 
+    <section id="formularz-kontaktowy" class="features-section" aria-labelledby="contact-form-title">
+        <x-section-heading id="contact-form-title" title="Napisz do zarządu" meta="CONTACT_FORM" />
+
+        <form method="POST" action="{{ route('contact.send') }}" class="contact-form">
+            @csrf
+
+            <div class="contact-form__grid">
+                <label for="contact-name">
+                    Imię i nazwisko
+                    <input id="contact-name" type="text" name="name" value="{{ old('name') }}" autocomplete="name" required
+                        @error('name') aria-invalid="true" aria-describedby="contact-name-error" @enderror>
+                    @error('name') <span id="contact-name-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label for="contact-email">
+                    Adres e-mail
+                    <input id="contact-email" type="email" name="email" value="{{ old('email') }}" autocomplete="email" required
+                        @error('email') aria-invalid="true" aria-describedby="contact-email-error" @enderror>
+                    @error('email') <span id="contact-email-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label for="contact-phone">
+                    Telefon <span class="form-optional">(opcjonalnie)</span>
+                    <input id="contact-phone" type="tel" name="phone" value="{{ old('phone') }}" autocomplete="tel" inputmode="tel"
+                        @error('phone') aria-invalid="true" aria-describedby="contact-phone-error" @enderror>
+                    @error('phone') <span id="contact-phone-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label for="contact-subject">
+                    Temat
+                    <input id="contact-subject" type="text" name="subject" value="{{ old('subject') }}" required
+                        @error('subject') aria-invalid="true" aria-describedby="contact-subject-error" @enderror>
+                    @error('subject') <span id="contact-subject-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label class="contact-form__message" for="contact-message">
+                    Wiadomość
+                    <textarea id="contact-message" name="message" rows="8" required
+                        @error('message') aria-invalid="true" aria-describedby="contact-message-error" @enderror>{{ old('message') }}</textarea>
+                    @error('message') <span id="contact-message-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+            </div>
+
+            <div class="honeypot" aria-hidden="true">
+                <label for="contact-website">Strona internetowa</label>
+                <input id="contact-website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
+        </form>
+    </section>
+
     <section id="lokalizacje" class="features-section" aria-labelledby="locations-title">
         <x-section-heading id="locations-title" title="Lokalizacje i mapy dojazdu" meta="GEO_LOCATIONS" />
 

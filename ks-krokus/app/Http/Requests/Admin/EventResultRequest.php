@@ -38,4 +38,15 @@ class EventResultRequest extends AdminFormRequest
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            ...parent::messages(),
+            'event_competition_id.required' => 'Wybierz wydarzenie i konkurencję.',
+            'participant_name.required_without' => 'Podaj zawodnika lub wybierz powiązanego użytkownika.',
+            'score.required' => 'Podaj wynik.',
+            'status.required' => 'Wybierz status wyniku.',
+        ];
+    }
 }

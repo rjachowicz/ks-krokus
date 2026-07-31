@@ -13,10 +13,10 @@
 @endphp
 
 <div class="admin-form-grid">
-    <div class="span-full"><h3 class="admin-section-title">Treść i publikacja</h3></div>
+    <div class="span-full"><h3 class="admin-section-title">Treść aktualności</h3></div>
     <label class="span-full">
         Tytuł
-        <input type="text" name="title" value="{{ old('title', $post->title ?? '') }}" required>
+        <input type="text" name="title" value="{{ old('title', $post->title ?? '') }}" autocomplete="off" required autofocus>
         @error('title') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -29,12 +29,23 @@
 
     <label class="span-full">
         Treść
-        <textarea name="content" rows="16" required>{{ old('content', $post->content ?? '') }}</textarea>
+        <input type="hidden" name="content_format" value="html">
+        <textarea
+            name="content"
+            rows="16"
+            required
+            data-rich-text
+            @error('content') aria-invalid="true" aria-describedby="post-content-error" @enderror
+        >{{ old('content', $post->content ?? '') }}</textarea>
         <span class="form-help">
-            Oddzielaj akapity pustą linią. Treść jest wyświetlana bezpiecznie jako tekst, bez wykonywania HTML.
+            Użyj paska narzędzi do formatowania nagłówków, list i wyróżnień.
         </span>
-        @error('content') <span class="form-error">{{ $message }}</span> @enderror
+        @error('content') <span id="post-content-error" class="form-error" role="alert">{{ $message }}</span> @enderror
     </label>
+
+    <div class="span-full">
+        <h3 class="admin-section-title">Publikacja</h3>
+    </div>
 
     <label>
         Status
@@ -69,12 +80,17 @@
         </div>
     @endif
 
-    <label>
-        Nowe zdjęcie główne
-        <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp">
-        <span class="form-help">JPG, PNG lub WebP, maksymalnie 6 MB.</span>
-        @error('cover_image') <span class="form-error">{{ $message }}</span> @enderror
-    </label>
+    <div class="file-upload" data-file-upload>
+        <label class="file-upload__dropzone">
+            <strong>Nowe zdjęcie główne</strong>
+            <span>Przeciągnij obraz tutaj lub wybierz plik</span>
+            <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
+                @error('cover_image') aria-invalid="true" aria-describedby="cover-image-error" @enderror>
+            <small>JPG, PNG lub WebP, maksymalnie 6 MB.</small>
+            @error('cover_image') <span id="cover-image-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+        </label>
+        <div class="file-preview-list" data-file-preview aria-live="polite"></div>
+    </div>
 
     <label>
         Tekst alternatywny zdjęcia
@@ -91,18 +107,25 @@
         <h3 class="admin-section-title">Galeria zdjęć</h3>
     </div>
 
-    <label class="span-full">
-        Dodaj zdjęcia do galerii
-        <input
-            type="file"
-            name="gallery_images[]"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-        >
-        <span class="form-help">Jednorazowo maksymalnie 12 zdjęć, każde do 6 MB.</span>
-        @error('gallery_images') <span class="form-error">{{ $message }}</span> @enderror
-        @error('gallery_images.*') <span class="form-error">{{ $message }}</span> @enderror
-    </label>
+    <div class="file-upload span-full" data-file-upload>
+        <label class="file-upload__dropzone">
+            <strong>Dodaj zdjęcia do galerii</strong>
+            <span>Przeciągnij obrazy tutaj lub wybierz pliki</span>
+            <input
+                type="file"
+                name="gallery_images[]"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                @if ($errors->has('gallery_images') || $errors->has('gallery_images.*'))
+                    aria-invalid="true" aria-describedby="gallery-images-error"
+                @endif
+            >
+            <small>Łącznie maksymalnie 12 zdjęć, każde do 6 MB.</small>
+            @error('gallery_images') <span id="gallery-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+            @error('gallery_images.*') <span id="gallery-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+        </label>
+        <div class="file-preview-list" data-file-preview aria-live="polite"></div>
+    </div>
 
     @if (isset($post) && $post->images->isNotEmpty())
         <div class="image-preview-grid span-full">
@@ -118,6 +141,9 @@
                                 name="existing_images[{{ $image->id }}][alt_text]"
                                 value="{{ old("existing_images.{$image->id}.alt_text", $image->alt_text) }}"
                             >
+                            @error("existing_images.{$image->id}.alt_text")
+                                <span class="form-error" role="alert">{{ $message }}</span>
+                            @enderror
                         </label>
 
                         <label>
@@ -126,6 +152,9 @@
                                 name="existing_images[{{ $image->id }}][caption]"
                                 rows="3"
                             >{{ old("existing_images.{$image->id}.caption", $image->caption) }}</textarea>
+                            @error("existing_images.{$image->id}.caption")
+                                <span class="form-error" role="alert">{{ $message }}</span>
+                            @enderror
                         </label>
 
                         <label>
@@ -136,6 +165,9 @@
                                 min="0"
                                 value="{{ old("existing_images.{$image->id}.sort_order", $image->sort_order) }}"
                             >
+                            @error("existing_images.{$image->id}.sort_order")
+                                <span class="form-error" role="alert">{{ $message }}</span>
+                            @enderror
                         </label>
 
                         <label class="form-check">
@@ -149,7 +181,7 @@
     @endif
 </div>
 
-<div class="admin-actions">
+<div class="admin-form-actions">
     <button type="submit" class="btn btn-primary">Zapisz aktualność</button>
     <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

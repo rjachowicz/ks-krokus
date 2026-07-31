@@ -17,36 +17,40 @@
         <form method="POST" action="{{ route('login.store') }}" class="auth-form">
             @csrf
 
-            <label>
+            <label for="login-email">
                 Adres e-mail
                 <input
+                    id="login-email"
                     type="email"
                     name="email"
                     value="{{ old('email') }}"
                     autocomplete="email"
                     required
                     autofocus
+                    @error('email') aria-invalid="true" aria-describedby="login-email-error" @enderror
                 >
                 @error('email')
-                    <span class="form-error">{{ $message }}</span>
+                    <span id="login-email-error" class="form-error" role="alert">{{ $message }}</span>
                 @enderror
             </label>
 
-            <label>
+            <label for="login-password">
                 Hasło
                 <input
+                    id="login-password"
                     type="password"
                     name="password"
                     autocomplete="current-password"
                     required
+                    @error('password') aria-invalid="true" aria-describedby="login-password-error" @enderror
                 >
                 @error('password')
-                    <span class="form-error">{{ $message }}</span>
+                    <span id="login-password-error" class="form-error" role="alert">{{ $message }}</span>
                 @enderror
             </label>
 
             <label class="form-check">
-                <input type="checkbox" name="remember" value="1">
+                <input type="checkbox" name="remember" value="1" @checked(old('remember'))>
                 Zapamiętaj mnie
             </label>
 

@@ -69,11 +69,11 @@
                                 <form
                                     method="POST"
                                     action="{{ route('admin.competitions.destroy', $definition) }}"
-                                    onsubmit="return confirm('Usunąć konkurencję?');"
+                                    data-confirm="Usunąć konkurencję? Tej operacji nie można cofnąć."
                                 >
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-secondary">Usuń</button>
+                                    <button type="submit" class="btn btn-danger-outline">Usuń</button>
                                 </form>
                             </div>
                         </td>

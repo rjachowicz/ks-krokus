@@ -61,7 +61,7 @@
                         <h3>{{ $post->title }}</h3>
 
                         <p>
-                            {{ $post->excerpt ?: \Illuminate\Support\Str::limit($post->content, 220) }}
+                            {{ $post->excerpt ?: \Illuminate\Support\Str::limit($post->plainTextContent(), 220) }}
                         </p>
 
                         <x-slot:footer>

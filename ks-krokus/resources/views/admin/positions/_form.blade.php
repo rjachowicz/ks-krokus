@@ -17,7 +17,7 @@
     <div class="span-full"><h3 class="admin-section-title">Dane funkcji</h3></div>
     <label>
         Nazwa funkcji
-        <input type="text" name="name" value="{{ old('name', $position->name ?? '') }}" required>
+        <input type="text" name="name" value="{{ old('name', $position->name ?? '') }}" autocomplete="off" required autofocus>
         @error('name') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -41,6 +41,7 @@
             <strong>Funkcja aktywna</strong><br>
             Widoczna na publicznej stronie kontaktowej.
         </span>
+        @error('is_active') <span class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label class="span-full">
@@ -55,22 +56,28 @@
             Zaznacz osoby i ustaw ich kolejność. Niższa liczba oznacza wcześniejsze miejsce.
             Dane kontaktowe są pokazywane zgodnie z ustawieniami profilu użytkownika.
         </p>
+        @error('user_ids') <span class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('user_ids.*') <span class="form-error" role="alert">{{ $message }}</span> @enderror
+        @error('user_sort_orders.*') <span class="form-error" role="alert">{{ $message }}</span> @enderror
     </div>
 
     <div class="admin-check-grid span-full">
         @foreach ($users as $user)
-            <label class="admin-check-option">
+            <div class="admin-check-option">
                 <input
+                    id="position-user-{{ $user->id }}"
                     type="checkbox"
                     name="user_ids[]"
                     value="{{ $user->id }}"
                     @checked(in_array($user->id, array_map('intval', $selectedUsers), true))
                 >
-                <span>
-                    <strong>{{ $user->name }}</strong><br>
-                    {{ $user->email }}
+                <div class="admin-check-option__body">
+                    <label for="position-user-{{ $user->id }}">
+                        <strong>{{ $user->name }}</strong><br>
+                        {{ $user->email }}
+                    </label>
 
-                    <span class="admin-inline-order">
+                    <label class="admin-inline-order">
                         Kolejność:
                         <input
                             type="number"
@@ -79,14 +86,14 @@
                             max="9999"
                             value="{{ $userSortOrders[$user->id] ?? $loop->iteration }}"
                         >
-                    </span>
-                </span>
-            </label>
+                    </label>
+                </div>
+            </div>
         @endforeach
     </div>
 </div>
 
-<div class="admin-actions">
+<div class="admin-form-actions">
     <button type="submit" class="btn btn-primary">Zapisz funkcję</button>
     <a href="{{ route('admin.positions.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

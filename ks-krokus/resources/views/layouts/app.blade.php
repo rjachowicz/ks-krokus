@@ -7,6 +7,7 @@
 <a class="skip-link" href="#main-content">Przejdź do treści</a>
 
 @include('partials.header')
+@include('partials.toasts')
 
 <main id="main-content" class="public-main">
     @yield('content')

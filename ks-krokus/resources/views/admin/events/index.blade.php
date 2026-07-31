@@ -93,11 +93,11 @@
                                 <form
                                     method="POST"
                                     action="{{ route('admin.events.destroy', $event) }}"
-                                    onsubmit="return confirm('Usunąć wydarzenie? Powiązane wyniki pozostaną w bazie do czasu trwałego usunięcia rekordu.');"
+                                    data-confirm="Przenieść wydarzenie do kosza? Powiązane wyniki pozostaną w bazie."
                                 >
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-secondary">Usuń</button>
+                                    <button type="submit" class="btn btn-danger-outline">Usuń</button>
                                 </form>
                             </div>
                         </td>
