@@ -19,6 +19,10 @@
                 {{ $sportEvent->location_name }}
             </p>
         </x-slot:description>
+
+        <x-slot:actions>
+            <a href="{{ route('calendar.index') }}" class="btn btn-secondary">← Wróć do kalendarza</a>
+        </x-slot:actions>
     </x-page-hero>
 
     <section class="features-section event-detail-grid" aria-label="Szczegóły wydarzenia">
@@ -91,8 +95,9 @@
                         class="btn btn-primary"
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label="Przejdź do rejestracji — otwiera w nowej karcie"
                     >
-                        Rejestracja
+                        Przejdź do rejestracji ↗
                     </a>
                 </div>
             @endif

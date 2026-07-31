@@ -54,13 +54,13 @@
             <caption class="sr-only">Lista wydarzeń</caption>
             <thead>
                 <tr>
-                    <th>Termin</th>
-                    <th>Wydarzenie</th>
-                    <th>Rodzaj</th>
-                    <th>Konkurencje</th>
-                    <th>Wyniki</th>
-                    <th>Status</th>
-                    <th>Operacje</th>
+                    <th scope="col">Termin</th>
+                    <th scope="col">Wydarzenie</th>
+                    <th scope="col">Rodzaj</th>
+                    <th scope="col">Konkurencje</th>
+                    <th scope="col">Wyniki</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Operacje</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,7 +84,8 @@
                         </td>
                         <td data-label="Operacje">
                             <div class="admin-table__actions">
-                                <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-secondary">Edytuj</a>
+                                <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-secondary"
+                                    aria-label="Edytuj wydarzenie: {{ $event->title }}">Edytuj</a>
 
                                 @if ($event->is_public && $event->status === \App\Enums\PublicationStatus::Published)
                                     <a
@@ -92,6 +93,7 @@
                                         class="btn btn-secondary"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        aria-label="Podgląd wydarzenia: {{ $event->title }} — otwiera w nowej karcie"
                                     >
                                         Podgląd
                                     </a>
@@ -100,17 +102,22 @@
                                 <form
                                     method="POST"
                                     action="{{ route('admin.events.destroy', $event) }}"
-                                    data-confirm="Przenieść wydarzenie do kosza? Powiązane wyniki pozostaną w bazie."
+                                    data-confirm="Przenieść wydarzenie „{{ $event->title }}” do kosza? Zniknie z kalendarza, a powiązane wyniki pozostaną w bazie."
                                 >
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger-outline">Usuń</button>
+                                    <button type="submit" class="btn btn-danger-outline"
+                                        aria-label="Usuń wydarzenie: {{ $event->title }}">Usuń</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7">Brak wydarzeń.</td></tr>
+                    <tr><td colspan="7">
+                        {{ request()->hasAny(['q', 'event_type', 'status'])
+                            ? 'Brak wydarzeń spełniających wybrane kryteria.'
+                            : 'Nie dodano jeszcze żadnego wydarzenia.' }}
+                    </td></tr>
                 @endforelse
             </tbody>
         </table>

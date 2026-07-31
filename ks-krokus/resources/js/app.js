@@ -4,6 +4,7 @@ import { initTheme } from './modules/theme';
 import { initToasts } from './modules/toasts';
 import { initAdminUi } from './modules/admin-ui';
 import { initFileUploads } from './modules/file-upload';
+import { initFormStates } from './modules/form-state';
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
@@ -12,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initToasts();
     initAdminUi();
     initFileUploads();
+    initFormStates();
     if (document.querySelector('[data-rich-text]')) {
         import('./modules/rich-text').then(({ initRichTextEditors }) => {
             initRichTextEditors();
@@ -32,5 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
         field.setAttribute('aria-describedby', [field.getAttribute('aria-describedby'), errorId].filter(Boolean).join(' '));
     });
 
-    document.querySelector('[aria-invalid="true"]')?.focus({ preventScroll: false });
+    const invalidField = [...document.querySelectorAll('[aria-invalid="true"]')]
+        .find((field) => !field.disabled && field.getClientRects().length > 0);
+
+    if (invalidField) {
+        invalidField.focus({ preventScroll: false });
+    } else {
+        document.querySelector('[data-error-summary]')?.focus({ preventScroll: false });
+    }
 });

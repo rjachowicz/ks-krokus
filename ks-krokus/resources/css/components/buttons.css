@@ -48,8 +48,8 @@
 }
 
 .btn-primary {
-    border-color: var(--gold-strong);
-    background: var(--gold-strong);
+    border-color: var(--gold-fill);
+    background: var(--gold-fill);
     color: #111318;
     box-shadow: 0 12px 30px rgba(170, 127, 25, 0.2);
 }
@@ -100,6 +100,33 @@
 
 .btn-action:hover {
     border-color: var(--gold-strong);
-    background: var(--gold-strong);
+    background: var(--gold-fill);
     color: #111318;
+}
+
+.btn.is-loading:disabled {
+    cursor: wait;
+    opacity: 0.82;
+}
+
+.btn.is-loading::before {
+    width: 1em;
+    height: 1em;
+    flex: 0 0 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    content: "";
+    animation: button-loading 700ms linear infinite;
+}
+
+@keyframes button-loading {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .btn.is-loading::before {
+        animation: none;
+        border-right-color: currentColor;
+    }
 }

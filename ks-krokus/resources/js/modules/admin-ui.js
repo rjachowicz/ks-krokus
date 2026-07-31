@@ -15,18 +15,82 @@ export function initAdminUi() {
         syncTrainerBio();
     });
 
+    document.querySelectorAll('[data-event-start]').forEach((start) => {
+        const form = start.closest('form');
+        const end = form?.querySelector('[data-event-end]');
+
+        if (!end) {
+            return;
+        }
+
+        const syncMinimumEnd = () => {
+            end.min = start.value;
+        };
+
+        start.addEventListener('change', syncMinimumEnd);
+        syncMinimumEnd();
+    });
+
+    document.querySelectorAll('[data-result-user]').forEach((userSelect) => {
+        const form = userSelect.closest('form');
+        const participant = form?.querySelector('[data-result-participant]');
+
+        if (!participant) {
+            return;
+        }
+
+        const syncParticipant = () => {
+            participant.disabled = userSelect.value !== '';
+        };
+
+        userSelect.addEventListener('change', syncParticipant);
+        syncParticipant();
+    });
+
     const sidebarToggle = document.querySelector('[data-admin-menu-toggle]');
     const sidebar = document.querySelector('[data-admin-sidebar]');
     const sidebarBackdrop = document.querySelector('[data-admin-menu-backdrop]');
+    const adminContent = document.querySelector('[data-admin-content]');
+    const adminUser = document.querySelector('[data-admin-user]');
+    const adminSkipLink = document.querySelector('[data-admin-skip-link]');
     const mobileSidebar = window.matchMedia('(max-width: 860px)');
 
     const setSidebarState = (open) => {
-        document.body.classList.toggle('admin-menu-open', open);
-        sidebarToggle?.setAttribute('aria-expanded', String(open));
-        sidebarToggle?.setAttribute('aria-label', open ? 'Zamknij menu panelu' : 'Otwórz menu panelu');
+        const isOpen = mobileSidebar.matches && open;
+
+        document.body.classList.toggle('admin-menu-open', isOpen);
+        sidebarToggle?.setAttribute('aria-expanded', String(isOpen));
+        sidebarToggle?.setAttribute('aria-label', isOpen ? 'Zamknij menu panelu' : 'Otwórz menu panelu');
         if (sidebar) {
-            sidebar.inert = mobileSidebar.matches && !open;
-            sidebar.setAttribute('aria-hidden', String(mobileSidebar.matches && !open));
+            const hidden = mobileSidebar.matches && !isOpen;
+            sidebar.inert = hidden;
+
+            if (mobileSidebar.matches) {
+                sidebar.setAttribute('aria-hidden', String(hidden));
+            } else {
+                sidebar.removeAttribute('aria-hidden');
+            }
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.inert = !isOpen;
+            sidebarBackdrop.setAttribute('aria-hidden', String(!isOpen));
+        }
+
+        if (adminContent) {
+            adminContent.inert = isOpen;
+        }
+
+        if (adminUser) {
+            adminUser.inert = isOpen;
+        }
+
+        if (adminSkipLink) {
+            adminSkipLink.inert = isOpen;
+        }
+
+        if (isOpen) {
+            sidebar?.querySelector('a')?.focus();
         }
     };
 
@@ -37,7 +101,10 @@ export function initAdminUi() {
     sidebar?.querySelectorAll('a').forEach((link) => {
         link.addEventListener('click', () => setSidebarState(false));
     });
-    sidebarBackdrop?.addEventListener('click', () => setSidebarState(false));
+    sidebarBackdrop?.addEventListener('click', () => {
+        setSidebarState(false);
+        sidebarToggle?.focus();
+    });
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && document.body.classList.contains('admin-menu-open')) {
             setSidebarState(false);
@@ -49,32 +116,61 @@ export function initAdminUi() {
 
     const dialog = document.querySelector('[data-confirm-dialog]');
     const dialogMessage = dialog?.querySelector('[data-confirm-message]');
+    const dialogAccept = dialog?.querySelector('[data-confirm-accept]');
     let pendingForm = null;
+    let pendingSubmitter = null;
 
     document.querySelectorAll('form[data-confirm]').forEach((form) => {
         form.addEventListener('submit', (event) => {
-            if (form.dataset.confirmed === 'true' || !dialog) {
+            if (form.dataset.confirmed === 'true') {
+                return;
+            }
+
+            if (!dialog || typeof dialog.showModal !== 'function') {
+                if (!window.confirm(form.dataset.confirm)) {
+                    event.preventDefault();
+                }
+
                 return;
             }
 
             event.preventDefault();
             pendingForm = form;
-            dialogMessage.textContent = form.dataset.confirm;
+            pendingSubmitter = event.submitter;
+
+            if (dialogMessage) {
+                dialogMessage.textContent = form.dataset.confirm;
+            }
+
+            if (dialogAccept) {
+                dialogAccept.textContent = form.dataset.confirmAction
+                    || event.submitter?.textContent.trim()
+                    || 'Potwierdź';
+            }
+
             dialog.showModal();
         });
     });
 
-    dialog?.querySelector('[data-confirm-accept]')?.addEventListener('click', () => {
+    dialogAccept?.addEventListener('click', () => {
         if (!pendingForm) {
             return;
         }
 
         pendingForm.dataset.confirmed = 'true';
-        pendingForm.requestSubmit();
+        pendingForm.requestSubmit(pendingSubmitter || undefined);
+        delete pendingForm.dataset.confirmed;
         dialog.close();
     });
 
     dialog?.addEventListener('close', () => {
         pendingForm = null;
+        pendingSubmitter = null;
+    });
+
+    window.addEventListener('pageshow', () => {
+        document.querySelectorAll('form[data-confirmed]').forEach((form) => {
+            delete form.dataset.confirmed;
+        });
     });
 }

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="pl" data-theme="light">
+<html lang="pl" data-theme="light" class="no-js">
 <head>
+    @section('robots', 'noindex, nofollow, noarchive')
     @include('partials.head')
 </head>
 <body class="admin-body">
-    <a class="skip-link" href="#admin-main-content">Przejdź do treści</a>
+    <a class="skip-link" href="#admin-main-content" data-admin-skip-link>Przejdź do treści</a>
     @include('partials.toasts')
 
     <div class="admin-shell">
@@ -81,7 +82,12 @@
 
                 <span class="admin-nav__label">Strona</span>
 
-                <a href="{{ route('home') }}" target="_blank" rel="noopener noreferrer">
+                <a
+                    href="{{ route('home') }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Otwórz stronę publiczną w nowej karcie"
+                >
                     Otwórz stronę
                 </a>
             </nav>
@@ -104,7 +110,7 @@
                     <strong>@yield('admin_title', 'Panel administracyjny')</strong>
                 </div>
 
-                <div class="admin-user">
+                <div class="admin-user" data-admin-user>
                     <span>
                         <strong>{{ auth()->user()->name }}</strong><br>
                         {{ auth()->user()->role->label() }}
@@ -127,19 +133,24 @@
                 </div>
             </header>
 
-            <main id="admin-main-content" class="admin-content" tabindex="-1">
+            <main id="admin-main-content" class="admin-content" tabindex="-1" data-admin-content>
                 <x-form-errors />
                 @yield('content')
             </main>
         </div>
     </div>
 
-    <dialog class="confirm-dialog" data-confirm-dialog>
+    <dialog
+        class="confirm-dialog"
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-message"
+        data-confirm-dialog
+    >
         <form method="dialog">
-            <h2>Potwierdź operację</h2>
-            <p data-confirm-message></p>
+            <h2 id="confirm-dialog-title">Potwierdź operację</h2>
+            <p id="confirm-dialog-message" data-confirm-message></p>
             <div class="confirm-dialog__actions">
-                <button type="submit" class="btn btn-secondary">Anuluj</button>
+                <button type="submit" value="cancel" class="btn btn-secondary">Anuluj</button>
                 <button type="button" class="btn btn-danger" data-confirm-accept>Potwierdź</button>
             </div>
         </form>

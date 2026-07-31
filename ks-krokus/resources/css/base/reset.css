@@ -85,7 +85,7 @@ li {
 }
 
 ::selection {
-    background: var(--gold-strong);
+    background: var(--gold-fill);
     color: #101216;
 }
 

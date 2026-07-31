@@ -4,7 +4,118 @@
 
 `main`
 
-## Bieżąca sesja — 2026-07-31 — pełny audyt interfejsu użytkownika
+## Bieżąca sesja — 2026-07-31 — audyt UX, dostępności i bezpieczeństwa
+
+### Cel
+
+Przejść cały przepływ publiczny, logowanie i panel, zweryfikować zachowanie
+formularzy, komunikatów, nawigacji, stanów pustych i operacji destrukcyjnych,
+a następnie sprawdzić dostępność, responsywność oraz zabezpieczenia aplikacji i
+naprawić wszystkie potwierdzone problemy bez obniżania istniejącej ochrony.
+
+### Najważniejsze potwierdzone problemy
+
+- Jasny motyw używał złotego tekstu i tekstu pomocniczego o zbyt niskim lub
+  granicznym kontraście na jasnych powierzchniach. Przygaszenie całych dni spoza
+  miesiąca obniżało również kontrast treści kalendarza.
+- Publiczne filtry zwracały poprawne polskie błędy, ale nie renderowały ich przy
+  odpowiednich kontrolkach ani nie ustawiały `aria-invalid` i `aria-describedby`.
+- Mobilne menu publiczne przenosiło użytkownika klawiatury poza właśnie otwartą
+  nawigację, a panelowy drawer nie izolował tła i nie zarządzał fokusem.
+- Dialog potwierdzenia nie miał dostępnej nazwy i opisu, a komunikaty usuwania nie
+  wskazywały jednoznacznie rekordu oraz skutków operacji.
+- Edytor treści usuwał widoczny fokus, nie obsługiwał wzorca klawiaturowego
+  toolbara i po ukryciu wymaganego `textarea` nie mógł poprawnie obsłużyć natywnej
+  walidacji. Domyślne style Tiptap były ponadto blokowane przez ścisłe CSP.
+- Formularze nie sygnalizowały wysyłania i pozwalały na ponowne kliknięcie, toast
+  znikał także podczas interakcji, a limit galerii w przeglądarce nie uwzględniał
+  już zapisanych zdjęć.
+- Selektor roku kalendarza nie pokazywał poprawnej wartości spoza okna ±5 lat,
+  a wydarzenie wielodniowe powtarzało godzinę rozpoczęcia w każdym dniu.
+- Aplikacja miała podstawowe nagłówki HTTP, lecz bez wymuszanego CSP, HSTS,
+  ochrony przed cache'owaniem formularzy i panelu oraz bez domyślnego bezpiecznego
+  ciasteczka sesji na produkcji.
+- Adres zapisów wydarzenia dopuszczał schematy inne niż HTTP/HTTPS.
+
+### Wykonane
+
+- [x] Ujednolicono dostępne tokeny kolorów light/dark, rozdzielono kolor tekstu
+  od złotego wypełnienia oraz poprawiono kontrast stanów kalendarza, statusów,
+  zaznaczenia, checkboxów i numerów kroków.
+- [x] Połączono błędy wszystkich filtrów publicznych z polami, dodano podsumowania
+  bez JavaScriptu, limity długości oraz konkretne puste stany dla wyników
+  filtrowanych i całkowitego braku danych.
+- [x] Dodano stan `aria-busy`, polskie komunikaty ładowania, blokadę podwójnego
+  wysłania i spinner respektujący `prefers-reduced-motion`. Toast pozostaje
+  widoczny podczas najechania lub fokusu.
+- [x] Potwierdzenia usuwania wskazują konkretny rekord i konsekwencje. Natywny
+  `dialog` ma `aria-labelledby`/`aria-describedby`, zachowuje submitter i posiada
+  bezpieczny fallback `window.confirm`.
+- [x] Menu publiczne oraz panelowe zarządzają fokusem, `aria-expanded`, `inert`,
+  `aria-hidden`, klawiszem Escape i powrotem fokusu. Dodano w pełni użyteczne
+  warianty bez JavaScriptu.
+- [x] Edytor Tiptap ma jawną etykietę, rolę textbox, `aria-required`, dostępną
+  walidację pustej treści, widoczny fokus także bez `:has`, roving tabindex i
+  strzałki/Home/End w toolbarze. Wstrzykiwany styl otrzymuje nonce CSP.
+- [x] Tabele mają `scope="col"`, operacje list mają nazwy zawierające rekord, a
+  wszystkie linki do nowej karty komunikują ten fakt i używają
+  `rel="noopener noreferrer"`.
+- [x] Poprawiono zależności pól dat i wyniku, blokadę niedostępnego formularza,
+  puste słowniki, konflikt wymiany/usunięcia okładki, łączny limit galerii,
+  walidację plików bez MIME oraz zwalnianie URL-i podglądu.
+- [x] Kalendarz zachowuje każdy poprawny rok, rozróżnia pojedynczą godzinę,
+  zakres jednodniowy oraz początek, kontynuację i koniec wydarzenia wielodniowego.
+- [x] Formularz kontaktowy normalizuje dane i odzwierciedla limity backendu w
+  HTML; logowanie ogranicza rozmiar e-maila i hasła.
+- [x] Dodano wymuszane CSP z nonce i ścisłą listą źródeł, HSTS na produkcji,
+  dodatkowe nagłówki izolacji i ochrony, `no-store` dla formularzy i panelu,
+  `noindex` dla logowania/panelu oraz produkcyjnie bezpieczne ciasteczko sesji.
+  Lokalny Vite otrzymuje tylko dokładny origin zapisany w aktywnym pliku `hot`.
+- [x] Utwardzono PHP (`expose_php`, błędy ekranowe, strict session), ograniczono
+  adres zapisów do HTTP/HTTPS i zweryfikowano CSRF wszystkich formularzy POST,
+  jawne `$fillable`, middleware ról/aktywności, autoryzację Form Requestów,
+  sanitację HTML, uploady i relacyjne kontrole własności.
+- [x] Dodano regresje nagłówków i nonce CSP, cache/noindex, schematów URL,
+  normalizacji kontaktu, dostępności filtrów i tabel, linków zewnętrznych,
+  kalendarza wielodniowego, zakresów godzin i selektora roku.
+
+### Testy i kontrole
+
+- [x] `composer test` — 65 testów, 579 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — produkcyjny build Vite zakończony poprawnie.
+- [x] `composer validate --strict`, `composer audit --locked` i
+  `npm audit --audit-level=moderate` — poprawne, 0 znanych podatności.
+- [x] Edge headless + axe-core — 22 główne trasy, 220 kombinacji 320, 375, 768,
+  1024 i 1440 px w obu motywach oraz 88 pełnych przebiegów WCAG/best-practice:
+  0 naruszeń axe i 0 poziomych przepełnień.
+- [x] Interakcje przeglądarkowe — fokus obu menu i Escape, izolacja drawera,
+  dialog usuwania, wymagana treść Tiptap, pojedynczy tabstop toolbara oraz loading
+  formularza: wszystkie scenariusze poprawne, bez naruszeń CSP i blokad zasobów.
+- [x] `php artisan view:cache`, statyczna kontrola CSRF/`$fillable`,
+  `git diff --check` i kontrola wszystkich zmienionych widoków — poprawne.
+
+### Migracje i zmienne środowiskowe
+
+- Nie dodano migracji ani nie zmieniono schematu bazy.
+- Nie dodano nowych wymaganych zmiennych środowiskowych.
+- `SESSION_SECURE_COOKIE` pozostaje obsługiwane; bez jawnej wartości domyślnie
+  włącza się teraz na `APP_ENV=production`.
+- Tymczasowe konta, sesje, profil Edge i zależność axe-core usunięto po audycie.
+
+### Znane ograniczenia i kontrole wdrożeniowe
+
+- Fizyczny test NVDA/VoiceOver oraz produkcyjny smoke test CSP, HSTS, ciasteczek,
+  SMTP, uploadu i nagłówków ustawianych przez proxy Railway nadal wymagają
+  działającego środowiska wdrożeniowego.
+- Warstwa aplikacji usuwa `Server` i `X-Powered-By`, ale końcowy reverse proxy może
+  dodać własny nagłówek `Server`; należy to potwierdzić i wyłączyć po wdrożeniu.
+- Lista CSP obejmuje obecne Google Fonts, Google Maps i obrazy Unsplash. Dodanie
+  kolejnej zewnętrznej integracji wymaga świadomego rozszerzenia tej listy.
+- Automatyczny audyt nie zastępuje testu z rzeczywistym czytnikiem ekranu ani
+  zewnętrznego testu penetracyjnego.
+
+## Poprzednia sesja — 2026-07-31 — pełny audyt interfejsu użytkownika
 
 ### Cel
 

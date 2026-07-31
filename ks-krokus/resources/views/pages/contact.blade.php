@@ -165,14 +165,16 @@
             <div class="contact-form__grid">
                 <label for="contact-name">
                     Imię i nazwisko
-                    <input id="contact-name" type="text" name="name" value="{{ old('name') }}" autocomplete="name" required
+                    <input id="contact-name" type="text" name="name" value="{{ old('name') }}" autocomplete="name"
+                        minlength="2" maxlength="120" required
                         @error('name') aria-invalid="true" aria-describedby="contact-name-error" @enderror>
                     @error('name') <span id="contact-name-error" class="form-error" role="alert">{{ $message }}</span> @enderror
                 </label>
 
                 <label for="contact-email">
                     Adres e-mail
-                    <input id="contact-email" type="email" name="email" value="{{ old('email') }}" autocomplete="email" required
+                    <input id="contact-email" type="email" name="email" value="{{ old('email') }}" autocomplete="email"
+                        maxlength="255" required
                         @error('email') aria-invalid="true" aria-describedby="contact-email-error" @enderror>
                     @error('email') <span id="contact-email-error" class="form-error" role="alert">{{ $message }}</span> @enderror
                 </label>
@@ -180,21 +182,25 @@
                 <label for="contact-phone">
                     Telefon <span class="form-optional">(opcjonalnie)</span>
                     <input id="contact-phone" type="tel" name="phone" value="{{ old('phone') }}" autocomplete="tel" inputmode="tel"
+                        maxlength="32"
                         @error('phone') aria-invalid="true" aria-describedby="contact-phone-error" @enderror>
                     @error('phone') <span id="contact-phone-error" class="form-error" role="alert">{{ $message }}</span> @enderror
                 </label>
 
                 <label for="contact-subject">
                     Temat
-                    <input id="contact-subject" type="text" name="subject" value="{{ old('subject') }}" required
+                    <input id="contact-subject" type="text" name="subject" value="{{ old('subject') }}"
+                        minlength="3" maxlength="150" autocomplete="off" required
                         @error('subject') aria-invalid="true" aria-describedby="contact-subject-error" @enderror>
                     @error('subject') <span id="contact-subject-error" class="form-error" role="alert">{{ $message }}</span> @enderror
                 </label>
 
                 <label class="contact-form__message" for="contact-message">
                     Wiadomość
-                    <textarea id="contact-message" name="message" rows="8" required
-                        @error('message') aria-invalid="true" aria-describedby="contact-message-error" @enderror>{{ old('message') }}</textarea>
+                    <textarea id="contact-message" name="message" rows="8" minlength="10" maxlength="5000" required
+                        aria-describedby="contact-message-help @error('message') contact-message-error @enderror"
+                        @error('message') aria-invalid="true" @enderror>{{ old('message') }}</textarea>
+                    <span id="contact-message-help" class="form-help">Od 10 do 5000 znaków.</span>
                     @error('message') <span id="contact-message-error" class="form-error" role="alert">{{ $message }}</span> @enderror
                 </label>
             </div>
@@ -242,8 +248,9 @@
                             target="_blank"
                             rel="noopener noreferrer"
                             class="card-link"
+                            aria-label="Otwórz mapę: {{ $location['name'] }} — otwiera w nowej karcie"
                         >
-                            Otwórz mapę →
+                            Otwórz mapę ↗
                         </a>
                     </x-slot:footer>
                 </x-content-card>

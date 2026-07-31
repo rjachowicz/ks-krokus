@@ -12,6 +12,7 @@
                     class="btn btn-secondary"
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Podgląd aktualności: {{ $post->title }} — otwiera w nowej karcie"
                 >
                     Podgląd publiczny
                 </a>

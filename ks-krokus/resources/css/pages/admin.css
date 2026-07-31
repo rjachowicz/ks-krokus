@@ -307,6 +307,16 @@
     gap: 10px;
 }
 
+.admin-choice-empty {
+    grid-column: 1 / -1;
+    padding: 24px;
+}
+
+.admin-choice-empty a {
+    color: var(--gold-strong);
+    font-weight: 700;
+}
+
 .admin-check-option {
     display: flex !important;
     flex-wrap: wrap;
@@ -412,12 +422,12 @@
 
 .admin-badge--success {
     border-color: rgba(31, 135, 87, 0.35);
-    color: #1f8757;
+    color: var(--success);
 }
 
 .admin-badge--warning {
     border-color: rgba(192, 125, 24, 0.4);
-    color: #b17217;
+    color: var(--warning);
 }
 
 .admin-badge--danger {
@@ -571,6 +581,11 @@
     color: var(--gold-strong);
 }
 
+.rich-text__button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
 .rich-text__surface {
     min-height: 320px;
     padding: 18px;
@@ -580,7 +595,23 @@
 
 .rich-text__surface .tiptap {
     min-height: 280px;
-    outline: 0;
+    outline: 3px solid transparent;
+    outline-offset: -3px;
+}
+
+.rich-text__surface .tiptap:focus-visible {
+    outline-color: var(--gold-strong);
+}
+
+@supports selector(.rich-text:has(.tiptap:focus-visible)) {
+    .rich-text__surface .tiptap:focus-visible {
+        outline: 0;
+    }
+
+    .rich-text:has(.tiptap:focus-visible) {
+        border-color: var(--gold-strong);
+        box-shadow: 0 0 0 3px var(--gold-soft);
+    }
 }
 
 .rich-text__surface p {
@@ -672,6 +703,10 @@
 }
 
 @media (max-width: 860px) {
+    .admin-menu-open {
+        overflow: hidden;
+    }
+
     .admin-menu-toggle {
         display: grid;
     }
@@ -726,6 +761,23 @@
 
     .admin-menu-open .admin-sidebar-backdrop {
         display: block;
+    }
+
+    .no-js .admin-shell {
+        display: block;
+    }
+
+    .no-js .admin-sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .no-js .admin-menu-toggle,
+    .no-js .admin-sidebar-backdrop {
+        display: none;
     }
 }
 

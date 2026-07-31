@@ -11,7 +11,7 @@ textarea {
     .calendar-picker,
     .admin-filter,
     .admin-form
-) label {
+) :where(label, .form-field) {
     display: grid;
     align-content: start;
     gap: 7px;
@@ -149,7 +149,7 @@ select {
 
 :where(.form-check, .admin-check-option) input[type="checkbox"]:checked {
     border-color: var(--gold-strong);
-    background: var(--gold-strong);
+    background: var(--gold-fill);
 }
 
 :where(.form-check, .admin-check-option) input[type="checkbox"]:checked::before {
@@ -190,4 +190,9 @@ select {
 
 .form-error-summary li + li {
     margin-top: 4px;
+}
+
+.content-toolbar > .form-error-summary,
+.admin-filter > .form-error-summary {
+    flex: 0 0 100%;
 }

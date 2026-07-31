@@ -47,12 +47,12 @@
             <caption class="sr-only">Lista konkurencji</caption>
             <thead>
                 <tr>
-                    <th>Kod</th>
-                    <th>Nazwa</th>
-                    <th>System</th>
-                    <th>Dyscyplina</th>
-                    <th>Status</th>
-                    <th>Operacje</th>
+                    <th scope="col">Kod</th>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">System</th>
+                    <th scope="col">Dyscyplina</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Operacje</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,22 +69,28 @@
                         </td>
                         <td data-label="Operacje">
                             <div class="admin-table__actions">
-                                <a href="{{ route('admin.competitions.edit', $definition) }}" class="btn btn-secondary">Edytuj</a>
+                                <a href="{{ route('admin.competitions.edit', $definition) }}" class="btn btn-secondary"
+                                    aria-label="Edytuj konkurencję: {{ $definition->name }}">Edytuj</a>
 
                                 <form
                                     method="POST"
                                     action="{{ route('admin.competitions.destroy', $definition) }}"
-                                    data-confirm="Usunąć konkurencję? Tej operacji nie można cofnąć."
+                                    data-confirm="Usunąć konkurencję „{{ $definition->name }}”? Tej operacji nie można cofnąć."
                                 >
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger-outline">Usuń</button>
+                                    <button type="submit" class="btn btn-danger-outline"
+                                        aria-label="Usuń konkurencję: {{ $definition->name }}">Usuń</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6">Brak konkurencji.</td></tr>
+                    <tr><td colspan="6">
+                        {{ request()->hasAny(['competition_system', 'discipline'])
+                            ? 'Brak konkurencji spełniających wybrane kryteria.'
+                            : 'Nie dodano jeszcze żadnej konkurencji.' }}
+                    </td></tr>
                 @endforelse
             </tbody>
         </table>

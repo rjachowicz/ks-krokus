@@ -26,6 +26,7 @@
                     name="email"
                     value="{{ old('email') }}"
                     autocomplete="email"
+                    maxlength="255"
                     required
                     autofocus
                     @error('email') aria-invalid="true" aria-describedby="login-email-error" @enderror
@@ -42,6 +43,7 @@
                     type="password"
                     name="password"
                     autocomplete="current-password"
+                    maxlength="4096"
                     required
                     @error('password') aria-invalid="true" aria-describedby="login-password-error" @enderror
                 >

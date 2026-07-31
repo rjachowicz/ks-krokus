@@ -65,6 +65,35 @@
         padding: 12px 14px;
     }
 
+    .no-js .site-header {
+        position: static;
+    }
+
+    .no-js .nav-container {
+        flex-wrap: wrap;
+        padding-block: 12px;
+    }
+
+    .no-js .main-nav {
+        position: static;
+        order: 3;
+        width: 100%;
+        max-height: none;
+        flex: 0 0 100%;
+        border-color: var(--line);
+        opacity: 1;
+        pointer-events: auto;
+        transform: none;
+    }
+
+    .no-js .mobile-menu-toggle {
+        display: none;
+    }
+
+    .no-js .public-main {
+        padding-top: 20px;
+    }
+
     .hero {
         grid-template-columns: 1fr;
     }

@@ -43,11 +43,11 @@
             <caption class="sr-only">Lista aktualności</caption>
             <thead>
                 <tr>
-                    <th>Tytuł</th>
-                    <th>Autor</th>
-                    <th>Status</th>
-                    <th>Publikacja</th>
-                    <th>Operacje</th>
+                    <th scope="col">Tytuł</th>
+                    <th scope="col">Autor</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Publikacja</th>
+                    <th scope="col">Operacje</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,7 +66,8 @@
                         <td data-label="Publikacja">{{ $post->published_at?->format('d.m.Y H:i') ?? '—' }}</td>
                         <td data-label="Operacje">
                             <div class="admin-table__actions">
-                                <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn-secondary">Edytuj</a>
+                                <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn-secondary"
+                                    aria-label="Edytuj aktualność: {{ $post->title }}">Edytuj</a>
 
                                 @if ($post->isPubliclyVisible())
                                     <a
@@ -74,6 +75,7 @@
                                         class="btn btn-secondary"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        aria-label="Podgląd aktualności: {{ $post->title }} — otwiera w nowej karcie"
                                     >
                                         Podgląd
                                     </a>
@@ -82,17 +84,22 @@
                                 <form
                                     method="POST"
                                     action="{{ route('admin.posts.destroy', $post) }}"
-                                    data-confirm="Przenieść aktualność do kosza?"
+                                    data-confirm="Przenieść aktualność „{{ $post->title }}” do kosza? Zniknie ze strony publicznej."
                                 >
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger-outline">Usuń</button>
+                                    <button type="submit" class="btn btn-danger-outline"
+                                        aria-label="Usuń aktualność: {{ $post->title }}">Usuń</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5">Brak aktualności.</td></tr>
+                    <tr><td colspan="5">
+                        {{ request()->hasAny(['q', 'status'])
+                            ? 'Brak aktualności spełniających wybrane kryteria.'
+                            : 'Nie dodano jeszcze żadnej aktualności.' }}
+                    </td></tr>
                 @endforelse
             </tbody>
         </table>

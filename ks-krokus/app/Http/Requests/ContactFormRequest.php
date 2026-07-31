@@ -6,6 +6,25 @@ namespace App\Http\Requests;
 
 final class ContactFormRequest extends LocalizedFormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $normalized = [];
+
+        foreach (['name', 'email', 'phone', 'subject', 'message'] as $field) {
+            $value = $this->input($field);
+
+            if (is_string($value)) {
+                $normalized[$field] = trim($value);
+            }
+        }
+
+        if (isset($normalized['email'])) {
+            $normalized['email'] = mb_strtolower($normalized['email']);
+        }
+
+        $this->merge($normalized);
+    }
+
     public function authorize(): bool
     {
         return true;

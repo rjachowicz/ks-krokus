@@ -38,6 +38,29 @@ final class ContactFormTest extends TestCase
         });
     }
 
+    public function test_contact_data_is_trimmed_and_email_is_normalized(): void
+    {
+        Mail::fake();
+
+        $this->post(route('contact.send'), [
+            'name' => '  Jan Kowalski  ',
+            'email' => '  JAN@EXAMPLE.COM  ',
+            'phone' => '  +48 500 000 000  ',
+            'subject' => '  Pytanie o trening  ',
+            'message' => '  Proszę o informację dotyczącą treningu.  ',
+        ])->assertSessionHasNoErrors();
+
+        Mail::assertSent(ContactMessage::class, function (ContactMessage $mail): bool {
+            return $mail->formData === [
+                'name' => 'Jan Kowalski',
+                'email' => 'jan@example.com',
+                'phone' => '+48 500 000 000',
+                'subject' => 'Pytanie o trening',
+                'message' => 'Proszę o informację dotyczącą treningu.',
+            ];
+        });
+    }
+
     public function test_contact_form_has_polish_validation_messages(): void
     {
         Mail::fake();

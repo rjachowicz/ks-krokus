@@ -31,6 +31,15 @@
         'competition_system',
         isset($event) ? $event->competition_system?->value : '',
     );
+
+    $startAt = old(
+        'start_at',
+        isset($event) ? $event->start_at->format('Y-m-d\TH:i') : '',
+    );
+    $endAt = old(
+        'end_at',
+        isset($event) && $event->end_at ? $event->end_at->format('Y-m-d\TH:i') : '',
+    );
 @endphp
 
 <div class="admin-form-grid admin-form-grid--3">
@@ -68,7 +77,7 @@
             @error('is_public') aria-invalid="true" aria-describedby="event-public-error" @enderror>
         <span>
             <strong>Wydarzenie publiczne</strong><br>
-            Widoczne w kalendarzu strony.
+            Widoczne w kalendarzu po ustawieniu statusu „Opublikowane”.
         </span>
         @error('is_public') <span id="event-public-error" class="form-error">{{ $message }}</span> @enderror
     </label>
@@ -81,7 +90,8 @@
             type="datetime-local"
             id="event-start-at"
             name="start_at"
-            value="{{ old('start_at', isset($event) ? $event->start_at->format('Y-m-d\TH:i') : '') }}"
+            value="{{ $startAt }}"
+            data-event-start
             required
             @error('start_at') aria-invalid="true" aria-describedby="event-start-at-error" @enderror
         >
@@ -94,7 +104,9 @@
             type="datetime-local"
             id="event-end-at"
             name="end_at"
-            value="{{ old('end_at', isset($event) && $event->end_at ? $event->end_at->format('Y-m-d\TH:i') : '') }}"
+            value="{{ $endAt }}"
+            min="{{ $startAt }}"
+            data-event-end
             @error('end_at') aria-invalid="true" aria-describedby="event-end-at-error" @enderror
         >
         @error('end_at') <span id="event-end-at-error" class="form-error">{{ $message }}</span> @enderror
@@ -109,8 +121,10 @@
             value="{{ old('registration_url', $event->registration_url ?? '') }}"
             placeholder="https://..."
             autocomplete="url"
-            @error('registration_url') aria-invalid="true" aria-describedby="event-registration-url-error" @enderror
+            aria-describedby="event-registration-url-help @error('registration_url') event-registration-url-error @enderror"
+            @error('registration_url') aria-invalid="true" @enderror
         >
+        <span id="event-registration-url-help" class="form-help">Podaj adres internetowy zaczynający się od http:// lub https://.</span>
         @error('registration_url') <span id="event-registration-url-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -169,7 +183,7 @@
         @error('competition_ids.*') <span id="event-competition-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
 
         <div class="admin-check-grid">
-            @foreach ($competitionDefinitions as $group => $definitions)
+            @forelse ($competitionDefinitions as $group => $definitions)
                 <fieldset class="admin-option-group">
                     <legend>{{ $group }}</legend>
 
@@ -191,7 +205,16 @@
                         </label>
                     @endforeach
                 </fieldset>
-            @endforeach
+            @empty
+                <p class="content-empty admin-choice-empty">
+                    Brak aktywnych konkurencji do wyboru.
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('admin.competitions.create') }}">Dodaj pierwszą konkurencję</a>.
+                    @else
+                        Poproś administratora o uzupełnienie słownika konkurencji.
+                    @endif
+                </p>
+            @endforelse
         </div>
     </fieldset>
 </div>

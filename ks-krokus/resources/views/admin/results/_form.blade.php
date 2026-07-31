@@ -16,8 +16,12 @@
     <label class="span-full">
         Wydarzenie i konkurencja
         <select id="result-event-competition" name="event_competition_id" required autofocus
-            @error('event_competition_id') aria-invalid="true" aria-describedby="result-event-competition-error" @enderror>
-            <option value="">Wybierz</option>
+            @disabled($eventCompetitions->isEmpty())
+            @if ($eventCompetitions->isEmpty() || $errors->has('event_competition_id'))
+                aria-describedby="@if ($eventCompetitions->isEmpty()) result-event-competition-empty @endif @error('event_competition_id') result-event-competition-error @enderror"
+            @endif
+            @error('event_competition_id') aria-invalid="true" @enderror>
+            <option value="">{{ $eventCompetitions->isEmpty() ? 'Brak dostępnych konkurencji zawodów' : 'Wybierz' }}</option>
             @foreach ($eventCompetitions as $eventCompetition)
                 <option
                     value="{{ $eventCompetition->id }}"
@@ -30,11 +34,17 @@
             @endforeach
         </select>
         @error('event_competition_id') <span id="result-event-competition-error" class="form-error">{{ $message }}</span> @enderror
+        @if ($eventCompetitions->isEmpty())
+            <span id="result-event-competition-empty" class="form-help">
+                Najpierw utwórz zawody i przypisz do nich co najmniej jedną aktywną konkurencję.
+            </span>
+        @endif
     </label>
 
     <label>
         Powiązany użytkownik
-        <select id="result-user" name="user_id" aria-describedby="result-user-help @error('user_id') result-user-error @enderror"
+        <select id="result-user" name="user_id" data-result-user aria-controls="result-participant-name"
+            aria-describedby="result-user-help @error('user_id') result-user-error @enderror"
             @error('user_id') aria-invalid="true" @enderror>
             <option value="">Zawodnik zewnętrzny / bez konta</option>
             @foreach ($users as $user)
@@ -55,6 +65,7 @@
             name="participant_name"
             value="{{ old('participant_name', $result->participant_name ?? '') }}"
             autocomplete="name"
+            data-result-participant
             aria-describedby="result-participant-help @error('participant_name') result-participant-error @enderror"
             @error('participant_name') aria-invalid="true" @enderror
         >
@@ -124,6 +135,9 @@
 </div>
 
 <div class="admin-form-actions">
-    <button type="submit" class="btn btn-primary">Zapisz wynik</button>
+    <button type="submit" class="btn btn-primary" @disabled($eventCompetitions->isEmpty())
+        @if ($eventCompetitions->isEmpty()) aria-describedby="result-event-competition-empty" @endif>
+        Zapisz wynik
+    </button>
     <a href="{{ route('admin.results.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

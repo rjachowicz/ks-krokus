@@ -48,6 +48,10 @@
                 @endforeach
             </div>
         @endif
+
+        <div class="btn-group content-actions">
+            <a href="{{ route('news.index') }}" class="btn btn-secondary">← Wróć do aktualności</a>
+        </div>
     </article>
 
     @if ($morePosts->isNotEmpty())

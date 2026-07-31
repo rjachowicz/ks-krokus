@@ -58,13 +58,13 @@
             <caption class="sr-only">Lista wyników</caption>
             <thead>
                 <tr>
-                    <th>Wydarzenie</th>
-                    <th>Konkurencja</th>
-                    <th>Zawodnik</th>
-                    <th>Wynik</th>
-                    <th>Miejsce</th>
-                    <th>Status</th>
-                    <th>Operacje</th>
+                    <th scope="col">Wydarzenie</th>
+                    <th scope="col">Konkurencja</th>
+                    <th scope="col">Zawodnik</th>
+                    <th scope="col">Wynik</th>
+                    <th scope="col">Miejsce</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Operacje</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,22 +87,28 @@
                         <td data-label="Status">{{ $result->status->label() }}</td>
                         <td data-label="Operacje">
                             <div class="admin-table__actions">
-                                <a href="{{ route('admin.results.edit', $result) }}" class="btn btn-secondary">Edytuj</a>
+                                <a href="{{ route('admin.results.edit', $result) }}" class="btn btn-secondary"
+                                    aria-label="Edytuj wynik zawodnika: {{ $result->displayName() }}">Edytuj</a>
 
                                 <form
                                     method="POST"
                                     action="{{ route('admin.results.destroy', $result) }}"
-                                    data-confirm="Usunąć wynik? Tej operacji nie można cofnąć."
+                                    data-confirm="Usunąć wynik zawodnika „{{ $result->displayName() }}” w konkurencji „{{ $result->eventCompetition->competition->name }}”? Tej operacji nie można cofnąć."
                                 >
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger-outline">Usuń</button>
+                                    <button type="submit" class="btn btn-danger-outline"
+                                        aria-label="Usuń wynik zawodnika: {{ $result->displayName() }}">Usuń</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7">Brak wyników.</td></tr>
+                    <tr><td colspan="7">
+                        {{ request()->hasAny(['q', 'event_id', 'user_id'])
+                            ? 'Brak wyników spełniających wybrane kryteria.'
+                            : 'Nie dodano jeszcze żadnego wyniku.' }}
+                    </td></tr>
                 @endforelse
             </tbody>
         </table>

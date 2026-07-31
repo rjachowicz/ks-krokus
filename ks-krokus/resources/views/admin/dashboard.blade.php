@@ -57,11 +57,11 @@
                     <caption class="sr-only">Najbliższe wydarzenia</caption>
                     <thead>
                         <tr>
-                            <th>Termin</th>
-                            <th>Nazwa</th>
-                            <th>Rodzaj</th>
-                            <th>Miejsce</th>
-                            <th>Status</th>
+                            <th scope="col">Termin</th>
+                            <th scope="col">Nazwa</th>
+                            <th scope="col">Rodzaj</th>
+                            <th scope="col">Miejsce</th>
+                            <th scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,10 +97,10 @@
                     <caption class="sr-only">Moje wyniki</caption>
                     <thead>
                         <tr>
-                            <th>Wydarzenie</th>
-                            <th>Konkurencja</th>
-                            <th>Wynik</th>
-                            <th>Miejsce</th>
+                            <th scope="col">Wydarzenie</th>
+                            <th scope="col">Konkurencja</th>
+                            <th scope="col">Wynik</th>
+                            <th scope="col">Miejsce</th>
                         </tr>
                     </thead>
                     <tbody>

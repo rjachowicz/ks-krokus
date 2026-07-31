@@ -43,8 +43,26 @@
 - [x] Zabezpieczyć wieloetapowe zapisy CRUD transakcjami i blokadami rekordów.
 - [x] Obsłużyć złośliwe tablice w polach skalarnych bez błędu renderowania 500.
 - [x] Pokryć pełne CREATE/READ/UPDATE/DELETE sześciu zasobów testami regresyjnymi.
+- [x] Dodać dostępne stany wysyłania, blokadę podwójnego submitu i komunikaty
+  ładowania wszystkich formularzy.
+- [x] Ujednoznacznić potwierdzenia usuwania, nazwy operacji i puste stany zasobów.
+- [x] Uwzględnić zapisane zdjęcia w limicie galerii i zsynchronizować wymianę oraz
+  usuwanie okładki.
 - [ ] Na istniejących środowiskach uruchomić jednorazowo
   `ClubDirectorySeeder`, jeśli profile katalogowe utworzono jako nieaktywne.
+
+## P1 — bezpieczeństwo
+
+- [x] Ponownie zweryfikować CSRF, XSS, uploady, autoryzację, middleware,
+  Form Requesty, masowe przypisanie, `$fillable` i obsługę wyjątków.
+- [x] Dodać wymuszane CSP z nonce, produkcyjne HSTS, nagłówki izolacji oraz
+  `no-store`/`noindex` dla formularzy konta i panelu.
+- [x] Domyślnie zabezpieczyć ciasteczko sesji na produkcji i wyłączyć ujawnianie
+  wersji PHP oraz błędów przez PHP runtime.
+- [x] Ograniczyć zewnętrzny adres zapisów wydarzenia do HTTP/HTTPS.
+- [x] Sprawdzić zależności Composer/npm — 0 znanych podatności.
+- [ ] Po wdrożeniu potwierdzić CSP, HSTS, flagi ciasteczek i usunięcie nagłówka
+  `Server` na końcowej odpowiedzi reverse proxy Railway.
 
 ## P1 — motyw i kontakt
 
@@ -62,9 +80,15 @@
 - [x] Obsłużyć wydarzenia wielodniowe bez duplikowania danych.
 - [x] Sprawdzić N+1, mobile, puste stany, sukcesy, błędy i potwierdzenia.
 - [x] Zapewnić focus-visible, etykiety, ARIA, skip link i obsługę klawiatury.
+- [x] Połączyć błędy filtrów publicznych z kontrolkami i dodać kompletne stany
+  puste, loading oraz jednoznaczną nawigację powrotną.
+- [x] Naprawić dostępność menu, dialogu potwierdzenia i edytora Tiptap, w tym
+  zarządzanie fokusem oraz obsługę toolbara strzałkami.
+- [x] Przeprowadzić automatyczny audyt axe-core 22 głównych tras w obu motywach —
+  88 przebiegów bez naruszeń WCAG/best-practice.
 - [x] Dodać polskie strony błędów HTTP.
-- [ ] Przeprowadzić końcowy test z NVDA/VoiceOver i audyt kontrastu narzędziem
-  na środowisku wdrożeniowym.
+- [ ] Przeprowadzić końcowy fizyczny test z NVDA/VoiceOver na środowisku
+  wdrożeniowym.
 
 ## P2 — responsywność
 

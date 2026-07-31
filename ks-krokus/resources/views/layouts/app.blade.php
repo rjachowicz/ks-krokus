@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl" data-theme="light">
+<html lang="pl" data-theme="light" class="no-js">
 <head>
     @include('partials.head')
 </head>
@@ -9,7 +9,7 @@
 @include('partials.header')
 @include('partials.toasts')
 
-<main id="main-content" class="public-main">
+<main id="main-content" class="public-main" tabindex="-1">
     @yield('content')
 </main>
 

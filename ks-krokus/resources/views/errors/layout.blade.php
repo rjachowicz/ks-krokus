@@ -7,7 +7,7 @@
     <meta name="robots" content="noindex">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <title>@yield('code') — KS Krokus</title>
-    <style>
+    <style nonce="{{ Vite::cspNonce() }}">
         :root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
         * { box-sizing: border-box; }
         body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: #f3f1eb; color: #181c22; }

@@ -40,8 +40,8 @@
         @error('excerpt') <span id="post-excerpt-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full">
-        Treść
+    <div class="form-field span-full">
+        <label id="post-content-label" for="post-content">Treść</label>
         <input type="hidden" name="content_format" value="html">
         <textarea
             id="post-content"
@@ -57,7 +57,7 @@
             Użyj paska narzędzi do formatowania nagłówków, list i wyróżnień.
         </span>
         @error('content') <span id="post-content-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-    </label>
+    </div>
 
     <h2 class="admin-section-title span-full">Publikacja</h2>
 
@@ -88,6 +88,7 @@
             <div class="image-edit-card__body">
                 <label class="form-check">
                     <input id="post-remove-cover" type="checkbox" name="remove_cover" value="1"
+                        data-cover-remove
                         @checked(old('remove_cover', false))
                         @error('remove_cover') aria-invalid="true" aria-describedby="post-remove-cover-error" @enderror>
                     Usuń obecne zdjęcie główne
@@ -107,9 +108,15 @@
             <strong>Nowe zdjęcie główne</strong>
             <span>Przeciągnij obraz tutaj lub wybierz plik</span>
             <input id="post-cover-image" type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
+                data-cover-file
                 aria-describedby="post-cover-image-help @error('cover_image') cover-image-error @enderror"
                 @error('cover_image') aria-invalid="true" @enderror>
-            <small id="post-cover-image-help">JPG, PNG lub WebP, maksymalnie 6 MB.</small>
+            <small id="post-cover-image-help">
+                JPG, PNG lub WebP, maksymalnie 6 MB.
+                @if (isset($post) && $post->coverUrl())
+                    Nowy plik zastąpi obecne zdjęcie.
+                @endif
+            </small>
             @error('cover_image') <span id="cover-image-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
@@ -138,6 +145,7 @@
         data-file-upload
         data-max-files="{{ config('content.gallery_max_images') }}"
         data-max-size-kb="{{ config('content.image_max_size_kb') }}"
+        data-existing-files="{{ isset($post) ? $post->images->count() : 0 }}"
     >
         <label class="file-upload__dropzone">
             <strong>Dodaj zdjęcia do galerii</strong>
@@ -230,6 +238,7 @@
                                 type="checkbox"
                                 name="delete_images[]"
                                 value="{{ $image->id }}"
+                                data-existing-file-delete
                                 @checked(in_array($image->id, $selectedImageIds, true))
                                 @if ($errors->has('delete_images.*'))
                                     aria-invalid="true" aria-describedby="post-delete-images-error"

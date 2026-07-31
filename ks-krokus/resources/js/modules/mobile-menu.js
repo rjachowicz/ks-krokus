@@ -33,6 +33,7 @@ export function initMobileMenu() {
         button.setAttribute('aria-expanded', 'true');
         button.setAttribute('aria-label', 'Zamknij menu');
         syncAvailability();
+        navigation.querySelector('a')?.focus();
     };
 
     button.addEventListener('click', () => {
@@ -61,6 +62,19 @@ export function initMobileMenu() {
         if (event.key === 'Escape' && navigation.classList.contains('is-open')) {
             closeMenu();
             button.focus();
+        }
+    });
+
+    document.addEventListener('focusin', (event) => {
+        const target = event.target;
+
+        if (
+            navigation.classList.contains('is-open')
+            && target instanceof Node
+            && !navigation.contains(target)
+            && !button.contains(target)
+        ) {
+            closeMenu();
         }
     });
 

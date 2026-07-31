@@ -1,7 +1,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta property="csp-nonce" nonce="{{ Vite::cspNonce() }}">
+@hasSection('robots')
+    <meta name="robots" content="@yield('robots')">
+@endif
 <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 
 @php
@@ -18,8 +21,10 @@
 <meta name="description" content="{{ $pageDescription }}">
 <title>{{ $pageTitle }}</title>
 
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     (() => {
+        document.documentElement.classList.remove('no-js');
+
         const storageKey = 'ks-krokus-theme';
         let savedTheme = null;
 

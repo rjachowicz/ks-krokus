@@ -53,12 +53,12 @@
             <caption class="sr-only">Lista użytkowników</caption>
             <thead>
                 <tr>
-                    <th>Użytkownik</th>
-                    <th>Rola</th>
-                    <th>Telefon</th>
-                    <th>Funkcje</th>
-                    <th>Status</th>
-                    <th>Operacje</th>
+                    <th scope="col">Użytkownik</th>
+                    <th scope="col">Rola</th>
+                    <th scope="col">Telefon</th>
+                    <th scope="col">Funkcje</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Operacje</th>
                 </tr>
             </thead>
             <tbody>
@@ -85,17 +85,19 @@
                         </td>
                         <td data-label="Operacje">
                             <div class="admin-table__actions">
-                                <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary">Edytuj</a>
+                                <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary"
+                                    aria-label="Edytuj użytkownika: {{ $user->name }}">Edytuj</a>
 
                                 @if (! auth()->user()->is($user))
                                     <form
                                         method="POST"
                                         action="{{ route('admin.users.destroy', $user) }}"
-                                        data-confirm="Usunąć użytkownika? Tej operacji nie można cofnąć."
+                                        data-confirm="Usunąć użytkownika „{{ $user->name }}”? Konto utraci dostęp, ale historyczne wyniki pozostaną zapisane."
                                     >
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger-outline">Usuń</button>
+                                        <button type="submit" class="btn btn-danger-outline"
+                                            aria-label="Usuń użytkownika: {{ $user->name }}">Usuń</button>
                                     </form>
                                 @endif
                             </div>
@@ -103,7 +105,11 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">Brak użytkowników spełniających kryteria.</td>
+                        <td colspan="6">
+                            {{ request()->hasAny(['q', 'role', 'active'])
+                                ? 'Brak użytkowników spełniających wybrane kryteria.'
+                                : 'Nie dodano jeszcze żadnego użytkownika.' }}
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

@@ -21,6 +21,7 @@
     </x-page-hero>
 
     <section class="features-section features-section--flush" aria-label="Informacje i procedury klubowe">
+        <h2 class="sr-only">Informacje i procedury klubowe</h2>
         <div class="bento-grid">
             <x-content-card
                 id="finanse"
@@ -93,8 +94,9 @@
                     <a href="{{ asset($club['documents']['membership_declaration']) }}"
                        class="btn-action"
                        target="_blank"
-                       rel="noopener noreferrer">
-                        POBIERZ DEKLARACJĘ →
+                       rel="noopener noreferrer"
+                       aria-label="Pobierz deklarację członkowską PDF — otwiera w nowej karcie">
+                        POBIERZ DEKLARACJĘ ↗
                     </a>
                 </x-slot:footer>
             </x-content-card>
@@ -129,8 +131,9 @@
                     <a href="{{ $training['regulations_url'] }}"
                        class="btn-action"
                        target="_blank"
-                       rel="noopener noreferrer">
-                        REGULAMIN PZSS →
+                       rel="noopener noreferrer"
+                       aria-label="Regulamin PZSS — otwiera w nowej karcie">
+                        REGULAMIN PZSS ↗
                     </a>
                 </x-slot:footer>
             </x-content-card>
@@ -207,8 +210,9 @@
                     <a href="{{ asset($club['documents']['refund_application']) }}"
                        class="btn-action"
                        target="_blank"
-                       rel="noopener noreferrer">
-                        POBIERZ WNIOSEK O ZWROT →
+                       rel="noopener noreferrer"
+                       aria-label="Pobierz wniosek o zwrot PDF — otwiera w nowej karcie">
+                        POBIERZ WNIOSEK O ZWROT ↗
                     </a>
                 </x-slot:footer>
             </x-content-card>
@@ -255,16 +259,18 @@
                         <a href="{{ asset($club['documents']['collectors_resolution']) }}"
                            class="btn-action"
                            target="_blank"
-                           rel="noopener noreferrer">
-                            POBIERZ UCHWAŁĘ KOLEKCJONERSKĄ →
+                           rel="noopener noreferrer"
+                           aria-label="Pobierz uchwałę kolekcjonerską PDF — otwiera w nowej karcie">
+                            POBIERZ UCHWAŁĘ KOLEKCJONERSKĄ ↗
                         </a>
                     @endif
 
                     <a href="{{ $club['firearm_permit']['wpa_url'] }}"
                        class="btn-action"
                        target="_blank"
-                       rel="noopener noreferrer">
-                        STRONA WPA KRAKÓW →
+                       rel="noopener noreferrer"
+                       aria-label="Strona WPA Kraków — otwiera w nowej karcie">
+                        STRONA WPA KRAKÓW ↗
                     </a>
                 </x-slot:footer>
             </x-content-card>

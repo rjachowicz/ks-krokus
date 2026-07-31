@@ -20,14 +20,28 @@
         <x-section-heading id="results-list-title" title="Archiwum wyników" meta="RESULTS_DATABASE" />
 
         <form method="GET" class="content-toolbar" aria-label="Filtrowanie wyników">
-            <label>
+            <x-form-errors />
+
+            <label for="results-filter-query">
                 Szukaj zawodów
-                <input type="search" name="q" value="{{ request('q') }}">
+                <input
+                    id="results-filter-query"
+                    type="search"
+                    name="q"
+                    value="{{ request('q') }}"
+                    autocomplete="off"
+                    maxlength="100"
+                    @error('q') aria-invalid="true" aria-describedby="results-filter-query-error" @enderror
+                >
+                @error('q')
+                    <span id="results-filter-query-error" class="form-error" role="alert">{{ $message }}</span>
+                @enderror
             </label>
 
-            <label>
+            <label for="results-filter-discipline">
                 Dyscyplina
-                <select name="discipline">
+                <select id="results-filter-discipline" name="discipline"
+                    @error('discipline') aria-invalid="true" aria-describedby="results-filter-discipline-error" @enderror>
                     <option value="">Wszystkie</option>
                     @foreach ($disciplines as $value => $label)
                         <option value="{{ $value }}" @selected(request('discipline') === $value)>
@@ -35,11 +49,15 @@
                         </option>
                     @endforeach
                 </select>
+                @error('discipline')
+                    <span id="results-filter-discipline-error" class="form-error" role="alert">{{ $message }}</span>
+                @enderror
             </label>
 
-            <label>
+            <label for="results-filter-system">
                 System
-                <select name="competition_system">
+                <select id="results-filter-system" name="competition_system"
+                    @error('competition_system') aria-invalid="true" aria-describedby="results-filter-system-error" @enderror>
                     <option value="">Wszystkie</option>
                     @foreach ($systems as $value => $label)
                         <option value="{{ $value }}" @selected(request('competition_system') === $value)>
@@ -47,6 +65,9 @@
                         </option>
                     @endforeach
                 </select>
+                @error('competition_system')
+                    <span id="results-filter-system-error" class="form-error" role="alert">{{ $message }}</span>
+                @enderror
             </label>
 
             <button type="submit" class="btn btn-primary">Filtruj</button>
@@ -56,7 +77,11 @@
         </form>
 
         @if ($events->isEmpty())
-            <p class="content-empty">Brak opublikowanych wyników.</p>
+            <p class="content-empty">
+                {{ request()->hasAny(['q', 'discipline', 'competition_system'])
+                    ? 'Nie znaleziono wyników spełniających wybrane kryteria.'
+                    : 'Nie opublikowano jeszcze żadnych wyników.' }}
+            </p>
         @else
             <div class="results-event-grid">
                 @foreach ($events as $event)

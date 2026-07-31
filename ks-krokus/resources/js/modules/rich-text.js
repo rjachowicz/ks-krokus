@@ -17,6 +17,18 @@ export function initRichTextEditors() {
         const shell = document.createElement('div');
         const toolbar = document.createElement('div');
         const surface = document.createElement('div');
+        const fieldLabel = textarea.labels?.[0] || null;
+        const wasRequired = textarea.required;
+        const shouldRestoreFocus = document.activeElement === textarea;
+        const cspNonce = document.querySelector('meta[property="csp-nonce"]')?.nonce;
+        const labelId = fieldLabel
+            ? fieldLabel.id || `${textarea.id || 'rich-text'}-label`
+            : null;
+
+        if (fieldLabel && !fieldLabel.id) {
+            fieldLabel.id = labelId;
+        }
+
         shell.className = 'rich-text';
         toolbar.className = 'rich-text__toolbar';
         toolbar.setAttribute('role', 'toolbar');
@@ -28,6 +40,7 @@ export function initRichTextEditors() {
 
         const editor = new Editor({
             element: surface,
+            injectNonce: cspNonce || undefined,
             extensions: [
                 StarterKit.configure({
                     code: false,
@@ -38,8 +51,12 @@ export function initRichTextEditors() {
             content: textarea.value,
             editorProps: {
                 attributes: {
-                    'aria-label': 'Treść aktualności',
+                    'role': 'textbox',
                     'aria-multiline': 'true',
+                    ...(labelId
+                        ? { 'aria-labelledby': labelId }
+                        : { 'aria-label': 'Treść aktualności' }),
+                    ...(wasRequired ? { 'aria-required': 'true' } : {}),
                     ...(textarea.getAttribute('aria-describedby')
                         ? { 'aria-describedby': textarea.getAttribute('aria-describedby') }
                         : {}),
@@ -53,6 +70,62 @@ export function initRichTextEditors() {
             },
         });
 
+        textarea.required = false;
+
+        fieldLabel?.addEventListener('click', (event) => {
+            if (event.target === fieldLabel) {
+                event.preventDefault();
+                editor.commands.focus();
+            }
+        });
+
+        if (wasRequired) {
+            const form = textarea.closest('form');
+            let clientError = null;
+
+            const clearRequiredError = () => {
+                if (editor.getText().trim() === '') {
+                    return;
+                }
+
+                clientError?.setAttribute('hidden', '');
+
+                if (textarea.getAttribute('aria-invalid') !== 'true') {
+                    shell.removeAttribute('aria-invalid');
+                    editor.view.dom.removeAttribute('aria-invalid');
+                }
+            };
+
+            editor.on('update', clearRequiredError);
+            form?.addEventListener('submit', (event) => {
+                if (editor.getText().trim() !== '') {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (!clientError) {
+                    clientError = document.createElement('span');
+                    clientError.id = `${textarea.id || 'rich-text'}-client-error`;
+                    clientError.className = 'form-error';
+                    clientError.setAttribute('role', 'alert');
+                    clientError.textContent = 'Wpisz treść aktualności.';
+                    shell.after(clientError);
+
+                    const describedBy = editor.view.dom.getAttribute('aria-describedby');
+                    editor.view.dom.setAttribute(
+                        'aria-describedby',
+                        [describedBy, clientError.id].filter(Boolean).join(' '),
+                    );
+                }
+
+                clientError.hidden = false;
+                shell.setAttribute('aria-invalid', 'true');
+                editor.view.dom.setAttribute('aria-invalid', 'true');
+                editor.commands.focus();
+            }, true);
+        }
+
         actions.forEach(([name, label, execute]) => {
             const button = document.createElement('button');
             button.type = 'button';
@@ -62,15 +135,58 @@ export function initRichTextEditors() {
                 button.setAttribute('aria-pressed', 'false');
             }
             button.addEventListener('click', () => execute(editor));
+            button.addEventListener('focus', () => {
+                [...toolbar.querySelectorAll('button')].forEach((toolbarButton) => {
+                    toolbarButton.tabIndex = toolbarButton === button ? 0 : -1;
+                });
+            });
             toolbar.append(button);
 
-            editor.on('transaction', () => {
+            const updateButtonState = () => {
                 const active = editor.isActive(name);
                 button.classList.toggle('is-active', active);
                 if (button.hasAttribute('aria-pressed')) {
                     button.setAttribute('aria-pressed', String(active));
                 }
-            });
+
+                if (name === 'undo') {
+                    button.disabled = !editor.can().chain().undo().run();
+                }
+
+                if (name === 'redo') {
+                    button.disabled = !editor.can().chain().redo().run();
+                }
+            };
+
+            editor.on('transaction', updateButtonState);
+            updateButtonState();
+        });
+
+        const toolbarButtons = [...toolbar.querySelectorAll('button')];
+        toolbarButtons.forEach((button, index) => {
+            button.tabIndex = index === 0 ? 0 : -1;
+        });
+        toolbar.addEventListener('keydown', (event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                return;
+            }
+
+            const enabledButtons = toolbarButtons.filter((button) => !button.disabled);
+            const currentIndex = enabledButtons.indexOf(document.activeElement);
+            let nextIndex = currentIndex;
+
+            if (event.key === 'Home') {
+                nextIndex = 0;
+            } else if (event.key === 'End') {
+                nextIndex = enabledButtons.length - 1;
+            } else if (event.key === 'ArrowRight') {
+                nextIndex = (currentIndex + 1) % enabledButtons.length;
+            } else {
+                nextIndex = (currentIndex - 1 + enabledButtons.length) % enabledButtons.length;
+            }
+
+            event.preventDefault();
+            enabledButtons[nextIndex]?.focus();
         });
 
         if (textarea.getAttribute('aria-invalid') === 'true') {
@@ -78,5 +194,9 @@ export function initRichTextEditors() {
         }
 
         textarea.classList.add('rich-text__fallback--enhanced');
+
+        if (shouldRestoreFocus) {
+            editor.commands.focus();
+        }
     });
 }

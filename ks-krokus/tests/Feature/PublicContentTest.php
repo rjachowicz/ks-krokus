@@ -105,6 +105,38 @@ final class PublicContentTest extends TestCase
             ->assertDontSeeText('Tylko zawody');
     }
 
+    public function test_calendar_distinguishes_start_time_from_same_day_range(): void
+    {
+        SportEvent::query()->create([
+            'title' => 'Trening punktualny',
+            'slug' => 'trening-punktualny',
+            'event_type' => EventType::Training,
+            'start_at' => '2026-07-18 09:00:00',
+            'location_name' => 'Strzelnica',
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+        SportEvent::query()->create([
+            'title' => 'Zawody jednodniowe',
+            'slug' => 'zawody-jednodniowe',
+            'event_type' => EventType::Competition,
+            'start_at' => '2026-07-19 10:00:00',
+            'end_at' => '2026-07-19 16:00:00',
+            'location_name' => 'Strzelnica',
+            'status' => PublicationStatus::Published,
+            'is_public' => true,
+        ]);
+
+        $this->get(route('calendar.index', [
+            'month' => 7,
+            'year' => 2026,
+        ]))
+            ->assertOk()
+            ->assertSeeText('09:00')
+            ->assertDontSeeText('od 09:00')
+            ->assertSeeText('10:00–16:00');
+    }
+
     public function test_multiday_event_is_shown_on_each_day_of_its_range(): void
     {
         SportEvent::query()->create([
@@ -124,6 +156,21 @@ final class PublicContentTest extends TestCase
         ]))->assertOk();
 
         self::assertSame(4, substr_count($response->getContent(), 'Trzydniowe zawody'));
+        self::assertSame(2, substr_count($response->getContent(), 'wydarzenie trwa'));
+        $response
+            ->assertSeeText('od 10:00')
+            ->assertSeeText('do 16:00');
+    }
+
+    public function test_calendar_year_picker_keeps_valid_year_outside_default_window(): void
+    {
+        $this->get(route('calendar.index', [
+            'month' => 1,
+            'year' => 2000,
+        ]))
+            ->assertOk()
+            ->assertSeeText('Styczeń 2000')
+            ->assertSee('value="2000" selected', false);
     }
 
     public function test_calendar_rejects_unknown_filters_with_polish_error(): void

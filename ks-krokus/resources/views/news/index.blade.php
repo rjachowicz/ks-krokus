@@ -20,14 +20,23 @@
         <x-section-heading id="news-list-title" title="Wszystkie aktualności" meta="NEWS_ARCHIVE" />
 
         <form method="GET" class="content-toolbar" aria-label="Filtrowanie aktualności">
-            <label>
+            <x-form-errors />
+
+            <label for="news-filter-query">
                 Szukaj
                 <input
+                    id="news-filter-query"
                     type="search"
                     name="q"
                     value="{{ request('q') }}"
                     placeholder="Tytuł lub treść"
+                    autocomplete="off"
+                    maxlength="100"
+                    @error('q') aria-invalid="true" aria-describedby="news-filter-query-error" @enderror
                 >
+                @error('q')
+                    <span id="news-filter-query-error" class="form-error" role="alert">{{ $message }}</span>
+                @enderror
             </label>
 
             <button type="submit" class="btn btn-primary">Filtruj</button>
@@ -38,7 +47,11 @@
         </form>
 
         @if ($posts->isEmpty())
-            <p class="content-empty">Nie znaleziono opublikowanych aktualności.</p>
+            <p class="content-empty">
+                {{ request()->filled('q')
+                    ? 'Nie znaleziono aktualności pasujących do wyszukiwanej frazy.'
+                    : 'Nie opublikowano jeszcze żadnej aktualności.' }}
+            </p>
         @else
             <div class="news-grid">
                 @foreach ($posts as $post)

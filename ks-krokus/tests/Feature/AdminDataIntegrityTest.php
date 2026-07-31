@@ -200,4 +200,27 @@ final class AdminDataIntegrityTest extends TestCase
         self::assertFalse($trainer->is_trainer);
         self::assertNull($trainer->trainer_bio);
     }
+
+    public function test_event_registration_link_accepts_only_http_or_https(): void
+    {
+        $moderator = User::factory()->create([
+            'role' => UserRole::Moderator,
+            'is_active' => true,
+        ]);
+
+        foreach (['javascript:alert(1)', 'ftp://example.com/zapisy'] as $url) {
+            $this->actingAs($moderator)
+                ->post(route('admin.events.store'), [
+                    'title' => 'Wydarzenie z niebezpiecznym linkiem',
+                    'event_type' => EventType::Training->value,
+                    'start_at' => now()->addDay()->format('Y-m-d H:i:s'),
+                    'location_name' => 'Strzelnica',
+                    'status' => PublicationStatus::Draft->value,
+                    'registration_url' => $url,
+                ])
+                ->assertSessionHasErrors('registration_url');
+        }
+
+        self::assertSame(0, SportEvent::query()->count());
+    }
 }

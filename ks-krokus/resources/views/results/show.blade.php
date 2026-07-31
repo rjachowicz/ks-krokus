@@ -18,6 +18,10 @@
                 {{ $sportEvent->location_name }}
             </p>
         </x-slot:description>
+
+        <x-slot:actions>
+            <a href="{{ route('results.index') }}" class="btn btn-secondary">← Wróć do wyników</a>
+        </x-slot:actions>
     </x-page-hero>
 
     <section class="features-section" aria-label="Tabela wyników">
@@ -41,13 +45,13 @@
                         <caption class="sr-only">Wyniki konkurencji {{ $eventCompetition->competition->name }}</caption>
                         <thead>
                             <tr>
-                                <th>Miejsce</th>
-                                <th>Zawodnik</th>
-                                <th>Klub</th>
-                                <th>Kategoria</th>
-                                <th>Wynik</th>
-                                <th>Klasyfikacja</th>
-                                <th>Status</th>
+                                <th scope="col">Miejsce</th>
+                                <th scope="col">Zawodnik</th>
+                                <th scope="col">Klub</th>
+                                <th scope="col">Kategoria</th>
+                                <th scope="col">Wynik</th>
+                                <th scope="col">Klasyfikacja</th>
+                                <th scope="col">Status</th>
                             </tr>
                         </thead>
                         <tbody>

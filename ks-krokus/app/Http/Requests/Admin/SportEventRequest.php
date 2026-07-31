@@ -53,7 +53,7 @@ class SportEventRequest extends AdminFormRequest
             'competition_system' => ['nullable', Rule::enum(CompetitionSystem::class)],
             'status' => ['required', Rule::enum(PublicationStatus::class)],
             'is_public' => ['nullable', 'boolean'],
-            'registration_url' => ['nullable', 'url', 'max:2048'],
+            'registration_url' => ['nullable', 'url:http,https', 'max:2048'],
             'competition_ids' => ['nullable', 'array'],
             'competition_ids.*' => [
                 'integer',

@@ -77,7 +77,7 @@
         @error('user_sort_orders.*') <span id="position-user-orders-error" class="form-error" role="alert">{{ $message }}</span> @enderror
 
         <div class="admin-check-grid">
-            @foreach ($users as $user)
+            @forelse ($users as $user)
                 <div class="admin-check-option">
                     <input
                         id="position-user-{{ $user->id }}"
@@ -112,7 +112,12 @@
                         </label>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <p class="content-empty admin-choice-empty">
+                    Brak użytkowników, których można przypisać do tej funkcji.
+                    <a href="{{ route('admin.users.create') }}">Dodaj użytkownika</a>.
+                </p>
+            @endforelse
         </div>
     </fieldset>
 </div>

@@ -8,6 +8,7 @@ use App\Enums\PublicationStatus;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 final class ApplicationQualityTest extends TestCase
@@ -16,15 +17,100 @@ final class ApplicationQualityTest extends TestCase
 
     public function test_public_responses_include_baseline_security_headers(): void
     {
-        $this->get(route('home'))
+        $response = $this->get(route('home'))
             ->assertOk()
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
+            ->assertHeader('X-Permitted-Cross-Domain-Policies', 'none')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+            ->assertHeader('Cross-Origin-Opener-Policy', 'same-origin')
+            ->assertHeader('Cross-Origin-Resource-Policy', 'same-origin')
+            ->assertHeader('Origin-Agent-Cluster', '?1')
             ->assertHeader(
                 'Permissions-Policy',
                 'camera=(), geolocation=(), microphone=()',
             );
+
+        $contentSecurityPolicy = (string) $response->headers->get(
+            'Content-Security-Policy',
+        );
+
+        self::assertStringContainsString("default-src 'self'", $contentSecurityPolicy);
+        self::assertStringContainsString("object-src 'none'", $contentSecurityPolicy);
+        self::assertStringContainsString("form-action 'self'", $contentSecurityPolicy);
+        self::assertStringContainsString("script-src-attr 'none'", $contentSecurityPolicy);
+        self::assertMatchesRegularExpression(
+            "/script-src 'self' 'nonce-[A-Za-z0-9]+'/",
+            $contentSecurityPolicy,
+        );
+
+        preg_match("/'nonce-([^']+)'/", $contentSecurityPolicy, $nonceMatch);
+        $nonce = $nonceMatch[1] ?? null;
+
+        self::assertIsString($nonce);
+        $response
+            ->assertSee('property="csp-nonce" nonce="'.$nonce.'"', false)
+            ->assertSee('<script nonce="'.$nonce.'">', false);
+    }
+
+    public function test_account_and_form_pages_are_not_cached_or_indexed(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
+            ->assertSee('<meta name="robots" content="noindex, nofollow, noarchive">', false);
+
+        $this->get(route('contact'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private');
+
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+
+        $this->actingAs($admin)
+            ->post(route('logout'))
+            ->assertRedirect(route('home'))
+            ->assertHeader('Cache-Control', 'no-store, private');
+    }
+
+    public function test_local_csp_allows_only_the_active_vite_development_origin(): void
+    {
+        $originalHotFile = Vite::hotFile();
+        $temporaryHotFile = storage_path('framework/testing/vite-hot-audit');
+        file_put_contents($temporaryHotFile, "http://127.0.0.1:5173\n");
+        Vite::useHotFile($temporaryHotFile);
+
+        try {
+            $response = $this->get(route('home'))->assertOk();
+            $contentSecurityPolicy = (string) $response->headers->get(
+                'Content-Security-Policy',
+            );
+
+            self::assertStringContainsString(
+                'http://127.0.0.1:5173',
+                $contentSecurityPolicy,
+            );
+            self::assertStringContainsString(
+                'ws://127.0.0.1:5173',
+                $contentSecurityPolicy,
+            );
+            self::assertStringNotContainsString(' ws: wss:', $contentSecurityPolicy);
+        } finally {
+            Vite::useHotFile($originalHotFile);
+
+            if (is_file($temporaryHotFile)) {
+                unlink($temporaryHotFile);
+            }
+        }
     }
 
     public function test_missing_page_uses_polish_error_view(): void
@@ -193,6 +279,30 @@ final class ApplicationQualityTest extends TestCase
         foreach ($filters as [$url, $query, $errorId]) {
             $response = $this->actingAs($admin)
                 ->from($url)
+                ->followingRedirects()
+                ->get($url.'?'.http_build_query($query))
+                ->assertOk()
+                ->assertSee('role="alert"', false)
+                ->assertSee('aria-invalid="true"', false)
+                ->assertSee("id=\"{$errorId}\"", false);
+
+            self::assertStringNotContainsString(
+                'validation.',
+                $response->getContent(),
+            );
+        }
+    }
+
+    public function test_public_filter_errors_are_connected_to_controls(): void
+    {
+        $filters = [
+            [route('news.index'), ['q' => str_repeat('x', 101)], 'news-filter-query-error'],
+            [route('calendar.index'), ['event_type' => 'unknown'], 'calendar-filter-type-error'],
+            [route('results.index'), ['discipline' => 'unknown'], 'results-filter-discipline-error'],
+        ];
+
+        foreach ($filters as [$url, $query, $errorId]) {
+            $response = $this->from($url)
                 ->followingRedirects()
                 ->get($url.'?'.http_build_query($query))
                 ->assertOk()

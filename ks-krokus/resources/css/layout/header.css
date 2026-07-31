@@ -50,7 +50,7 @@
 }
 
 .logo:hover .logo-mark {
-    background: var(--gold-strong);
+    background: var(--gold-fill);
     color: #101216;
     transform: rotate(-3deg) scale(1.04);
 }
@@ -82,7 +82,7 @@
     height: 7px;
     flex: 0 0 auto;
     border-radius: 50%;
-    background: var(--gold-strong);
+    background: var(--gold-fill);
     box-shadow: 0 0 0 4px var(--gold-soft);
 }
 

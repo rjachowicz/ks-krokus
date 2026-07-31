@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 final class InterfaceAuditTest extends TestCase
@@ -70,6 +71,62 @@ final class InterfaceAuditTest extends TestCase
                 $contents,
                 $view,
             );
+        }
+    }
+
+    public function test_tables_and_external_links_expose_accessible_context(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('<th scope="col">', false)
+            ->assertSee('aria-labelledby="confirm-dialog-title"', false)
+            ->assertSee('aria-describedby="confirm-dialog-message"', false)
+            ->assertSee('data-admin-content', false);
+
+        $viewFiles = [
+            ...glob(resource_path('views/admin/*/index.blade.php')),
+            resource_path('views/admin/dashboard.blade.php'),
+            resource_path('views/results/show.blade.php'),
+        ];
+
+        foreach ($viewFiles as $viewFile) {
+            $contents = (string) file_get_contents($viewFile);
+
+            self::assertDoesNotMatchRegularExpression(
+                '/<th\b(?![^>]*\bscope="col")/s',
+                $contents,
+                $viewFile,
+            );
+        }
+
+        $externalLinkViews = File::allFiles(resource_path('views'));
+
+        foreach ($externalLinkViews as $viewFile) {
+            $contents = (string) file_get_contents($viewFile->getPathname());
+            preg_match_all(
+                '/<a\b(?=[^>]*target="_blank")[^>]*>/s',
+                $contents,
+                $externalLinks,
+            );
+
+            foreach ($externalLinks[0] as $externalLink) {
+                self::assertStringContainsString(
+                    'rel="noopener noreferrer"',
+                    $externalLink,
+                    $viewFile->getPathname(),
+                );
+                self::assertStringContainsString(
+                    'aria-label=',
+                    $externalLink,
+                    $viewFile->getPathname(),
+                );
+            }
         }
     }
 }
