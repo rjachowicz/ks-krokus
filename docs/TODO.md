@@ -6,6 +6,7 @@
 - [x] Skonfigurować osobną bazę PostgreSQL dla testów.
 - [x] Uruchomić migracje i ograniczyć runtime wyłącznie do PostgreSQL.
 - [x] Dodać indeks zakresowy dla wydarzeń wielodniowych.
+- [x] Odtworzyć lokalne dane startowe bez wpisów wyników.
 
 ## P0 — uploady i wdrożenie
 

@@ -111,6 +111,14 @@ Lokalny PostgreSQL zawiera 10 wykonanych migracji.
 
 ## Historia
 
+### 2026-07-31 — odtworzenie lokalnych danych startowych
+
+- Cel: wyczyścić lokalną bazę PostgreSQL i odtworzyć dane startowe bez wyników.
+- Wykonano: `php artisan migrate:fresh --seed --force`; dodano 23 użytkowników,
+  5 funkcji klubowych, 10 przypisań funkcji i 14 definicji konkurencji.
+- Stan końcowy treści: 0 aktualności, 0 wydarzeń i 0 wyników.
+- Testy: 40 testów / 192 asercje, Pint i build Vite poprawne.
+
 ### 2026-07-31 — lokalny PostgreSQL
 
 - Cel: zastąpić SQLite lokalnym PostgreSQL bez utraty danych.
