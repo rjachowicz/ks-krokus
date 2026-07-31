@@ -4,20 +4,17 @@
 @section('meta_description', 'Regulamin Klubu Strzeleckiego Krokus LOK w Nowym Sączu — tekst jednolity po zmianach z 3 lutego 2024 r.')
 
 @section('content')
-    <section class="hero regulamin-hero" aria-labelledby="rules-page-title">
-        <div class="hero-content regulamin-hero-content">
-            <span class="category-tag">DOKUMENTACJA FORMALNA</span>
-            <h1 id="rules-page-title">Regulamin <span class="highlight">Klubu</span></h1>
+    <x-page-hero id="rules-page-title" eyebrow="DOKUMENTACJA FORMALNA" class="regulamin-hero">
+        <x-slot:title>Regulamin <span class="highlight">Klubu</span></x-slot:title>
+        <x-slot:description>
             <p>Regulamin Klubu Strzeleckiego „KROKUS” Ligi Obrony Kraju w Nowym Sączu (tekst jednolity po zmianach z 3
                 lutego 2024 r.).</p>
-        </div>
-    </section>
+        </x-slot:description>
+    </x-page-hero>
 
-    <section class="features-section regulamin-section" aria-label="Treść regulaminu">
+    <section class="features-section features-section--flush" aria-label="Treść regulaminu">
         <article class="card regulamin-card">
-            <div class="card-code">
-                <span>[ DOC_ID: REG-LOK-2024 ]</span>
-            </div>
+            <span class="card-code">[ DOC_ID: REG-LOK-2024 ]</span>
 
             <!-- Nagłówek prawniczy dokumentu -->
             <div class="regulamin-header">
@@ -29,7 +26,7 @@
             <div class="regulamin-body">
 
                 <!-- Rozdział I -->
-                <div>
+                <section>
                     <h3 class="regulamin-chapter-title">
                         Rozdział I — Postanowienia ogólne
                     </h3>
@@ -90,12 +87,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <hr class="regulamin-divider">
+                </section>
 
                 <!-- Rozdział II -->
-                <div>
+                <section>
                     <h3 class="regulamin-chapter-title">
                         Rozdział II — Władze Klubu
                     </h3>
@@ -362,12 +357,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <hr class="regulamin-divider">
+                </section>
 
                 <!-- Rozdział III -->
-                <div>
+                <section>
                     <h3 class="regulamin-chapter-title">
                         Rozdział III — Członkowie Klubu – prawa i obowiązki
                     </h3>
@@ -460,12 +453,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <hr class="regulamin-divider">
+                </section>
 
                 <!-- Rozdział IV -->
-                <div>
+                <section>
                     <h3 class="regulamin-chapter-title">
                         Rozdział IV — Majątek Klubu
                     </h3>
@@ -495,12 +486,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <hr class="regulamin-divider">
+                </section>
 
                 <!-- Rozdział V -->
-                <div>
+                <section>
                     <h3 class="regulamin-chapter-title">
                         Rozdział V — Postanowienia końcowe
                     </h3>
@@ -522,14 +511,14 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
             </div>
 
-            <div class="card-footer regulamin-footer">
+            <footer class="card-footer regulamin-footer">
                 <span class="card-status">STATUS: OBOWIĄZUJĄCY</span>
                 <a href="{{ route('home') }}" class="card-link">← Powrót do strony głównej</a>
-            </div>
+            </footer>
         </article>
     </section>
 @endsection

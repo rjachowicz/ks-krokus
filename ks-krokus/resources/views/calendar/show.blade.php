@@ -85,7 +85,7 @@
             </dl>
 
             @if ($sportEvent->registration_url)
-                <div class="btn-group" style="margin-top: 24px;">
+                <div class="btn-group content-actions">
                     <a
                         href="{{ $sportEvent->registration_url }}"
                         class="btn btn-primary"

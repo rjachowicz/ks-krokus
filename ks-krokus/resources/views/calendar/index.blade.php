@@ -16,7 +16,7 @@
     <x-page-hero id="calendar-title" eyebrow="TERMINARZ SPORTOWY" class="content-hero">
         <x-slot:title>Kalendarz <span class="highlight">zawodów i treningów</span></x-slot:title>
         <x-slot:description>
-            <p>Pełny terminarz klubowy. Na telefonie kalendarz automatycznie zmienia się w czytelną agendę.</p>
+            <p>Terminy zawodów, treningów i pozostałych wydarzeń klubowych w jednym miejscu.</p>
         </x-slot:description>
     </x-page-hero>
 
@@ -49,7 +49,9 @@
                 </select>
             </label>
             <button type="submit" class="btn btn-primary">Filtruj</button>
-            <a href="{{ route('calendar.index', ['month' => $displayDate->month, 'year' => $displayDate->year]) }}" class="btn btn-secondary">Wyczyść</a>
+            @if (request()->hasAny(['event_type', 'discipline', 'competition_system']))
+                <a href="{{ route('calendar.index', ['month' => $displayDate->month, 'year' => $displayDate->year]) }}" class="btn btn-secondary">Wyczyść</a>
+            @endif
         </form>
 
         <div class="calendar-toolbar">
@@ -82,39 +84,43 @@
         </div>
 
         <div class="calendar-legend" aria-label="Legenda">
-            <span><i class="calendar-legend__dot calendar-legend__dot--competition"></i> Zawody</span>
-            <span><i class="calendar-legend__dot calendar-legend__dot--training"></i> Treningi</span>
+            <span><span class="calendar-legend__dot calendar-legend__dot--competition" aria-hidden="true"></span> Zawody</span>
+            <span><span class="calendar-legend__dot calendar-legend__dot--training" aria-hidden="true"></span> Treningi</span>
         </div>
 
-        <div class="month-calendar">
-            <div class="month-calendar__weekdays" aria-hidden="true">
-                @foreach (['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'] as $weekday)
-                    <span>{{ $weekday }}</span>
-                @endforeach
+        @if ($events->isEmpty())
+            <p class="content-empty">Brak wydarzeń spełniających wybrane kryteria w tym miesiącu.</p>
+        @else
+            <div class="month-calendar">
+                <div class="month-calendar__weekdays" aria-hidden="true">
+                    @foreach (['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'] as $weekday)
+                        <span>{{ $weekday }}</span>
+                    @endforeach
+                </div>
+                <div class="month-calendar__grid">
+                    @foreach ($days as $day)
+                        @php($dayEvents = $eventsByDate->get($day->toDateString(), collect()))
+                        <section class="calendar-day {{ $day->month !== $displayDate->month ? 'calendar-day--outside' : '' }} {{ $day->isToday() ? 'calendar-day--today' : '' }}" aria-label="{{ $day->translatedFormat('l, j F Y') }}">
+                            <header>
+                                <span class="calendar-day__weekday">{{ ucfirst($day->translatedFormat('D')) }}</span>
+                                <time datetime="{{ $day->toDateString() }}">{{ $day->day }}</time>
+                            </header>
+                            <div class="calendar-day__events">
+                                @foreach ($dayEvents as $event)
+                                    <a class="calendar-event calendar-event--{{ $event->event_type->value }}" href="{{ route('calendar.show', $event) }}">
+                                        <time datetime="{{ $event->start_at->toIso8601String() }}">{{ $event->start_at->format('H:i') }}</time>
+                                        <strong>{{ $event->title }}</strong>
+                                        @if ($event->location_name)<span>{{ $event->location_name }}</span>@endif
+                                    </a>
+                                @endforeach
+                                @if ($dayEvents->isEmpty())
+                                    <span class="calendar-day__empty">Brak wydarzeń</span>
+                                @endif
+                            </div>
+                        </section>
+                    @endforeach
+                </div>
             </div>
-            <div class="month-calendar__grid">
-                @foreach ($days as $day)
-                    @php($dayEvents = $eventsByDate->get($day->toDateString(), collect()))
-                    <section class="calendar-day {{ $day->month !== $displayDate->month ? 'calendar-day--outside' : '' }} {{ $day->isToday() ? 'calendar-day--today' : '' }}" aria-label="{{ $day->translatedFormat('l, j F Y') }}">
-                        <header>
-                            <span class="calendar-day__weekday">{{ ucfirst($day->translatedFormat('D')) }}</span>
-                            <time datetime="{{ $day->toDateString() }}">{{ $day->day }}</time>
-                        </header>
-                        <div class="calendar-day__events">
-                            @foreach ($dayEvents as $event)
-                                <a class="calendar-event calendar-event--{{ $event->event_type->value }}" href="{{ route('calendar.show', $event) }}">
-                                    <time datetime="{{ $event->start_at->toIso8601String() }}">{{ $event->start_at->format('H:i') }}</time>
-                                    <strong>{{ $event->title }}</strong>
-                                    @if ($event->location_name)<span>{{ $event->location_name }}</span>@endif
-                                </a>
-                            @endforeach
-                            @if ($dayEvents->isEmpty())
-                                <span class="calendar-day__empty">Brak wydarzeń</span>
-                            @endif
-                        </div>
-                    </section>
-                @endforeach
-            </div>
-        </div>
+        @endif
     </section>
 @endsection

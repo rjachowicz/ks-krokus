@@ -4,12 +4,10 @@
 @section('admin_title', 'Edycja funkcji klubowej')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>{{ $position->name }}</h1>
-            <p>Edytuj opis, kolejność oraz przypisane osoby.</p>
-        </div>
-    </header>
+    <x-admin-page-header
+        :title="$position->name"
+        description="Edytuj opis, kolejność oraz przypisane osoby."
+    />
 
     <form method="POST" action="{{ route('admin.positions.update', $position) }}" class="admin-card admin-form">
         @csrf

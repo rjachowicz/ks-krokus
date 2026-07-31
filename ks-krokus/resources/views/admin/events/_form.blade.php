@@ -34,7 +34,7 @@
 @endphp
 
 <div class="admin-form-grid admin-form-grid--3">
-    <div class="span-full"><h3 class="admin-section-title">Podstawowe informacje</h3></div>
+    <h2 class="admin-section-title span-full">Podstawowe informacje</h2>
     <label class="span-full">
         Nazwa wydarzenia
         <input id="event-title" type="text" name="title" value="{{ old('title', $event->title ?? '') }}" autocomplete="off" required autofocus
@@ -73,9 +73,7 @@
         @error('is_public') <span id="event-public-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Termin i zapisy</h3>
-    </div>
+    <h2 class="admin-section-title span-full">Termin i zapisy</h2>
 
     <label>
         Początek
@@ -116,9 +114,7 @@
         @error('registration_url') <span id="event-registration-url-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Miejsce i klasyfikacja</h3>
-    </div>
+    <h2 class="admin-section-title span-full">Miejsce i klasyfikacja</h2>
 
     <label>
         Nazwa miejsca
@@ -163,41 +159,41 @@
         @error('description') <span id="event-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Konkurencje wydarzenia</h3>
+    <fieldset class="admin-choice-section span-full">
+        <legend class="admin-section-title">Konkurencje wydarzenia</legend>
         <p class="form-help">
             Dla treningów możesz wybrać ćwiczone konkurencje. Dla zawodów wybór definiuje pozycje dostępne
             przy dodawaniu wyników.
         </p>
         @error('competition_ids') <span id="event-competitions-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         @error('competition_ids.*') <span id="event-competition-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-    </div>
 
-    <div class="admin-check-grid span-full">
-        @foreach ($competitionDefinitions as $group => $definitions)
-            <div class="admin-card">
-                <h4>{{ $group }}</h4>
+        <div class="admin-check-grid">
+            @foreach ($competitionDefinitions as $group => $definitions)
+                <fieldset class="admin-option-group">
+                    <legend>{{ $group }}</legend>
 
-                @foreach ($definitions as $definition)
-                    <label class="admin-check-option">
-                        <input
-                            type="checkbox"
-                            name="competition_ids[]"
-                            value="{{ $definition->id }}"
-                            @checked(in_array($definition->id, $selectedCompetitionIds, true))
-                            @if ($competitionErrorIds !== '')
-                                aria-invalid="true" aria-describedby="{{ $competitionErrorIds }}"
-                            @endif
-                        >
-                        <span>
-                            <strong>{{ $definition->name }}</strong><br>
-                            <code>{{ $definition->code }}</code>
-                        </span>
-                    </label>
-                @endforeach
-            </div>
-        @endforeach
-    </div>
+                    @foreach ($definitions as $definition)
+                        <label class="admin-check-option">
+                            <input
+                                type="checkbox"
+                                name="competition_ids[]"
+                                value="{{ $definition->id }}"
+                                @checked(in_array($definition->id, $selectedCompetitionIds, true))
+                                @if ($competitionErrorIds !== '')
+                                    aria-invalid="true" aria-describedby="{{ $competitionErrorIds }}"
+                                @endif
+                            >
+                            <span>
+                                <strong>{{ $definition->name }}</strong><br>
+                                <code>{{ $definition->code }}</code>
+                            </span>
+                        </label>
+                    @endforeach
+                </fieldset>
+            @endforeach
+        </div>
+    </fieldset>
 </div>
 
 <div class="admin-form-actions">

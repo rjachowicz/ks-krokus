@@ -4,12 +4,10 @@
 @section('admin_title', 'Nowa konkurencja')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Dodaj konkurencję</h1>
-            <p>Rozszerz listę konkurencji ISSF lub IPSC.</p>
-        </div>
-    </header>
+    <x-admin-page-header
+        title="Dodaj konkurencję"
+        description="Rozszerz listę konkurencji ISSF lub IPSC."
+    />
 
     <form method="POST" action="{{ route('admin.competitions.store') }}" class="admin-card admin-form">
         @csrf

@@ -4,13 +4,11 @@
 @section('admin_title', 'Edycja wydarzenia')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>{{ $event->title }}</h1>
-            <p>{{ $event->start_at->format('d.m.Y H:i') }} — {{ $event->location_name }}</p>
-        </div>
-
-        <div class="admin-actions">
+    <x-admin-page-header
+        :title="$event->title"
+        :description="$event->start_at->format('d.m.Y H:i').' — '.$event->location_name"
+    >
+        <x-slot:actions>
             @if ($event->event_type === \App\Enums\EventType::Competition && $event->eventCompetitions()->exists())
                 <a
                     href="{{ route('admin.results.create', ['event_competition_id' => $event->eventCompetitions()->value('id')]) }}"
@@ -30,8 +28,8 @@
                     Podgląd publiczny
                 </a>
             @endif
-        </div>
-    </header>
+        </x-slot:actions>
+    </x-admin-page-header>
 
     <form method="POST" action="{{ route('admin.events.update', $event) }}" class="admin-card admin-form">
         @csrf

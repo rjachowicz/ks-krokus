@@ -24,7 +24,7 @@
                 </a>
 
                 @if (auth()->user()->canManageContent())
-                    <div class="admin-nav__label">Treści</div>
+                    <span class="admin-nav__label">Treści</span>
 
                     <a
                         href="{{ route('admin.posts.index') }}"
@@ -52,7 +52,7 @@
                 @endif
 
                 @if (auth()->user()->isAdmin())
-                    <div class="admin-nav__label">Administracja</div>
+                    <span class="admin-nav__label">Administracja</span>
 
                     <a
                         href="{{ route('admin.users.index') }}"
@@ -79,7 +79,7 @@
                     </a>
                 @endif
 
-                <div class="admin-nav__label">Strona</div>
+                <span class="admin-nav__label">Strona</span>
 
                 <a href="{{ route('home') }}" target="_blank" rel="noopener noreferrer">
                     Otwórz stronę

@@ -72,7 +72,7 @@
             @endauth
 
             <button
-                class="icon-button theme-toggle-btn"
+                class="icon-button"
                 type="button"
                 aria-label="Przełącz motyw kolorystyczny"
                 title="Przełącz motyw"

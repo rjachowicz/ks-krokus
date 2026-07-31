@@ -4,14 +4,14 @@
 @section('admin_title', 'Aktualności')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Aktualności</h1>
-            <p>Wpisy tekstowe, zdjęcia główne i galerie publikowane na stronie klubu.</p>
-        </div>
-
-        <a href="{{ route('admin.posts.create') }}" class="btn btn-primary">Dodaj aktualność</a>
-    </header>
+    <x-admin-page-header
+        title="Aktualności"
+        description="Wpisy tekstowe, zdjęcia główne i galerie publikowane na stronie klubu."
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.posts.create') }}" class="btn btn-primary">Dodaj aktualność</a>
+        </x-slot:actions>
+    </x-admin-page-header>
 
     <form method="GET" class="admin-filter">
         <label>
@@ -33,11 +33,14 @@
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>
-        <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @if (request()->hasAny(['q', 'status']))
+            <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @endif
     </form>
 
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" aria-label="Lista aktualności" tabindex="0">
         <table class="admin-table">
+            <caption class="sr-only">Lista aktualności</caption>
             <thead>
                 <tr>
                     <th>Tytuł</th>
@@ -50,18 +53,18 @@
             <tbody>
                 @forelse ($posts as $post)
                     <tr>
-                        <td>
+                        <td data-label="Tytuł">
                             <strong>{{ $post->title }}</strong><br>
                             <code>{{ $post->slug }}</code>
                         </td>
-                        <td>{{ $post->author?->name ?? '—' }}</td>
-                        <td>
+                        <td data-label="Autor">{{ $post->author?->name ?? '—' }}</td>
+                        <td data-label="Status">
                             <span class="admin-badge {{ $post->status === \App\Enums\PublicationStatus::Published ? 'admin-badge--success' : 'admin-badge--warning' }}">
                                 {{ $post->status->label() }}
                             </span>
                         </td>
-                        <td>{{ $post->published_at?->format('d.m.Y H:i') ?? '—' }}</td>
-                        <td>
+                        <td data-label="Publikacja">{{ $post->published_at?->format('d.m.Y H:i') ?? '—' }}</td>
+                        <td data-label="Operacje">
                             <div class="admin-table__actions">
                                 <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn-secondary">Edytuj</a>
 

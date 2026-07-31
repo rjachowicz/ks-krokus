@@ -1,9 +1,9 @@
 .hero-stats-bar {
     width: min(var(--container-width), calc(100% - var(--page-gutter)));
-    margin: 0 auto 84px;
+    margin: 0 auto var(--section-space);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+    gap: var(--content-gap);
 }
 
 .stat-card {
@@ -12,7 +12,7 @@
     min-height: 148px;
     padding: 28px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-panel);
     background: var(--surface);
     box-shadow: var(--shadow-sm);
     transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
@@ -55,7 +55,7 @@
 .bento-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
+    gap: var(--content-gap);
     align-items: stretch;
 }
 
@@ -77,7 +77,7 @@
     padding: clamp(24px, 3vw, 34px);
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: var(--radius-panel);
     background: var(--surface);
     box-shadow: var(--shadow-sm);
     transition:
@@ -85,10 +85,6 @@
         border-color 180ms ease,
         background 180ms ease,
         box-shadow 180ms ease;
-}
-
-.card-equal {
-    height: 100%;
 }
 
 .card::after {

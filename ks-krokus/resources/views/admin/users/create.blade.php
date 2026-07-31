@@ -4,12 +4,10 @@
 @section('admin_title', 'Nowy użytkownik')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Dodaj użytkownika</h1>
-            <p>Utwórz konto i przypisz rolę systemową.</p>
-        </div>
-    </header>
+    <x-admin-page-header
+        title="Dodaj użytkownika"
+        description="Utwórz konto i przypisz rolę systemową."
+    />
 
     <form method="POST" action="{{ route('admin.users.store') }}" class="admin-card admin-form">
         @csrf

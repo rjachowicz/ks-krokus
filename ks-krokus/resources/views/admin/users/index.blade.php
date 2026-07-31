@@ -4,14 +4,14 @@
 @section('admin_title', 'Użytkownicy')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Użytkownicy</h1>
-            <p>Konta administratorów, moderatorów, użytkowników, trenerów i osób funkcyjnych.</p>
-        </div>
-
-        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Dodaj użytkownika</a>
-    </header>
+    <x-admin-page-header
+        title="Użytkownicy"
+        description="Konta administratorów, moderatorów, użytkowników, trenerów i osób funkcyjnych."
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Dodaj użytkownika</a>
+        </x-slot:actions>
+    </x-admin-page-header>
 
     <form method="GET" class="admin-filter">
         <label>
@@ -43,11 +43,14 @@
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @if (request()->hasAny(['q', 'role', 'active']))
+            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @endif
     </form>
 
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" aria-label="Lista użytkowników" tabindex="0">
         <table class="admin-table">
+            <caption class="sr-only">Lista użytkowników</caption>
             <thead>
                 <tr>
                     <th>Użytkownik</th>
@@ -61,13 +64,13 @@
             <tbody>
                 @forelse ($users as $user)
                     <tr>
-                        <td>
+                        <td data-label="Użytkownik">
                             <strong>{{ $user->name }}</strong><br>
                             {{ $user->email }}
                         </td>
-                        <td>{{ $user->role->label() }}</td>
-                        <td>{{ $user->phone ?: '—' }}</td>
-                        <td>
+                        <td data-label="Rola">{{ $user->role->label() }}</td>
+                        <td data-label="Telefon">{{ $user->phone ?: '—' }}</td>
+                        <td data-label="Funkcje">
                             @if ($user->is_trainer)
                                 <span class="admin-badge admin-badge--success">Trener</span>
                             @endif
@@ -75,12 +78,12 @@
                                 <span class="admin-badge">Dostęp do strzelnicy</span>
                             @endif
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="admin-badge {{ $user->is_active ? 'admin-badge--success' : 'admin-badge--danger' }}">
                                 {{ $user->is_active ? 'Aktywne' : 'Wyłączone' }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Operacje">
                             <div class="admin-table__actions">
                                 <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary">Edytuj</a>
 

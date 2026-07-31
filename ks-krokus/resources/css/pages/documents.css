@@ -3,7 +3,7 @@
     margin-bottom: 36px;
 }
 
-.regulamin-hero-content {
+.regulamin-hero .hero-content {
     max-width: 930px;
 }
 
@@ -52,9 +52,25 @@
 
 .regulamin-body {
     display: grid;
-    gap: 34px;
+    gap: 0;
     color: var(--text-muted);
     line-height: 1.8;
+}
+
+.regulamin-body > section:not(.rodo-section) {
+    padding-block: 34px;
+}
+
+.regulamin-body > section:not(.rodo-section):first-child {
+    padding-top: 0;
+}
+
+.regulamin-body > section:not(.rodo-section):last-child {
+    padding-bottom: 0;
+}
+
+.regulamin-body > section + section {
+    border-top: 1px solid var(--line);
 }
 
 .regulamin-chapter-title {
@@ -119,26 +135,13 @@
     overflow-wrap: anywhere;
 }
 
-.regulamin-divider {
-    width: 100%;
-    margin: 0;
-    border: 0;
-    border-top: 1px solid var(--line);
-}
-
 .regulamin-footer {
     margin-top: 44px;
 }
 
-.rodo-card {
-    width: 100%;
-}
-
-.rodo-body {
-    gap: 0;
-}
-
 .rodo-section {
+    display: grid;
+    gap: 16px;
     padding-block: 30px;
 }
 
@@ -150,13 +153,8 @@
     padding-bottom: 0;
 }
 
-.rodo-content {
-    display: grid;
-    min-width: 0;
-    gap: 16px;
-}
-
-.rodo-content p {
+.rodo-section .regulamin-chapter-title,
+.rodo-section > p {
     margin-bottom: 0;
 }
 
@@ -200,6 +198,7 @@
 }
 
 .rodo-note {
+    margin: 0;
     padding: 15px 17px;
     border: 1px solid rgba(209, 169, 54, 0.42);
     border-radius: 8px;

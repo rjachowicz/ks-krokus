@@ -5,7 +5,7 @@
 @section('content')
     <section class="auth-card">
         <a href="{{ route('home') }}" class="auth-card__brand">
-            <span class="logo-mark">KS</span>
+            <span class="logo-mark" aria-hidden="true">KS</span>
             KS KROKUS
         </a>
 

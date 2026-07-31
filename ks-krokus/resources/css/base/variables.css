@@ -25,6 +25,11 @@ html[data-theme="light"] {
     --font-mono: "JetBrains Mono", monospace;
     --container-width: 1280px;
     --page-gutter: 32px;
+    --section-space: clamp(56px, 7vw, 84px);
+    --content-gap: clamp(16px, 2vw, 20px);
+    --control-height: 46px;
+    --radius-control: 9px;
+    --radius-panel: 14px;
 }
 
 html[data-theme="dark"] {

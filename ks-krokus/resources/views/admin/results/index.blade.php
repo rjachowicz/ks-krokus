@@ -4,14 +4,14 @@
 @section('admin_title', 'Wyniki')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Wyniki zawodów</h1>
-            <p>Rezultaty przypisane do wydarzeń, konkurencji i użytkowników.</p>
-        </div>
-
-        <a href="{{ route('admin.results.create') }}" class="btn btn-primary">Dodaj wynik</a>
-    </header>
+    <x-admin-page-header
+        title="Wyniki zawodów"
+        description="Rezultaty przypisane do wydarzeń, konkurencji i użytkowników."
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.results.create') }}" class="btn btn-primary">Dodaj wynik</a>
+        </x-slot:actions>
+    </x-admin-page-header>
 
     <form method="GET" class="admin-filter">
         <label>
@@ -48,11 +48,14 @@
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>
-        <a href="{{ route('admin.results.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @if (request()->hasAny(['q', 'event_id', 'user_id']))
+            <a href="{{ route('admin.results.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @endif
     </form>
 
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" aria-label="Lista wyników" tabindex="0">
         <table class="admin-table">
+            <caption class="sr-only">Lista wyników</caption>
             <thead>
                 <tr>
                     <th>Wydarzenie</th>
@@ -67,22 +70,22 @@
             <tbody>
                 @forelse ($results as $result)
                     <tr>
-                        <td>
+                        <td data-label="Wydarzenie">
                             <strong>{{ $result->eventCompetition->event->title }}</strong><br>
                             {{ $result->eventCompetition->event->start_at->format('d.m.Y') }}
                         </td>
-                        <td>
+                        <td data-label="Konkurencja">
                             {{ $result->eventCompetition->competition->name }}<br>
                             <code>{{ $result->eventCompetition->competition->code }}</code>
                         </td>
-                        <td>
+                        <td data-label="Zawodnik">
                             <strong>{{ $result->displayName() }}</strong><br>
                             {{ $result->club_name ?: '—' }}
                         </td>
-                        <td>{{ $result->score }}</td>
-                        <td>{{ $result->place ?? '—' }}</td>
-                        <td>{{ $result->status->label() }}</td>
-                        <td>
+                        <td data-label="Wynik">{{ $result->score }}</td>
+                        <td data-label="Miejsce">{{ $result->place ?? '—' }}</td>
+                        <td data-label="Status">{{ $result->status->label() }}</td>
+                        <td data-label="Operacje">
                             <div class="admin-table__actions">
                                 <a href="{{ route('admin.results.edit', $result) }}" class="btn btn-secondary">Edytuj</a>
 

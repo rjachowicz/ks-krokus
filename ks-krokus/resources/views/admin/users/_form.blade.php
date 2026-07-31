@@ -4,7 +4,7 @@
 @endphp
 
 <div class="admin-form-grid">
-    <div class="span-full"><h3 class="admin-section-title">Dane konta</h3></div>
+    <h2 class="admin-section-title span-full">Dane konta</h2>
     <label>
         Imię i nazwisko
         <input id="user-name" type="text" name="name" value="{{ old('name', $editedUser->name ?? '') }}" autocomplete="name" required autofocus
@@ -52,9 +52,7 @@
         @error('password_confirmation') <span id="user-password-confirmation-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Uprawnienia i widoczność</h3>
-    </div>
+    <h2 class="admin-section-title span-full">Uprawnienia i widoczność</h2>
 
     <label class="admin-check-option">
         <input type="hidden" name="is_active" value="0">

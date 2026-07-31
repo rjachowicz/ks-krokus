@@ -5,7 +5,11 @@ main {
 
 .features-section {
     width: min(var(--container-width), calc(100% - var(--page-gutter)));
-    margin: 84px auto;
+    margin: var(--section-space) auto;
+}
+
+.features-section.features-section--flush {
+    margin-top: 0;
 }
 
 .section-header {
@@ -13,7 +17,7 @@ main {
     align-items: flex-end;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 32px;
+    margin-bottom: clamp(24px, 3vw, 32px);
     padding-bottom: 18px;
     border-bottom: 1px solid var(--line);
 }

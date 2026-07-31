@@ -12,7 +12,7 @@
 @endphp
 
 <div class="admin-form-grid">
-    <div class="span-full"><h3 class="admin-section-title">Wydarzenie i zawodnik</h3></div>
+    <h2 class="admin-section-title span-full">Wydarzenie i zawodnik</h2>
     <label class="span-full">
         Wydarzenie i konkurencja
         <select id="result-event-competition" name="event_competition_id" required autofocus
@@ -62,9 +62,7 @@
         @error('participant_name') <span id="result-participant-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Wynik i klasyfikacja</h3>
-    </div>
+    <h2 class="admin-section-title span-full">Wynik i klasyfikacja</h2>
 
     <label>
         Klub

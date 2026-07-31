@@ -20,11 +20,11 @@
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section club-section" aria-label="Informacje i procedury klubowe">
+    <section class="features-section features-section--flush" aria-label="Informacje i procedury klubowe">
         <div class="bento-grid">
             <x-content-card
                 id="finanse"
-                class="bento-span-2 card-equal"
+                class="bento-span-2"
                 code="SEC_01 // FINANSE I SKŁADKI"
                 title="Składki członkowskie i rachunek bankowy"
                 status="TERMIN: {{ $finance['membership_deadline'] }}"
@@ -77,7 +77,7 @@
 
             <x-content-card
                 id="dokumenty"
-                class="card-equal card-highlight-download"
+                class="card-highlight-download"
                 code="SEC_02 // DOKUMENTACJA"
                 badge="PLIK DO POBRANIA"
                 title="Deklaracja członkowska"
@@ -101,7 +101,6 @@
 
             <x-content-card
                 id="szkolenie-patentowe"
-                class="card-equal"
                 code="SEC_03 // SZKOLENIE PATENTOWE"
                 badge="NOWY REGULAMIN"
                 title="Szkolenie do egzaminu na patent"
@@ -139,7 +138,7 @@
 
             @if ($trainers->isNotEmpty())
                 <x-content-card
-                    class="bento-full card-equal"
+                    class="bento-full"
                     code="SEC_03A // KADRA"
                     title="Trenerzy i instruktorzy"
                     status="{{ $trainers->count() }} OSÓB"
@@ -172,7 +171,7 @@
 
             <x-content-card
                 id="refundacja"
-                class="bento-span-2 card-equal card-highlight-download"
+                class="bento-span-2 card-highlight-download"
                 code="SEC_04 // SPORT I REFUNDACJA"
                 badge="WNIOSEK DO POBRANIA"
                 title="Zwrot kosztów za zawody"
@@ -216,7 +215,7 @@
 
             <x-content-card
                 id="pozwolenie"
-                class="bento-span-2 card-equal card-highlight-download"
+                class="bento-span-2 card-highlight-download"
                 code="SEC_05 // PROCEDURY URZĘDOWE"
                 badge="UCHWAŁA DO POBRANIA"
                 title="Pozwolenie na broń – zaświadczenia klubowe"
@@ -271,7 +270,6 @@
             </x-content-card>
 
             <x-content-card
-                class="card-equal"
                 code="SEC_06 // SPOŁECZNOŚĆ"
                 title="WhatsApp – Społeczność Krokus"
                 status="DOBROWOLNA"
@@ -288,14 +286,14 @@
                     lub do członków społeczności.
                 </p>
 
-                <div class="whatsapp-disclaimer">
+                <p class="whatsapp-disclaimer">
                     Oficjalne wydarzenia (zawody, szkolenia) publikowane są na stronie internetowej.
-                </div>
+                </p>
             </x-content-card>
 
             <x-content-card
                 id="dostep-do-strzelnicy"
-                class="bento-full card-equal"
+                class="bento-full"
                 code="SEC_07 // INFRASTRUKTURA"
                 title="Elektroniczny dostęp do strzelnicy"
                 status="KONTROLA DOSTĘPU"

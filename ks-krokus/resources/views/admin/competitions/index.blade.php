@@ -4,14 +4,14 @@
 @section('admin_title', 'Konkurencje')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Słownik konkurencji</h1>
-            <p>Konkurencje ISSF i IPSC używane w wydarzeniach oraz wynikach.</p>
-        </div>
-
-        <a href="{{ route('admin.competitions.create') }}" class="btn btn-primary">Dodaj konkurencję</a>
-    </header>
+    <x-admin-page-header
+        title="Słownik konkurencji"
+        description="Konkurencje ISSF i IPSC używane w wydarzeniach oraz wynikach."
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.competitions.create') }}" class="btn btn-primary">Dodaj konkurencję</a>
+        </x-slot:actions>
+    </x-admin-page-header>
 
     <form method="GET" class="admin-filter">
         <label>
@@ -37,11 +37,14 @@
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>
-        <a href="{{ route('admin.competitions.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @if (request()->hasAny(['competition_system', 'discipline']))
+            <a href="{{ route('admin.competitions.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @endif
     </form>
 
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" aria-label="Lista konkurencji" tabindex="0">
         <table class="admin-table">
+            <caption class="sr-only">Lista konkurencji</caption>
             <thead>
                 <tr>
                     <th>Kod</th>
@@ -55,16 +58,16 @@
             <tbody>
                 @forelse ($definitions as $definition)
                     <tr>
-                        <td><code>{{ $definition->code }}</code></td>
-                        <td>{{ $definition->name }}</td>
-                        <td>{{ $definition->competition_system->label() }}</td>
-                        <td>{{ $definition->discipline->label() }}</td>
-                        <td>
+                        <td data-label="Kod"><code>{{ $definition->code }}</code></td>
+                        <td data-label="Nazwa">{{ $definition->name }}</td>
+                        <td data-label="System">{{ $definition->competition_system->label() }}</td>
+                        <td data-label="Dyscyplina">{{ $definition->discipline->label() }}</td>
+                        <td data-label="Status">
                             <span class="admin-badge {{ $definition->is_active ? 'admin-badge--success' : 'admin-badge--danger' }}">
                                 {{ $definition->is_active ? 'Aktywna' : 'Wyłączona' }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Operacje">
                             <div class="admin-table__actions">
                                 <a href="{{ route('admin.competitions.edit', $definition) }}" class="btn btn-secondary">Edytuj</a>
 

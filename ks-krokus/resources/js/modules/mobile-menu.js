@@ -1,5 +1,3 @@
-const DESKTOP_BREAKPOINT = 960;
-
 export function initMobileMenu() {
     const button = document.querySelector('[data-mobile-menu-toggle]');
     const navigation = document.querySelector('[data-main-navigation]');
@@ -8,11 +6,25 @@ export function initMobileMenu() {
         return;
     }
 
+    const mobileNavigation = window.matchMedia('(max-width: 959px)');
+
+    const syncAvailability = () => {
+        const hidden = mobileNavigation.matches && !navigation.classList.contains('is-open');
+        navigation.inert = hidden;
+
+        if (mobileNavigation.matches) {
+            navigation.setAttribute('aria-hidden', String(hidden));
+        } else {
+            navigation.removeAttribute('aria-hidden');
+        }
+    };
+
     const closeMenu = () => {
         navigation.classList.remove('is-open');
         button.classList.remove('is-open');
         button.setAttribute('aria-expanded', 'false');
         button.setAttribute('aria-label', 'Otwórz menu');
+        syncAvailability();
     };
 
     const openMenu = () => {
@@ -20,6 +32,7 @@ export function initMobileMenu() {
         button.classList.add('is-open');
         button.setAttribute('aria-expanded', 'true');
         button.setAttribute('aria-label', 'Zamknij menu');
+        syncAvailability();
     };
 
     button.addEventListener('click', () => {
@@ -45,15 +58,12 @@ export function initMobileMenu() {
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && navigation.classList.contains('is-open')) {
             closeMenu();
             button.focus();
         }
     });
 
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= DESKTOP_BREAKPOINT) {
-            closeMenu();
-        }
-    });
+    mobileNavigation.addEventListener('change', closeMenu);
+    closeMenu();
 }

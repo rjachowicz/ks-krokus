@@ -19,7 +19,7 @@
     <section class="features-section" aria-labelledby="news-list-title">
         <x-section-heading id="news-list-title" title="Wszystkie aktualności" meta="NEWS_ARCHIVE" />
 
-        <form method="GET" class="content-toolbar">
+        <form method="GET" class="content-toolbar" aria-label="Filtrowanie aktualności">
             <label>
                 Szukaj
                 <input
@@ -38,7 +38,7 @@
         </form>
 
         @if ($posts->isEmpty())
-            <div class="content-empty">Nie znaleziono opublikowanych aktualności.</div>
+            <p class="content-empty">Nie znaleziono opublikowanych aktualności.</p>
         @else
             <div class="news-grid">
                 @foreach ($posts as $post)

@@ -4,17 +4,18 @@
 @section('admin_title', 'Funkcje klubowe')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Funkcje klubowe</h1>
-            <p>Przypisywanie użytkowników do ról takich jak prezes, skarbnik, sekretarz i komisja rewizyjna.</p>
-        </div>
+    <x-admin-page-header
+        title="Funkcje klubowe"
+        description="Przypisywanie użytkowników do ról takich jak prezes, skarbnik, sekretarz i komisja rewizyjna."
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.positions.create') }}" class="btn btn-primary">Dodaj funkcję</a>
+        </x-slot:actions>
+    </x-admin-page-header>
 
-        <a href="{{ route('admin.positions.create') }}" class="btn btn-primary">Dodaj funkcję</a>
-    </header>
-
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" aria-label="Lista funkcji klubowych" tabindex="0">
         <table class="admin-table">
+            <caption class="sr-only">Lista funkcji klubowych</caption>
             <thead>
                 <tr>
                     <th>Kolejność</th>
@@ -27,24 +28,24 @@
             <tbody>
                 @forelse ($positions as $position)
                     <tr>
-                        <td>{{ $position->sort_order }}</td>
-                        <td>
+                        <td data-label="Kolejność">{{ $position->sort_order }}</td>
+                        <td data-label="Funkcja">
                             <strong>{{ $position->name }}</strong><br>
                             <code>{{ $position->slug }}</code>
                         </td>
-                        <td>
+                        <td data-label="Przypisane osoby">
                             @forelse ($position->users as $user)
                                 <span class="admin-badge">{{ $user->name }}</span>
                             @empty
                                 —
                             @endforelse
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="admin-badge {{ $position->is_active ? 'admin-badge--success' : 'admin-badge--danger' }}">
                                 {{ $position->is_active ? 'Aktywna' : 'Wyłączona' }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Operacje">
                             <div class="admin-table__actions">
                                 <a href="{{ route('admin.positions.edit', $position) }}" class="btn btn-secondary">Edytuj</a>
 

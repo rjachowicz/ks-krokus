@@ -4,15 +4,10 @@
 @section('admin_title', 'Edycja wyniku')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>{{ $result->displayName() }}</h1>
-            <p>
-                {{ $result->eventCompetition->event->title }} —
-                {{ $result->eventCompetition->competition->name }}
-            </p>
-        </div>
-    </header>
+    <x-admin-page-header
+        :title="$result->displayName()"
+        :description="$result->eventCompetition->event->title.' — '.$result->eventCompetition->competition->name"
+    />
 
     <form method="POST" action="{{ route('admin.results.update', $result) }}" class="admin-card admin-form">
         @csrf

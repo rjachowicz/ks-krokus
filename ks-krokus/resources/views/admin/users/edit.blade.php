@@ -4,12 +4,7 @@
 @section('admin_title', 'Edycja użytkownika')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>{{ $editedUser->name }}</h1>
-            <p>{{ $editedUser->email }}</p>
-        </div>
-    </header>
+    <x-admin-page-header :title="$editedUser->name" :description="$editedUser->email" />
 
     <form method="POST" action="{{ route('admin.users.update', $editedUser) }}" class="admin-card admin-form">
         @csrf

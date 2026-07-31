@@ -23,7 +23,7 @@
 @endphp
 
 <div class="admin-form-grid">
-    <div class="span-full"><h3 class="admin-section-title">Treść aktualności</h3></div>
+    <h2 class="admin-section-title span-full">Treść aktualności</h2>
     <label class="span-full">
         Tytuł
         <input id="post-title" type="text" name="title" value="{{ old('title', $post->title ?? '') }}" autocomplete="off" required autofocus
@@ -59,9 +59,7 @@
         @error('content') <span id="post-content-error" class="form-error" role="alert">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Publikacja</h3>
-    </div>
+    <h2 class="admin-section-title span-full">Publikacja</h2>
 
     <label>
         Status
@@ -82,9 +80,7 @@
         @error('published_at') <span id="post-published-at-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Zdjęcie główne</h3>
-    </div>
+    <h2 class="admin-section-title span-full">Zdjęcie główne</h2>
 
     @if (isset($post) && $post->coverUrl())
         <div class="span-full image-edit-card">
@@ -135,9 +131,7 @@
         @error('cover_image_alt') <span id="post-cover-alt-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Galeria zdjęć</h3>
-    </div>
+    <h2 class="admin-section-title span-full">Galeria zdjęć</h2>
 
     <div
         class="file-upload span-full"
@@ -183,7 +177,7 @@
             @endif
         >
             @foreach ($post->images as $image)
-                <article class="image-edit-card">
+                <div class="image-edit-card">
                     <img src="{{ $image->url() }}" alt="{{ $image->alt_text ?: $post->title }}">
 
                     <div class="image-edit-card__body">
@@ -244,7 +238,7 @@
                             Usuń zdjęcie
                         </label>
                     </div>
-                </article>
+                </div>
             @endforeach
         </div>
     @endif

@@ -15,16 +15,6 @@ export function initAdminUi() {
         syncTrainerBio();
     });
 
-    document.querySelectorAll('.admin-table').forEach((table) => {
-        const labels = [...table.querySelectorAll('thead th')].map((header) => header.textContent.trim());
-
-        table.querySelectorAll('tbody tr').forEach((row) => {
-            row.querySelectorAll('td').forEach((cell, index) => {
-                cell.dataset.label = labels[index] || '';
-            });
-        });
-    });
-
     const sidebarToggle = document.querySelector('[data-admin-menu-toggle]');
     const sidebar = document.querySelector('[data-admin-sidebar]');
     const sidebarBackdrop = document.querySelector('[data-admin-menu-backdrop]');

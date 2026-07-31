@@ -24,11 +24,46 @@
     animation: toast-in 180ms ease-out;
 }
 
-.toast--success { border-left-color: #25845a; }
-.toast--error { border-left-color: var(--danger); }
-.toast p { margin: 2px 0 0; color: var(--text-muted); font-size: 0.88rem; }
-.toast__close { padding: 0 4px; border: 0; background: transparent; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; }
-.toast.is-leaving { opacity: 0; transform: translateX(20px); transition: 180ms ease; }
+.toast--success {
+    border-left-color: #25845a;
+}
+
+.toast--error {
+    border-left-color: var(--danger);
+}
+
+.toast p {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.toast__close {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    margin: -8px -10px 0 0;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.toast__close:hover {
+    background: var(--surface-muted);
+    color: var(--text);
+}
+
+.toast.is-leaving {
+    opacity: 0;
+    transform: translateX(20px);
+    transition: 180ms ease;
+}
 
 .confirm-dialog {
     width: min(480px, calc(100% - 32px));
@@ -40,16 +75,32 @@
     box-shadow: var(--shadow-lg);
 }
 
-.confirm-dialog::backdrop { background: rgba(4, 7, 12, .68); backdrop-filter: blur(3px); }
-.confirm-dialog form { padding: 24px; }
-.confirm-dialog h2 { font-family: var(--font-heading); }
-.confirm-dialog__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
-.btn-danger { border-color: var(--danger); background: var(--danger); color: var(--surface-solid); }
+.confirm-dialog::backdrop {
+    background: rgba(4, 7, 12, 0.68);
+    backdrop-filter: blur(3px);
+}
 
+.confirm-dialog form {
+    padding: 24px;
+}
+
+.confirm-dialog h2 {
+    font-family: var(--font-heading);
+}
+
+.confirm-dialog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+}
 @keyframes toast-in {
     from { opacity: 0; transform: translateY(-12px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .toast { animation: none; }
+    .toast {
+        animation: none;
+    }
 }

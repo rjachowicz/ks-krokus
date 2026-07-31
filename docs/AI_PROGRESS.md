@@ -4,7 +4,81 @@
 
 `main`
 
-## Bieżąca sesja — 2026-07-31 — ponowny pełny audyt backendu i panelu
+## Bieżąca sesja — 2026-07-31 — pełny audyt interfejsu użytkownika
+
+### Cel
+
+Przejść wszystkie widoki publiczne, logowanie i panel administracyjny, uprościć
+strukturę Blade, usunąć martwy lub zbędny CSS oraz doprowadzić układ, formularze,
+karty, tabele i kontrolki do spójnego standardu bez zmiany identyfikacji wizualnej.
+
+### Najważniejsze potwierdzone problemy
+
+- Mobilny kalendarz poniżej 680 px nadal dziedziczył siedem kolumn z widoku
+  desktopowego. Karty agendy były przez to układane w siedmiokolumnowej siatce.
+- Etykiety komórek mobilnych tabel panelu powstawały dopiero w JavaScript.
+  Bez skryptów układ kart tracił kontekst kolumn.
+- Pola filtrów miały pionowy `flex-basis: 180px` po zmianie kierunku toolbara na
+  kolumnowy, co powodowało bardzo duże puste odstępy na telefonie.
+- Puste miesiące kalendarza renderowały 35–42 puste dni, które na telefonie były
+  ukrywane bez jakiegokolwiek komunikatu dla użytkownika.
+- Style formularzy, checkboxów, selectów, błędów i tekstów pomocniczych były
+  powielone w arkuszach logowania, kontaktu i panelu.
+- Widoki zawierały powtarzalne nagłówki panelu, techniczne wrappery nagłówków
+  formularzy, niesemantyczne separatory dokumentów i klasy bez efektu.
+
+### Wykonane
+
+- [x] Przeanalizowano wszystkie 60 widoków Blade, 21 arkuszy CSS, 8 modułów
+  JavaScript i wszystkie komponenty; każda z 248 klas CSS ma potwierdzone użycie
+  (dwa warianty kalendarza są generowane dynamicznie).
+- [x] Dodano wspólny komponent nagłówka panelu i zastąpiono nim 19 duplikatów.
+  Liczba znaczników `div` w widokach spadła z 329 do 262.
+- [x] Nagłówki sekcji formularzy są bezpośrednimi `h2`, a grupy checkboxów
+  wydarzeń i funkcji klubowych używają semantycznych `fieldset` oraz `legend`.
+- [x] Uproszczono regulamin i RODO: wspólny hero, semantyczne sekcje, usunięte
+  wrappery treści i elementy `hr`, prawidłowe stopki dokumentów.
+- [x] Ujednolicono wysokość i stany pól, selecty, checkboxy, teksty pomocnicze,
+  błędy, przyciski, promienie kart, odstępy sekcji i siatki treści.
+- [x] Dodano kompletne stany `hover`, `focus-visible`, `disabled`, `readonly`
+  i `invalid`, większe cele dotykowe oraz dostępny fokus regionów tabel.
+- [x] Mobilne tabele mają etykiety `data-label` renderowane po stronie serwera,
+  podpisy `caption` i zachowują kontekst bez JavaScriptu. Usunięto martwy kod JS,
+  który przepisywał nagłówki tabel.
+- [x] Naprawiono jednokolumnową agendę kalendarza, kompaktowe filtry, czytelny
+  pusty stan, responsywne metryki dashboardu i dostępność zamkniętego menu.
+- [x] Usunięto martwe klasy CSS, klasy Blade bez stylów, zbędne klasy wysokości,
+  style inline i elementy resetowania filtrów, gdy żaden filtr nie jest aktywny.
+- [x] Dodano testy renderowania dziewięciu głównych ekranów publicznych oraz
+  regresję semantyki mobilnych tabel bez JavaScriptu.
+
+### Testy i kontrole
+
+- [x] `composer test` — 57 testów, 474 asercje.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — build Vite zakończony poprawnie.
+- [x] Edge headless — 22 ekrany, szerokości 320, 375, 768, 1024, 1366 i 1920 px,
+  oba motywy oraz otwarte menu publiczne i panelowe: 266 wariantów bez poziomego
+  overflow.
+- [x] Ręcznie oceniono 11 reprezentatywnych zrzutów: home, kalendarz, kontakt,
+  logowanie, regulamin, RODO, dashboard, menu panelu, formularz i tabelę mobilną.
+- [x] `php artisan view:cache` i `git diff --check` — poprawne.
+
+### Migracje i zmienne środowiskowe
+
+- Nie dodano migracji ani nie zmieniono schematu bazy.
+- Nie dodano zmiennych środowiskowych.
+- Tymczasowe konto, sesję, profile przeglądarki i zrzuty audytowe usunięto po
+  zakończeniu kontroli.
+
+### Znane ograniczenia
+
+- Fizyczny test NVDA/VoiceOver i audyt kontrastu narzędziem na środowisku
+  wdrożeniowym nadal wymagają zewnętrznego środowiska i odpowiedniego sprzętu.
+- Zewnętrzne obrazy oraz mapy zachowano bez zmian; ich dostępność zależy od usług
+  zewnętrznych i połączenia sieciowego.
+
+## Poprzednia sesja — 2026-07-31 — ponowny pełny audyt backendu i panelu
 
 ### Cel
 

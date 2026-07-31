@@ -4,12 +4,7 @@
 @section('admin_title', 'Edycja konkurencji')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>{{ $definition->name }}</h1>
-            <p>{{ $definition->code }}</p>
-        </div>
-    </header>
+    <x-admin-page-header :title="$definition->name" :description="$definition->code" />
 
     <form method="POST" action="{{ route('admin.competitions.update', $definition) }}" class="admin-card admin-form">
         @csrf

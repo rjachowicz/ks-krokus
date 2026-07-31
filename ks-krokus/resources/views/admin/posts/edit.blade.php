@@ -4,23 +4,20 @@
 @section('admin_title', 'Edycja aktualności')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>{{ $post->title }}</h1>
-            <p>{{ $post->status->label() }}</p>
-        </div>
-
+    <x-admin-page-header :title="$post->title" :description="$post->status->label()">
         @if ($post->isPubliclyVisible())
-            <a
-                href="{{ route('news.show', $post) }}"
-                class="btn btn-secondary"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Podgląd publiczny
-            </a>
+            <x-slot:actions>
+                <a
+                    href="{{ route('news.show', $post) }}"
+                    class="btn btn-secondary"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Podgląd publiczny
+                </a>
+            </x-slot:actions>
         @endif
-    </header>
+    </x-admin-page-header>
 
     <form
         method="POST"

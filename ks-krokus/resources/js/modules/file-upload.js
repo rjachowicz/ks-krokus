@@ -55,7 +55,7 @@ export function initFileUploads() {
             validate();
 
             [...input.files].forEach((file, index) => {
-                const item = document.createElement('article');
+                const item = document.createElement('div');
                 item.className = 'file-preview';
 
                 if (file.type.startsWith('image/')) {

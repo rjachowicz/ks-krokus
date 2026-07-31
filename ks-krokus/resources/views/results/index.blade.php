@@ -19,7 +19,7 @@
     <section class="features-section" aria-labelledby="results-list-title">
         <x-section-heading id="results-list-title" title="Archiwum wyników" meta="RESULTS_DATABASE" />
 
-        <form method="GET" class="content-toolbar">
+        <form method="GET" class="content-toolbar" aria-label="Filtrowanie wyników">
             <label>
                 Szukaj zawodów
                 <input type="search" name="q" value="{{ request('q') }}">
@@ -50,11 +50,13 @@
             </label>
 
             <button type="submit" class="btn btn-primary">Filtruj</button>
-            <a href="{{ route('results.index') }}" class="btn btn-secondary">Wyczyść</a>
+            @if (request()->hasAny(['q', 'discipline', 'competition_system']))
+                <a href="{{ route('results.index') }}" class="btn btn-secondary">Wyczyść</a>
+            @endif
         </form>
 
         @if ($events->isEmpty())
-            <div class="content-empty">Brak opublikowanych wyników.</div>
+            <p class="content-empty">Brak opublikowanych wyników.</p>
         @else
             <div class="results-event-grid">
                 @foreach ($events as $event)

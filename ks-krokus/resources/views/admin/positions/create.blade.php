@@ -4,12 +4,10 @@
 @section('admin_title', 'Nowa funkcja klubowa')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Dodaj funkcję klubową</h1>
-            <p>Utwórz rolę organizacyjną i przypisz do niej użytkowników.</p>
-        </div>
-    </header>
+    <x-admin-page-header
+        title="Dodaj funkcję klubową"
+        description="Utwórz rolę organizacyjną i przypisz do niej użytkowników."
+    />
 
     <form method="POST" action="{{ route('admin.positions.store') }}" class="admin-card admin-form">
         @csrf

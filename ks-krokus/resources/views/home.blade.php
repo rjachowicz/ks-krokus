@@ -100,7 +100,7 @@
     </section>
 
 
-    <section class="features-section home-dynamic-section" aria-labelledby="latest-news-title">
+    <section class="features-section" aria-labelledby="latest-news-title">
         <x-section-heading
             id="latest-news-title"
             title="Najnowsze aktualności"
@@ -108,9 +108,9 @@
         />
 
         @if ($latestNews->isEmpty())
-            <div class="content-empty">
+            <p class="content-empty">
                 Aktualności pojawią się po opublikowaniu pierwszego wpisu w panelu.
-            </div>
+            </p>
         @else
             <div class="news-grid">
                 @foreach ($latestNews as $post)
@@ -154,7 +154,7 @@
         @endif
     </section>
 
-    <section class="features-section home-dynamic-section" aria-labelledby="upcoming-events-title">
+    <section class="features-section" aria-labelledby="upcoming-events-title">
         <x-section-heading
             id="upcoming-events-title"
             title="Najbliższe wydarzenia"
@@ -162,9 +162,9 @@
         />
 
         @if ($upcomingEvents->isEmpty())
-            <div class="content-empty">
+            <p class="content-empty">
                 Brak zaplanowanych publicznych zawodów i treningów.
-            </div>
+            </p>
         @else
             <div class="event-grid">
                 @foreach ($upcomingEvents as $event)
@@ -207,7 +207,7 @@
     </section>
 
     @if ($recentResultEvents->isNotEmpty())
-        <section class="features-section home-dynamic-section" aria-labelledby="recent-results-title">
+        <section class="features-section" aria-labelledby="recent-results-title">
             <x-section-heading
                 id="recent-results-title"
                 title="Ostatnie rezultaty"
@@ -238,7 +238,7 @@
 
         <div class="timeline">
             <article class="timeline-item">
-                <div class="timeline-year">1999</div>
+                <span class="timeline-year">1999</span>
                 <div class="timeline-content">
                     <h3>Inicjatywa i powstanie klubu</h3>
                     <p>
@@ -249,7 +249,7 @@
             </article>
 
             <article class="timeline-item">
-                <div class="timeline-year">2000</div>
+                <span class="timeline-year">2000</span>
                 <div class="timeline-content">
                     <h3>Oficjalna rejestracja w PZSS</h3>
                     <p>
@@ -260,7 +260,7 @@
             </article>
 
             <article class="timeline-item">
-                <div class="timeline-year">ROZWÓJ</div>
+                <span class="timeline-year">ROZWÓJ</span>
                 <div class="timeline-content">
                     <h3>Współpraca i kultura obronna</h3>
                     <p>
@@ -271,7 +271,7 @@
             </article>
 
             <article class="timeline-item">
-                <div class="timeline-year">DZIŚ</div>
+                <span class="timeline-year">DZIŚ</span>
                 <div class="timeline-content">
                     <h3>Kontynuacja tradycji</h3>
                     <p>
@@ -288,22 +288,22 @@
 
         <div class="steps-grid">
             <article class="step-card">
-                <div class="step-num">01</div>
+                <span class="step-num">01</span>
                 <h3>Pobierz deklarację</h3>
                 <p>Wypełnij deklarację członkowską i przygotuj dokumenty wymagane przez klub.</p>
             </article>
             <article class="step-card">
-                <div class="step-num">02</div>
+                <span class="step-num">02</span>
                 <h3>Skontaktuj się z zarządem</h3>
                 <p>Ustal dalszą procedurę, termin spotkania oraz sposób przekazania dokumentów.</p>
             </article>
             <article class="step-card">
-                <div class="step-num">03</div>
+                <span class="step-num">03</span>
                 <h3>Rozpocznij szkolenie</h3>
                 <p>Poznaj zasady bezpieczeństwa, regulamin strzelnicy i podstawy sportu strzeleckiego.</p>
             </article>
             <article class="step-card">
-                <div class="step-num">04</div>
+                <span class="step-num">04</span>
                 <h3>Zdobądź uprawnienia</h3>
                 <p>Przystąp do egzaminu na patent, uzyskaj licencję i rozpocznij starty w zawodach.</p>
             </article>

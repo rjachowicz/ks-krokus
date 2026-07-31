@@ -4,14 +4,14 @@
 @section('admin_title', 'Kalendarz')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Wydarzenia</h1>
-            <p>Zawody, treningi, terminy, miejsca oraz przypisane konkurencje.</p>
-        </div>
-
-        <a href="{{ route('admin.events.create') }}" class="btn btn-primary">Dodaj wydarzenie</a>
-    </header>
+    <x-admin-page-header
+        title="Wydarzenia"
+        description="Zawody, treningi, terminy, miejsca oraz przypisane konkurencje."
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.events.create') }}" class="btn btn-primary">Dodaj wydarzenie</a>
+        </x-slot:actions>
+    </x-admin-page-header>
 
     <form method="GET" class="admin-filter">
         <label>
@@ -44,11 +44,14 @@
         </label>
 
         <button type="submit" class="btn btn-primary">Filtruj</button>
-        <a href="{{ route('admin.events.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @if (request()->hasAny(['q', 'event_type', 'status']))
+            <a href="{{ route('admin.events.index') }}" class="btn btn-secondary">Wyczyść</a>
+        @endif
     </form>
 
-    <div class="admin-table-wrap">
+    <div class="admin-table-wrap" role="region" aria-label="Lista wydarzeń" tabindex="0">
         <table class="admin-table">
+            <caption class="sr-only">Lista wydarzeń</caption>
             <thead>
                 <tr>
                     <th>Termin</th>
@@ -63,15 +66,15 @@
             <tbody>
                 @forelse ($events as $event)
                     <tr>
-                        <td>{{ $event->start_at->format('d.m.Y H:i') }}</td>
-                        <td>
+                        <td data-label="Termin">{{ $event->start_at->format('d.m.Y H:i') }}</td>
+                        <td data-label="Wydarzenie">
                             <strong>{{ $event->title }}</strong><br>
                             {{ $event->location_name }}
                         </td>
-                        <td>{{ $event->event_type->label() }}</td>
-                        <td>{{ $event->event_competitions_count }}</td>
-                        <td>{{ $event->results_count }}</td>
-                        <td>
+                        <td data-label="Rodzaj">{{ $event->event_type->label() }}</td>
+                        <td data-label="Konkurencje">{{ $event->event_competitions_count }}</td>
+                        <td data-label="Wyniki">{{ $event->results_count }}</td>
+                        <td data-label="Status">
                             <span class="admin-badge {{ $event->status === \App\Enums\PublicationStatus::Published ? 'admin-badge--success' : 'admin-badge--warning' }}">
                                 {{ $event->status->label() }}
                             </span>
@@ -79,7 +82,7 @@
                                 <span class="admin-badge admin-badge--danger">Prywatne</span>
                             @endif
                         </td>
-                        <td>
+                        <td data-label="Operacje">
                             <div class="admin-table__actions">
                                 <a href="{{ route('admin.events.edit', $event) }}" class="btn btn-secondary">Edytuj</a>
 

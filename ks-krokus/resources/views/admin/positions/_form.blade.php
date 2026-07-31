@@ -24,7 +24,7 @@
 @endphp
 
 <div class="admin-form-grid">
-    <div class="span-full"><h3 class="admin-section-title">Dane funkcji</h3></div>
+    <h2 class="admin-section-title span-full">Dane funkcji</h2>
     <label>
         Nazwa funkcji
         <input id="position-name" type="text" name="name" value="{{ old('name', $position->name ?? '') }}" autocomplete="off" required autofocus
@@ -66,8 +66,8 @@
         @error('description') <span id="position-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="span-full">
-        <h3 class="admin-section-title">Przypisani użytkownicy</h3>
+    <fieldset class="admin-choice-section span-full">
+        <legend class="admin-section-title">Przypisani użytkownicy</legend>
         <p class="form-help">
             Zaznacz osoby i ustaw ich kolejność. Niższa liczba oznacza wcześniejsze miejsce.
             Dane kontaktowe są pokazywane zgodnie z ustawieniami profilu użytkownika.
@@ -75,46 +75,46 @@
         @error('user_ids') <span id="position-users-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         @error('user_ids.*') <span id="position-user-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         @error('user_sort_orders.*') <span id="position-user-orders-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-    </div>
 
-    <div class="admin-check-grid span-full">
-        @foreach ($users as $user)
-            <div class="admin-check-option">
-                <input
-                    id="position-user-{{ $user->id }}"
-                    type="checkbox"
-                    name="user_ids[]"
-                    value="{{ $user->id }}"
-                    @checked(in_array($user->id, $selectedUsers, true))
-                    @if ($userSelectionErrorIds !== '')
-                        aria-invalid="true" aria-describedby="{{ $userSelectionErrorIds }}"
-                    @endif
-                >
-                <div class="admin-check-option__body">
-                    <label for="position-user-{{ $user->id }}">
-                        <strong>{{ $user->name }}</strong><br>
-                        {{ $user->email }}
-                    </label>
+        <div class="admin-check-grid">
+            @foreach ($users as $user)
+                <div class="admin-check-option">
+                    <input
+                        id="position-user-{{ $user->id }}"
+                        type="checkbox"
+                        name="user_ids[]"
+                        value="{{ $user->id }}"
+                        @checked(in_array($user->id, $selectedUsers, true))
+                        @if ($userSelectionErrorIds !== '')
+                            aria-invalid="true" aria-describedby="{{ $userSelectionErrorIds }}"
+                        @endif
+                    >
+                    <div class="admin-check-option__body">
+                        <label for="position-user-{{ $user->id }}">
+                            <strong>{{ $user->name }}</strong><br>
+                            {{ $user->email }}
+                        </label>
 
-                    <label class="admin-inline-order">
-                        Kolejność:
-                        <input
-                            id="position-user-{{ $user->id }}-order"
-                            type="number"
-                            name="user_sort_orders[{{ $user->id }}]"
-                            min="0"
-                            max="9999"
-                            value="{{ $userSortOrders[$user->id] ?? $loop->iteration }}"
-                            @error("user_sort_orders.{$user->id}") aria-invalid="true" aria-describedby="position-user-{{ $user->id }}-order-error" @enderror
-                        >
-                        @error("user_sort_orders.{$user->id}")
-                            <span id="position-user-{{ $user->id }}-order-error" class="form-error">{{ $message }}</span>
-                        @enderror
-                    </label>
+                        <label class="admin-inline-order">
+                            Kolejność:
+                            <input
+                                id="position-user-{{ $user->id }}-order"
+                                type="number"
+                                name="user_sort_orders[{{ $user->id }}]"
+                                min="0"
+                                max="9999"
+                                value="{{ $userSortOrders[$user->id] ?? $loop->iteration }}"
+                                @error("user_sort_orders.{$user->id}") aria-invalid="true" aria-describedby="position-user-{{ $user->id }}-order-error" @enderror
+                            >
+                            @error("user_sort_orders.{$user->id}")
+                                <span id="position-user-{{ $user->id }}-order-error" class="form-error">{{ $message }}</span>
+                            @enderror
+                        </label>
+                    </div>
                 </div>
-            </div>
-        @endforeach
-    </div>
+            @endforeach
+        </div>
+    </fieldset>
 </div>
 
 <div class="admin-form-actions">

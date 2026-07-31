@@ -2,10 +2,10 @@
 
 <footer class="site-footer">
     <div class="footer-container">
-        <div>
+        <address class="footer-address">
             <strong>{{ $club['name'] }}</strong>
             <p>{{ $club['address']['formatted'] }}</p>
-        </div>
+        </address>
 
         <nav class="footer-links" aria-label="Nawigacja w stopce">
             <a href="{{ route('news.index') }}">Aktualności</a>

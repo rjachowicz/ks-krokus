@@ -53,7 +53,8 @@
 - [x] POST `/kontakt`, Form Request, Mailable, rate limiting i honeypot.
 - [x] Polskie komunikaty i testy `Mail::fake()`.
 - [ ] Sprawdzić rzeczywiste SMTP w środowisku produkcyjnym.
-- [ ] Wykonać ręczną kontrolę wszystkich ekranów w obu motywach.
+- [x] Sprawdzić wszystkie ekrany w obu motywach: automatyczny render 22 ekranów
+  i ręczna inspekcja reprezentatywnych zrzutów.
 
 ## P2 — kalendarz, UX i dostępność
 
@@ -67,14 +68,20 @@
 
 ## P2 — responsywność
 
-- [x] Sprawdzić 320, 375, 768, 1024, 1366 i 1920 px.
+- [x] Sprawdzić 320, 375, 768, 1024, 1366 i 1920 px w light/dark
+  (266 wariantów wraz z otwartymi menu).
 - [x] Usunąć poziomy scroll części publicznej i panelu.
 - [x] Sprawdzić tabele, formularze, sidebar, topbar, galerie i kalendarz.
+- [x] Naprawić jednokolumnową agendę kalendarza, mobilne filtry, puste stany
+  i dwukolumnowe metryki dashboardu.
 
 ## P3 — dalszy rozwój
 
-- [x] Usunąć wykryty martwy CSS, przykładowy kod i puste zasoby.
+- [x] Usunąć wykryty martwy CSS, przykładowy kod i puste zasoby; ponowny audyt
+  potwierdza użycie wszystkich literalnych klas CSS.
 - [x] Zweryfikować importy JS, komponenty Blade i zależności.
+- [x] Uprościć semantykę wszystkich widoków Blade i ujednolicić formularze,
+  karty, tabele, kontrolki oraz nagłówki panelu.
 - [x] Dodać testy regresyjne i dokumentację wdrożenia.
 - [ ] Dodać przywracanie kosza lub cykliczne trwałe czyszczenie zdjęć
   miękko usuniętych aktualności.

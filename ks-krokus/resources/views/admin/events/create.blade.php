@@ -4,12 +4,10 @@
 @section('admin_title', 'Nowe wydarzenie')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Dodaj wydarzenie</h1>
-            <p>Utwórz zawody lub trening i przypisz konkurencje.</p>
-        </div>
-    </header>
+    <x-admin-page-header
+        title="Dodaj wydarzenie"
+        description="Utwórz zawody lub trening i przypisz konkurencje."
+    />
 
     <form method="POST" action="{{ route('admin.events.store') }}" class="admin-card admin-form">
         @csrf

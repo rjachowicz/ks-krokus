@@ -4,12 +4,10 @@
 @section('admin_title', 'Nowa aktualność')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Dodaj aktualność</h1>
-            <p>Utwórz wpis z opisem, zdjęciem głównym i galerią.</p>
-        </div>
-    </header>
+    <x-admin-page-header
+        title="Dodaj aktualność"
+        description="Utwórz wpis z opisem, zdjęciem głównym i galerią."
+    />
 
     <form
         method="POST"

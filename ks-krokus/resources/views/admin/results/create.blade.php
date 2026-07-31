@@ -4,12 +4,10 @@
 @section('admin_title', 'Nowy wynik')
 
 @section('content')
-    <header class="admin-page-header">
-        <div>
-            <h1>Dodaj wynik</h1>
-            <p>Przypisz rezultat do wydarzenia, konkurencji i opcjonalnie konta użytkownika.</p>
-        </div>
-    </header>
+    <x-admin-page-header
+        title="Dodaj wynik"
+        description="Przypisz rezultat do wydarzenia, konkurencji i opcjonalnie konta użytkownika."
+    />
 
     <form method="POST" action="{{ route('admin.results.store') }}" class="admin-card admin-form">
         @csrf

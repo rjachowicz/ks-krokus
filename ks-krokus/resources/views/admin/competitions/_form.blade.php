@@ -1,5 +1,5 @@
 <div class="admin-form-grid">
-    <div class="span-full"><h3 class="admin-section-title">Dane konkurencji</h3></div>
+    <h2 class="admin-section-title span-full">Dane konkurencji</h2>
     <label>
         Kod
         <input id="competition-code" type="text" name="code" value="{{ old('code', $definition->code ?? '') }}" autocomplete="off" required autofocus

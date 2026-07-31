@@ -9,7 +9,6 @@
     <x-page-hero
         id="contact-title"
         eyebrow="Centrala i władze klubu"
-        class="contact-hero"
         :visual="true"
         visual-class="visual-canvas--contact"
         visual-primary="Sekretariat klubu"
@@ -52,7 +51,7 @@
                 <p><strong>Adres:</strong> {{ $club['address']['formatted'] }}</p>
                 <p>
                     <strong>E-mail:</strong>
-                    <a href="mailto:{{ $club['email'] }}" class="card-link inline-mail-link">
+                    <a href="mailto:{{ $club['email'] }}" class="card-link">
                         {{ $club['email'] }}
                     </a>
                 </p>
@@ -77,9 +76,9 @@
         <x-section-heading id="positions-title" title="Władze i funkcje klubowe" meta="CLUB_DIRECTORY" />
 
         @if ($positions->isEmpty())
-            <div class="content-empty">
+            <p class="content-empty">
                 Lista osób funkcyjnych nie została jeszcze uzupełniona w panelu administracyjnym.
-            </div>
+            </p>
         @else
             <div class="bento-grid">
                 @foreach ($positions as $position)
@@ -126,13 +125,13 @@
         <x-section-heading id="trainers-title" title="Trenerzy i instruktorzy" meta="TRAINING_STAFF" />
 
         @if ($trainers->isEmpty())
-            <div class="content-empty">
+            <p class="content-empty">
                 Lista trenerów nie została jeszcze uzupełniona w panelu.
-            </div>
+            </p>
         @else
             <div class="trainers-grid">
                 @foreach ($trainers as $trainer)
-                    <article class="trainer-card">
+                    <div class="trainer-card">
                         <strong class="trainer-name">{{ $trainer->name }}</strong>
 
                         @if ($trainer->show_phone_publicly && $trainer->phone)
@@ -150,7 +149,7 @@
                         @if ($trainer->trainer_bio)
                             <p class="trainers-desc">{{ $trainer->trainer_bio }}</p>
                         @endif
-                    </article>
+                    </div>
                 @endforeach
             </div>
         @endif
