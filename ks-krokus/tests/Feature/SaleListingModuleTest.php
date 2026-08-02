@@ -342,6 +342,39 @@ final class SaleListingModuleTest extends TestCase
         ]))->assertOk()->assertSee($matching->title)->assertDontSee('Pistolet Beta');
     }
 
+    public function test_refactored_listing_views_keep_neutral_forms_and_accessible_gallery_controls(): void
+    {
+        $user = User::factory()->create();
+        $listing = SaleListing::factory()->for($user, 'author')->approved()->create();
+        SaleListingImage::factory()->for($listing, 'listing')->create();
+        SaleListingImage::factory()->for($listing, 'listing')->create([
+            'is_primary' => false,
+            'sort_order' => 1,
+        ]);
+
+        $formResponse = $this->actingAs($user)
+            ->get(route('admin.my-listings.edit', $listing))
+            ->assertOk()
+            ->assertSee('class="form-layout listing-form"', false)
+            ->assertSee('class="form-section__header"', false)
+            ->assertDontSee('admin-form-grid', false)
+            ->assertDontSee('admin-form-actions', false);
+
+        self::assertSame(7, preg_match_all('/<section class="form-section(?: |")/', $formResponse->getContent()));
+
+        $this->get(route('listings.index'))
+            ->assertOk()
+            ->assertSee('class="listing-filters__more"', false)
+            ->assertSee('class="listing-results-bar"', false);
+
+        $this->get(route('listings.show', $listing))
+            ->assertOk()
+            ->assertSee('data-listing-gallery', false)
+            ->assertSee('data-listing-gallery-thumbnail', false)
+            ->assertSee('data-listing-lightbox', false)
+            ->assertSee('aria-current="true"', false);
+    }
+
     public function test_public_report_is_validated_and_deduplicated(): void
     {
         $listing = SaleListing::factory()->approved()->create();

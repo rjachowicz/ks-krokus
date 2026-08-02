@@ -18,6 +18,9 @@
 - [x] Dodać bazodanowe powiadomienia wykonywane po odpowiedzi HTTP.
 - [x] Dodać idempotentne wygasanie, przypomnienia oraz harmonogram aplikacji.
 - [x] Dodać testy Feature i Unit modułu.
+- [x] Przebudować publiczną listę i szczegóły, formularz właściciela, „Moje
+  ogłoszenia” oraz moderację w spójny, responsywny i dostępny system UI bez zmiany
+  workflow, tras i zasad prywatności.
 - [ ] Skonfigurować osobną usługę Cron na Railway i wykonać produkcyjny smoke test.
 
 ## P0 — baza danych
@@ -123,6 +126,9 @@
 - [x] Sprawdzić tabele, formularze, sidebar, topbar, galerie i kalendarz.
 - [x] Naprawić jednokolumnową agendę kalendarza, mobilne filtry, puste stany
   i dwukolumnowe metryki dashboardu.
+- [x] Zweryfikować wszystkie ekrany ogłoszeń przy 320, 375, 768, 1024, 1366 i
+  1920 px w light/dark oraz interakcję galerii — 96 wariantów bez overflow i
+  błędów konsoli.
 
 ## P3 — dalszy rozwój
 

@@ -6,10 +6,14 @@
     $fieldValue = static fn (string $name, mixed $fallback = ''): mixed => old($name, data_get($listing, $name, $fallback));
 @endphp
 
-<section class="listing-form-section" aria-labelledby="listing-basic-heading">
-    <h2 id="listing-basic-heading"><span>1</span> Podstawowe informacje</h2>
-    <div class="admin-form-grid">
-        <label class="admin-form-grid--full">
+<section class="form-section" aria-labelledby="listing-basic-heading">
+    <header class="form-section__header">
+        <span class="form-section__number" aria-hidden="true">01</span>
+        <h2 id="listing-basic-heading">Podstawowe informacje</h2>
+        <p>Krótko nazwij przedmiot i przypisz go do właściwej kategorii.</p>
+    </header>
+    <div class="form-grid">
+        <label class="form-grid--full">
             Tytuł ogłoszenia <span aria-hidden="true">*</span>
             <input id="listing-title" name="title" type="text" maxlength="255" required value="{{ $fieldValue('title') }}"
                 placeholder="np. Pistolet sportowy z kaburą" autocomplete="off"
@@ -42,9 +46,13 @@
     </div>
 </section>
 
-<section class="listing-form-section" aria-labelledby="listing-parameters-heading">
-    <h2 id="listing-parameters-heading"><span>2</span> Parametry przedmiotu</h2>
-    <div class="admin-form-grid">
+<section class="form-section" aria-labelledby="listing-parameters-heading">
+    <header class="form-section__header">
+        <span class="form-section__number" aria-hidden="true">02</span>
+        <h2 id="listing-parameters-heading">Parametry</h2>
+        <p>Uzupełnij tylko dane, które dotyczą oferowanego przedmiotu.</p>
+    </header>
+    <div class="form-grid">
         @foreach ([
             ['manufacturer', 'Producent', 'np. CZ'],
             ['model', 'Model', 'np. Shadow 2'],
@@ -79,24 +87,32 @@
     </div>
 </section>
 
-<section class="listing-form-section" aria-labelledby="listing-price-heading">
-    <h2 id="listing-price-heading"><span>3</span> Cena</h2>
-    <div class="admin-form-grid">
+<section class="form-section" aria-labelledby="listing-price-heading">
+    <header class="form-section__header">
+        <span class="form-section__number" aria-hidden="true">03</span>
+        <h2 id="listing-price-heading">Cena</h2>
+        <p>Podaj oczekiwaną kwotę albo pozostaw pole puste, jeśli cena wymaga ustalenia.</p>
+    </header>
+    <div class="form-grid form-grid--price">
         <label>
             Cena w zł
             <input id="listing-price" name="price" type="number" min="0" max="9999999999.99" step="0.01" inputmode="decimal" value="{{ $fieldValue('price') }}"
                 placeholder="np. 2500,00" @error('price') aria-invalid="true" aria-describedby="listing-price-error" @enderror>
             @error('price') <span id="listing-price-error" class="form-error">{{ $message }}</span> @enderror
         </label>
-        <label class="form-check">
+        <label class="form-switch">
             <input type="checkbox" name="price_negotiable" value="1" @checked(old('price_negotiable', $listing?->price_negotiable ?? false))>
-            Cena do negocjacji
+            <span>Cena do negocjacji</span>
         </label>
     </div>
 </section>
 
-<section class="listing-form-section" aria-labelledby="listing-description-heading">
-    <h2 id="listing-description-heading"><span>4</span> Opis</h2>
+<section class="form-section" aria-labelledby="listing-description-heading">
+    <header class="form-section__header">
+        <span class="form-section__number" aria-hidden="true">04</span>
+        <h2 id="listing-description-heading">Opis</h2>
+        <p>Przedstaw stan, historię i wyposażenie zestawu w czytelnej formie.</p>
+    </header>
     <label>
         Pełny opis <span aria-hidden="true">*</span>
         <textarea id="listing-description" name="description" rows="10" minlength="30" maxlength="20000" required
@@ -107,18 +123,24 @@
     </label>
 </section>
 
-<section class="listing-form-section" aria-labelledby="listing-images-heading">
-    <h2 id="listing-images-heading"><span>5</span> Zdjęcia</h2>
-    <p class="form-help">Dodaj 1–{{ $maxImages }} zdjęć JPG, PNG lub WebP, maksymalnie {{ (int) ($maxImageSizeKb / 1024) }} MB każde. Pierwsze zostanie głównym, chyba że wybierzesz inne.</p>
+<section class="form-section" aria-labelledby="listing-images-heading">
+    <header class="form-section__header">
+        <span class="form-section__number" aria-hidden="true">05</span>
+        <h2 id="listing-images-heading">Zdjęcia</h2>
+        <p>Dodaj czytelne fotografie i ustaw kolejność, w której zobaczą je użytkownicy.</p>
+    </header>
 
     <div class="file-upload" data-listing-images data-max-files="{{ $maxImages }}" data-max-size-kb="{{ $maxImageSizeKb }}" data-existing-files="{{ $existingImages->count() }}">
         <label for="listing-images" class="file-upload__dropzone">
+            <span class="file-upload__icon" aria-hidden="true">＋</span>
             <strong>Przeciągnij zdjęcia tutaj lub wybierz pliki</strong>
-            <span>Możesz potem zmienić kolejność, opisy i zdjęcie główne.</span>
+            <span>JPG, PNG lub WebP · maks. {{ (int) ($maxImageSizeKb / 1024) }} MB na zdjęcie · do {{ $maxImages }} plików</span>
+            <small>Po dodaniu możesz zmienić kolejność, opisy i zdjęcie główne.</small>
         </label>
         <input id="listing-images" name="images[]" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple
-            @error('images') aria-invalid="true" aria-describedby="listing-images-error" @enderror
-            @error('images.*') aria-invalid="true" aria-describedby="listing-images-error" @enderror>
+            aria-describedby="listing-images-help @if ($errors->has('images') || $errors->has('images.*')) listing-images-error @endif"
+            @if ($errors->has('images') || $errors->has('images.*')) aria-invalid="true" @endif>
+        <span id="listing-images-help" class="form-help">Pierwsze zdjęcie zostanie główne, jeśli nie wskażesz innego.</span>
         <div class="listing-upload-preview" data-listing-image-preview aria-live="polite"></div>
         @if ($errors->has('images') || $errors->has('images.*'))
             <span id="listing-images-error" class="form-error">{{ $errors->first('images') ?: $errors->first('images.*') }}</span>
@@ -132,11 +154,14 @@
             <div class="listing-existing-images__grid">
                 @foreach ($existingImages as $image)
                     <article class="listing-image-editor">
-                        <img src="{{ $image->thumbnailUrl() }}" alt="{{ $image->alt_text ?: $listing->title }}">
+                        <div class="listing-image-editor__preview">
+                            <img src="{{ $image->thumbnailUrl() }}" alt="{{ $image->alt_text ?: $listing->title }}">
+                            @if ($image->is_primary)<span class="listing-image-primary">Zdjęcie główne</span>@endif
+                        </div>
                         <div class="listing-image-editor__fields">
-                            <label class="form-check">
+                            <label class="form-check listing-image-editor__primary">
                                 <input type="radio" name="primary_image_id" value="{{ $image->id }}" @checked((int) old('primary_image_id', $existingImages->firstWhere('is_primary', true)?->id) === $image->id)>
-                                Zdjęcie główne
+                                Ustaw jako zdjęcie główne
                             </label>
                             <label>
                                 Tekst alternatywny
@@ -156,7 +181,7 @@
                                     @error("existing_images.{$image->id}.sort_order") aria-invalid="true" aria-describedby="listing-image-{{ $image->id }}-order-error" @enderror>
                                 @error("existing_images.{$image->id}.sort_order") <span id="listing-image-{{ $image->id }}-order-error" class="form-error">{{ $message }}</span> @enderror
                             </label>
-                            <label class="form-check">
+                            <label class="form-check listing-image-editor__delete">
                                 <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" data-existing-listing-image-delete @checked(in_array($image->id, $selectedDeletes, true))>
                                 Usuń zdjęcie po zapisaniu
                             </label>
@@ -170,9 +195,13 @@
     @endif
 </section>
 
-<section class="listing-form-section" aria-labelledby="listing-contact-heading">
-    <h2 id="listing-contact-heading"><span>6</span> Lokalizacja i kontakt</h2>
-    <div class="admin-form-grid">
+<section class="form-section" aria-labelledby="listing-contact-heading">
+    <header class="form-section__header">
+        <span class="form-section__number" aria-hidden="true">06</span>
+        <h2 id="listing-contact-heading">Kontakt</h2>
+        <p>Wybierz dane, które mogą zostać publicznie pokazane przy ogłoszeniu.</p>
+    </header>
+    <div class="form-grid">
         <label>
             Lokalizacja
             <input id="listing-location" name="location" type="text" maxlength="255" value="{{ $fieldValue('location') }}" placeholder="np. Nowy Sącz" autocomplete="address-level2"
@@ -212,23 +241,37 @@
     </div>
 </section>
 
-<section class="listing-form-section listing-form-summary" aria-labelledby="listing-summary-heading">
-    <h2 id="listing-summary-heading"><span>7</span> Podsumowanie i moderacja</h2>
+<section class="form-section listing-form-summary" aria-labelledby="listing-summary-heading">
+    <header class="form-section__header">
+        <span class="form-section__number" aria-hidden="true">07</span>
+        <h2 id="listing-summary-heading">Podsumowanie</h2>
+        <p>Sprawdź dane przed zapisaniem szkicu lub przekazaniem ogłoszenia do moderacji.</p>
+    </header>
     <p>KS Krokus publikuje ogłoszenie informacyjnie i nie jest stroną transakcji. Za treść oraz zgodność oferty z prawem odpowiada autor.</p>
 
-    <div class="admin-form-actions">
+    <div class="form-actions">
         @if ($isOwnerForm)
-            @if ($listing?->status === \App\Enums\SaleListingStatus::Approved)
-                <button type="submit" name="intent" value="pending" class="btn btn-primary">Zapisz i wyślij ponownie do moderacji</button>
-            @else
-                <button type="submit" name="intent" value="draft" class="btn btn-secondary">Zapisz bez wysyłania</button>
-                <button type="submit" name="intent" value="pending" class="btn btn-primary">Zapisz i wyślij do moderacji</button>
-            @endif
-            <a href="{{ route('admin.my-listings.index') }}" class="btn btn-secondary">Anuluj</a>
+            <div class="form-actions__secondary">
+                <a href="{{ route('admin.my-listings.index') }}" class="btn btn-secondary">Anuluj</a>
+                @if ($listing?->status !== \App\Enums\SaleListingStatus::Approved)
+                    <button type="submit" name="intent" value="draft" class="btn btn-secondary">Zapisz bez wysyłania</button>
+                @endif
+            </div>
+            <div class="form-actions__primary">
+                @if ($listing?->status === \App\Enums\SaleListingStatus::Approved)
+                    <button type="submit" name="intent" value="pending" class="btn btn-primary">Zapisz i wyślij ponownie do moderacji</button>
+                @else
+                    <button type="submit" name="intent" value="pending" class="btn btn-primary">Zapisz i wyślij do moderacji</button>
+                @endif
+            </div>
         @else
             <input type="hidden" name="intent" value="save">
-            <button type="submit" class="btn btn-primary">Zapisz treść ogłoszenia</button>
-            <a href="{{ route('admin.sale-listings.index') }}" class="btn btn-secondary">Wróć do kolejki</a>
+            <div class="form-actions__secondary">
+                <a href="{{ route('admin.sale-listings.index') }}" class="btn btn-secondary">Wróć do kolejki</a>
+            </div>
+            <div class="form-actions__primary">
+                <button type="submit" class="btn btn-primary">Zapisz treść ogłoszenia</button>
+            </div>
         @endif
     </div>
 </section>

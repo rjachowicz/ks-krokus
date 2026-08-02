@@ -30,10 +30,10 @@ enum SaleListingStatus: string
     public function badgeClass(): string
     {
         return match ($this) {
-            self::Approved => 'admin-badge--success',
-            self::Pending => 'admin-badge--warning',
-            self::Rejected => 'admin-badge--danger',
-            self::Sold, self::Expired, self::Archived => 'admin-badge--muted',
+            self::Approved => 'status-badge--success',
+            self::Pending => 'status-badge--warning',
+            self::Rejected => 'status-badge--danger',
+            self::Sold, self::Expired, self::Archived => 'status-badge--muted',
             self::Draft => '',
         };
     }

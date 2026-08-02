@@ -4,6 +4,84 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-02 — spójny interfejs ogłoszeń sprzedaży
+
+### Cel
+
+Przebudować wyłącznie warstwę wizualną publicznych ogłoszeń, strefy właściciela
+i moderacji tak, aby moduł korzystał ze wspólnego języka KS Krokus, zachowując
+workflow, uprawnienia, prywatność kontaktu, uploady, zgłoszenia i istniejące trasy.
+
+### Najważniejsze potwierdzone problemy
+
+- Publiczne filtry pokazywały wszystkie pola i sortowanie w jednym ciężkim
+  formularzu, nie prezentowały liczby wyników, a karty powtarzały zbędny status
+  „Aktualne” i miały niestabilny footer.
+- Brak zdjęcia tworzył pusty link, natomiast galeria szczegółów układała wszystkie
+  fotografie jako nierówne kafle z podpisami i otwierała je w nowych kartach.
+- Formularz właściciela zależał od klas `admin-*`, siedem sekcji rozdzielały
+  głównie linie, a końcowe akcje korygował ujemny margines.
+- „Moje ogłoszenia” i kolejka moderacji nie miały miniatur ani wyraźnej hierarchii
+  akcji. Formularze decyzji, historia i zgłoszenia były wizualnie zbite.
+- Ogólne style uploadu pozostawały w arkuszu panelu, a moduł duplikował własne
+  badge, powierzchnie i wzorce formularzy.
+
+### Wykonane
+
+- [x] Publiczna lista używa wspólnego hero i kontenera sekcji. Podstawowe filtry
+  obejmują wyszukiwarkę, kategorię i akcję, a rodzaj, kaliber i ceny znajdują się
+  w dostępnej sekcji „Więcej filtrów”. Dodano licznik, aktywne filtry, czyszczenie
+  oraz osobne sortowanie zachowujące parametry GET.
+- [x] Karty mają stałą wysokość, proporcjonalne zdjęcie, neutralny placeholder KS,
+  kategorię, tytuł ograniczony do dwóch linii, producenta/model, maksymalnie dwa
+  parametry, krótki opis oraz uporządkowany blok ceny, lokalizacji i daty.
+- [x] Szczegóły otrzymały główne zdjęcie, przewijany rząd miniatur, dostępny dialog
+  lightbox z bezskryptowym fallbackiem, zwartą semantyczną siatkę `dl`, wyraźną
+  cenę i kartę kontaktową z akcjami „Zadzwoń” oraz „Napisz wiadomość”. Formularz
+  zgłoszenia przeniesiono do osobnej sekcji pod treścią.
+- [x] Dodano neutralne `form-layout`, `form-grid`, `form-grid--full`,
+  `form-section`, `form-section__header` i `form-actions`. Wszystkie siedem sekcji
+  ma numer, nagłówek i opis; checkbox negocjacji jest switchem, a akcje nie używają
+  ujemnych marginesów ani nie nakładają się na treść.
+- [x] Ogólny dropzone i podglądy plików przeniesiono z `admin.css` do wspólnych
+  stylów formularzy. Ujednolicono nowe i zapisane zdjęcia, ograniczono podglądy,
+  dodano badge zdjęcia głównego oraz czytelne, opisane akcje kolejności i usuwania.
+- [x] „Moje ogłoszenia” korzystają z responsywnych kart z miniaturą, statusem,
+  aktualizacją, wygaśnięciem, powodem odrzucenia, następnym krokiem oraz rozdziałem
+  akcji głównej, dodatkowych i destrukcyjnej.
+- [x] Kolejka, edycja, zgłoszenia i historia moderacji zachowują layout panelu, ale
+  mają lżejsze filtry, status tabs, stabilne kolumny, miniatury, grupy akcji,
+  osobny formularz odrzucenia, timeline historii i puste stany. Sticky sidebar
+  wyłącza się na mniejszych ekranach.
+- [x] Dodano wspólny neutralny komponent placeholdera obrazu i neutralne badge
+  statusów, usunięto nieużywane warianty klas ogłoszeń oraz pozostawiono w
+  `listings.css` wyłącznie selektory specyficzne dla modułu.
+- [x] Dodano test regresyjny neutralnej struktury siedmiu sekcji formularza oraz
+  dostępnych kontrolek galerii i lightboxa.
+
+### Testy i kontrole
+
+- [x] `composer test` — 89 testów, 713 asercji, wszystkie poprawne.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite; moduł galerii 5,86 kB.
+- [x] `php artisan view:cache` i `git diff --check` — poprawne.
+- [x] Edge headless — 8 ekranów modułu, szerokości 320, 375, 768, 1024, 1366
+  i 1920 px, oba motywy: 96 wariantów bez poziomego overflow i błędów konsoli.
+  Sprawdzono także efektywne cele dotykowe, zmianę miniatur i otwarcie lightboxa.
+- [x] Ręcznie oceniono reprezentatywne zrzuty listy, szczegółów, formularza,
+  „Moich ogłoszeń” i moderacji w widokach desktopowych i mobilnych light/dark.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Nie dodano migracji, nie zmieniono schematu bazy ani zmiennych środowiskowych.
+- Nie zmieniono logiki biznesowej, zapytań publicznej widoczności, workflow ani
+  zasad ujawniania telefonu i adresu e-mail.
+- Tymczasowe dane, konto, serwer, pakiet audytowy i zrzuty zostały usunięte po
+  kontroli; lokalny rekord użytkownika istniejący przed audytem pozostał bez zmian.
+- Nadal potrzebny jest fizyczny test NVDA/VoiceOver i kontrola na rzeczywistych
+  urządzeniach po wdrożeniu. Obrazy demonstracyjne nie zastępują testu fotografii
+  o skrajnych proporcjach i rozmiarach z produkcyjnego storage.
+
 ## Bieżąca sesja — 2026-08-02 — moderowane ogłoszenia sprzedaży
 
 ### Cel

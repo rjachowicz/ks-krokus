@@ -23,8 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (document.querySelector('[data-listing-images]')) {
-        import('./modules/listing-images').then(({ initListingImages }) => {
+    if (document.querySelector('[data-listing-images], [data-listing-gallery]')) {
+        import('./modules/listing-images').then(({ initListingGallery, initListingImages }) => {
+            initListingGallery();
             initListingImages();
         });
     }

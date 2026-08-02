@@ -8,6 +8,70 @@ function fileKey(file) {
     return `${file.name}:${file.size}:${file.lastModified}`;
 }
 
+export function initListingGallery() {
+    document.querySelectorAll('[data-listing-gallery]').forEach((gallery) => {
+        const mainLink = gallery.querySelector('[data-listing-gallery-open]');
+        const mainImage = gallery.querySelector('[data-listing-gallery-main]');
+        const mainCaption = gallery.querySelector('[data-listing-gallery-caption]');
+        const thumbnails = [...gallery.querySelectorAll('[data-listing-gallery-thumbnail]')];
+        const lightbox = document.querySelector('[data-listing-lightbox]');
+        const lightboxImage = lightbox?.querySelector('[data-listing-lightbox-image]');
+        const lightboxCaption = lightbox?.querySelector('[data-listing-lightbox-caption]');
+        const closeButton = lightbox?.querySelector('[data-listing-lightbox-close]');
+
+        if (!mainLink || !mainImage) {
+            return;
+        }
+
+        const setCaption = (element, caption) => {
+            if (!element) return;
+            element.textContent = caption;
+            element.hidden = caption === '';
+        };
+
+        const selectImage = (thumbnail) => {
+            const { src = '', alt = '', caption = '' } = thumbnail.dataset;
+            mainLink.href = src;
+            mainLink.setAttribute('aria-label', `Powiększ zdjęcie: ${alt}`);
+            mainImage.src = src;
+            mainImage.alt = alt;
+            setCaption(mainCaption, caption);
+            thumbnails.forEach((candidate) => {
+                if (candidate === thumbnail) {
+                    candidate.setAttribute('aria-current', 'true');
+                } else {
+                    candidate.removeAttribute('aria-current');
+                }
+            });
+        };
+
+        thumbnails.forEach((thumbnail) => {
+            thumbnail.addEventListener('click', (event) => {
+                event.preventDefault();
+                selectImage(thumbnail);
+            });
+        });
+
+        mainLink.addEventListener('click', (event) => {
+            if (!lightbox || !lightboxImage || typeof lightbox.showModal !== 'function') {
+                return;
+            }
+
+            event.preventDefault();
+            lightboxImage.src = mainLink.href;
+            lightboxImage.alt = mainImage.alt;
+            setCaption(lightboxCaption, mainCaption?.textContent.trim() || '');
+            lightbox.showModal();
+            closeButton?.focus();
+        });
+
+        closeButton?.addEventListener('click', () => lightbox.close());
+        lightbox?.addEventListener('click', (event) => {
+            if (event.target === lightbox) lightbox.close();
+        });
+    });
+}
+
 export function initListingImages() {
     document.querySelectorAll('[data-listing-images]').forEach((upload) => {
         const input = upload.querySelector('input[type="file"]');
@@ -78,6 +142,16 @@ export function initListingImages() {
                 image.addEventListener('load', () => URL.revokeObjectURL(objectUrl), { once: true });
                 image.addEventListener('error', () => URL.revokeObjectURL(objectUrl), { once: true });
 
+                const previewWrap = document.createElement('div');
+                previewWrap.className = 'listing-upload-item__preview';
+                previewWrap.append(image);
+                if (item.primary) {
+                    const primaryBadge = document.createElement('span');
+                    primaryBadge.className = 'listing-image-primary';
+                    primaryBadge.textContent = 'Zdjęcie główne';
+                    previewWrap.append(primaryBadge);
+                }
+
                 const details = document.createElement('div');
                 details.className = 'listing-upload-item__details';
                 const fileName = document.createElement('strong');
@@ -115,15 +189,17 @@ export function initListingImages() {
                 primary.checked = item.primary;
                 primary.addEventListener('change', () => {
                     items.forEach((candidate) => { candidate.primary = candidate === item; });
+                    render();
                 });
-                primaryLabel.append(primary, document.createTextNode(' Zdjęcie główne'));
+                primaryLabel.append(primary, document.createTextNode(' Ustaw jako zdjęcie główne'));
 
                 const actions = document.createElement('div');
                 actions.className = 'listing-upload-item__actions';
                 const up = document.createElement('button');
                 up.type = 'button';
                 up.className = 'btn btn-secondary';
-                up.textContent = 'W górę';
+                up.textContent = '↑ W górę';
+                up.setAttribute('aria-label', `Przesuń zdjęcie ${item.file.name} w górę`);
                 up.disabled = index === 0;
                 up.addEventListener('click', () => {
                     [items[index - 1], items[index]] = [items[index], items[index - 1]];
@@ -132,7 +208,8 @@ export function initListingImages() {
                 const down = document.createElement('button');
                 down.type = 'button';
                 down.className = 'btn btn-secondary';
-                down.textContent = 'W dół';
+                down.textContent = '↓ W dół';
+                down.setAttribute('aria-label', `Przesuń zdjęcie ${item.file.name} w dół`);
                 down.disabled = index === items.length - 1;
                 down.addEventListener('click', () => {
                     [items[index + 1], items[index]] = [items[index], items[index + 1]];
@@ -151,7 +228,7 @@ export function initListingImages() {
                     render();
                 });
                 actions.append(up, down, remove);
-                card.append(image, details, altLabel, captionLabel, primaryLabel, actions);
+                card.append(previewWrap, details, altLabel, captionLabel, primaryLabel, actions);
 
                 card.addEventListener('dragstart', () => { draggedIndex = index; });
                 card.addEventListener('dragover', (event) => event.preventDefault());
