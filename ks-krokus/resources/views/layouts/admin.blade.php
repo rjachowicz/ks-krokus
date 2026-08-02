@@ -24,6 +24,14 @@
                     Pulpit
                 </a>
 
+                <a
+                    href="{{ route('admin.my-listings.index') }}"
+                    class="{{ request()->routeIs('admin.my-listings.*') ? 'active' : '' }}"
+                    @if (request()->routeIs('admin.my-listings.*')) aria-current="page" @endif
+                >
+                    Moje ogłoszenia
+                </a>
+
                 @if (auth()->user()->canManageContent())
                     <span class="admin-nav__label">Treści</span>
 
@@ -49,6 +57,14 @@
                         @if (request()->routeIs('admin.results.*')) aria-current="page" @endif
                     >
                         Wyniki
+                    </a>
+
+                    <a
+                        href="{{ route('admin.sale-listings.index') }}"
+                        class="{{ request()->routeIs('admin.sale-listings.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.sale-listings.*')) aria-current="page" @endif
+                    >
+                        Ogłoszenia
                     </a>
                 @endif
 

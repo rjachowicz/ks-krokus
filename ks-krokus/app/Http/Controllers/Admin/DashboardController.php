@@ -61,10 +61,16 @@ final class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $notifications = $user->notifications()
+            ->latest()
+            ->limit(8)
+            ->get();
+
         return view('admin.dashboard', compact(
             'metrics',
             'upcomingEvents',
             'ownResults',
+            'notifications',
         ));
     }
 }

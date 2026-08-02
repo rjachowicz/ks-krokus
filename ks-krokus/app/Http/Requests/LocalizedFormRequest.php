@@ -84,6 +84,8 @@ abstract class LocalizedFormRequest extends FormRequest
             'url' => 'Podaj prawidłowy adres URL.',
             'date' => 'Podaj prawidłową datę w polu :attribute.',
             'after_or_equal' => 'Pole :attribute nie może wskazywać daty wcześniejszej niż :date.',
+            'gte.numeric' => 'Wartość pola :attribute nie może być mniejsza niż :value.',
+            'numeric' => 'Pole :attribute musi być liczbą.',
             'string' => 'Pole :attribute musi być tekstem.',
             'integer' => 'Pole :attribute musi być liczbą całkowitą.',
             'in' => 'Wybrana wartość pola :attribute jest nieprawidłowa.',

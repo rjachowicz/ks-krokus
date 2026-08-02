@@ -32,6 +32,8 @@ KS Krokus to aplikacja klubu strzeleckiego z częścią publiczną i panelem adm
 - `/kalendarz/{sportEvent}`
 - `/wyniki`
 - `/wyniki/{sportEvent}`
+- `/ogloszenia`
+- `/ogloszenia/{saleListing}`
 - `/klub`
 - `/kontakt`
 - `/regulamin`
@@ -50,7 +52,9 @@ Zasoby:
 - wyniki,
 - użytkownicy,
 - funkcje klubowe,
-- konkurencje.
+- konkurencje,
+- moje ogłoszenia,
+- moderacja ogłoszeń i zgłoszeń.
 
 Dostęp kontrolują `auth`, `active` i role.
 

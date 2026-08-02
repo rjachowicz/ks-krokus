@@ -87,6 +87,25 @@
     </section>
 
     <section class="admin-card">
+        <h2>Powiadomienia</h2>
+        @if ($notifications->isEmpty())
+            <p>Nie masz nowych informacji dotyczących ogłoszeń.</p>
+        @else
+            <ul class="dashboard-notifications">
+                @foreach ($notifications as $notification)
+                    <li>
+                        <a href="{{ $notification->data['url'] ?? route('admin.my-listings.index') }}">
+                            <strong>{{ $notification->data['title'] ?? 'Powiadomienie' }}</strong>
+                            <span>{{ $notification->data['message'] ?? '' }}</span>
+                            <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+
+    <section class="admin-card">
         <h2>Moje wyniki</h2>
 
         @if ($ownResults->isEmpty())

@@ -1,5 +1,25 @@
 # TODO.md
 
+## P0 — ogłoszenia sprzedaży
+
+- [x] Dodać modele ofert, zdjęć, historii moderacji i zgłoszeń wraz z indeksami,
+  enumami, fabrykami i soft delete.
+- [x] Dodać kontrolowany workflow statusów oraz Policy dla właściciela,
+  moderatora i administratora.
+- [x] Dodać publiczną listę i szczegóły z wyszukiwaniem, filtrami, sortowaniem i
+  ochroną danych kontaktowych.
+- [x] Dodać strefę „Moje ogłoszenia”, kopiowanie, ponowną moderację po edycji i
+  oznaczanie sprzedaży.
+- [x] Dodać kolejkę moderacji, historię operacji, odrzucenie z powodem, ukrywanie,
+  archiwizację, kosz i przywracanie.
+- [x] Dodać galerię 1–10 zdjęć, drag and drop, podgląd, kolejność, zdjęcie główne,
+  miniatury i bezpieczne sprzątanie plików.
+- [x] Dodać zgłoszenia publiczne z CSRF, throttlingiem, honeypotem i deduplikacją.
+- [x] Dodać bazodanowe powiadomienia wykonywane po odpowiedzi HTTP.
+- [x] Dodać idempotentne wygasanie, przypomnienia oraz harmonogram aplikacji.
+- [x] Dodać testy Feature i Unit modułu.
+- [ ] Skonfigurować osobną usługę Cron na Railway i wykonać produkcyjny smoke test.
+
 ## P0 — baza danych
 
 - [x] Przełączyć środowisko lokalne z SQLite na PostgreSQL.

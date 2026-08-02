@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (document.querySelector('[data-listing-images]')) {
+        import('./modules/listing-images').then(({ initListingImages }) => {
+            initListingImages();
+        });
+    }
+
     if (document.querySelector('[data-rich-text]')) {
         import('./modules/rich-text').then(({ initRichTextEditors }) => {
             initRichTextEditors();

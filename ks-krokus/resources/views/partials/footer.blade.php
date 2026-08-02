@@ -11,6 +11,7 @@
             <a href="{{ route('news.index') }}">Aktualności</a>
             <a href="{{ route('calendar.index') }}">Kalendarz</a>
             <a href="{{ route('results.index') }}">Wyniki</a>
+            <a href="{{ route('listings.index') }}">Ogłoszenia</a>
             <a href="{{ route('contact') }}">Kontakt</a>
             <a href="{{ route('rules') }}">Regulamin</a>
             <a href="{{ route('rodo') }}">RODO</a>

@@ -48,6 +48,13 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('listings.index') }}"
+                       class="{{ request()->routeIs('listings.*') ? 'active' : '' }}"
+                       @if (request()->routeIs('listings.*')) aria-current="page" @endif>
+                        Ogłoszenia
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('club') }}"
                        class="{{ request()->routeIs('club') ? 'active' : '' }}"
                        @if (request()->routeIs('club')) aria-current="page" @endif>
@@ -66,7 +73,7 @@
 
         <div class="header-actions">
             @auth
-                <a class="icon-button" href="{{ route('admin.dashboard') }}" aria-label="Panel administracyjny" title="Panel">
+                <a class="icon-button" href="{{ route('admin.dashboard') }}" aria-label="Panel użytkownika" title="Panel">
                     <span aria-hidden="true">A</span>
                 </a>
             @endauth

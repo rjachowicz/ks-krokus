@@ -9,14 +9,17 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use Notifiable;
     use SoftDeletes;
 
     /**
@@ -76,6 +79,11 @@ class User extends Authenticatable
     public function canManageContent(): bool
     {
         return in_array($this->role, [UserRole::Admin, UserRole::Moderator], true);
+    }
+
+    public function saleListings(): HasMany
+    {
+        return $this->hasMany(SaleListing::class);
     }
 
     public function scopeTrainers(Builder $query): Builder

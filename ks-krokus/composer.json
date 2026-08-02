@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "ext-fileinfo": "*",
+        "ext-gd": "*",
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
         "php": "^8.4",
@@ -14,7 +15,6 @@
         "symfony/html-sanitizer": "^8.1"
     },
     "require-dev": {
-        "ext-gd": "*",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",

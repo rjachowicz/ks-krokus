@@ -20,5 +20,6 @@
 @import "./pages/calendar.css";
 @import "./pages/auth.css";
 @import "./pages/admin.css";
+@import "./pages/listings.css";
 
 @import "./utilities/responsive.css";

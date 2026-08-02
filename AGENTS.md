@@ -132,6 +132,17 @@ Nie cofaj tych zmian.
 
 Kalendarz grupuje obecnie wydarzenia po dacie rozpoczęcia. Wydarzenia wielodniowe mogą wymagać dodatkowej obsługi bez duplikowania rekordów w bazie.
 
+## Ogłoszenia sprzedaży
+
+- Status ogłoszenia zmieniaj wyłącznie przez `SaleListingWorkflow`; nie zapisuj
+  przejść statusów bezpośrednio w kontrolerach.
+- Publiczne zapytania muszą korzystać ze scope `publiclyVisible()` i nigdy nie
+  ujawniać danych kontaktowych bez `show_phone` lub `show_email`.
+- Galeria ogłoszenia używa dysku `MEDIA_DISK`, limitu 10 zdjęć i zachowuje pliki
+  po soft delete, aby administrator mógł przywrócić rekord.
+- Komenda `listings:expire` jest idempotentna i jest jedynym mechanizmem
+  automatycznego wygaszania oraz przypomnień przed terminem.
+
 ## Bieżące priorytety
 
 1. Audyt formularzy panelu.

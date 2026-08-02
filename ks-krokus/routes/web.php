@@ -8,15 +8,19 @@ use App\Http\Controllers\Admin\CompetitionDefinitionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventResultController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\SaleListingController as AdminSaleListingController;
+use App\Http\Controllers\Admin\SaleListingReportController;
 use App\Http\Controllers\Admin\SportEventController as AdminSportEventController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\MySaleListingController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\ClubController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\NewsController;
 use App\Http\Controllers\Public\ResultsController;
+use App\Http\Controllers\Public\SaleListingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -35,6 +39,14 @@ Route::get('/wyniki', [ResultsController::class, 'index'])
     ->name('results.index');
 Route::get('/wyniki/{slug}', [ResultsController::class, 'show'])
     ->name('results.show');
+
+Route::get('/ogloszenia', [SaleListingController::class, 'index'])
+    ->name('listings.index');
+Route::get('/ogloszenia/{saleListing}', [SaleListingController::class, 'show'])
+    ->name('listings.show');
+Route::post('/ogloszenia/{saleListing}/zglos', [SaleListingController::class, 'report'])
+    ->middleware('throttle:3,60')
+    ->name('listings.report');
 
 Route::get('/klub', ClubController::class)->name('club');
 Route::get('/kontakt', ContactController::class)->name('contact');
@@ -66,9 +78,41 @@ Route::prefix('panel')
         Route::get('/', DashboardController::class)
             ->name('dashboard');
 
+        Route::get('moje-ogloszenia', [MySaleListingController::class, 'index'])
+            ->name('my-listings.index');
+        Route::get('moje-ogloszenia/nowe', [MySaleListingController::class, 'create'])
+            ->name('my-listings.create');
+        Route::post('moje-ogloszenia', [MySaleListingController::class, 'store'])
+            ->name('my-listings.store');
+        Route::get('moje-ogloszenia/{saleListing}/edytuj', [MySaleListingController::class, 'edit'])
+            ->name('my-listings.edit');
+        Route::put('moje-ogloszenia/{saleListing}', [MySaleListingController::class, 'update'])
+            ->name('my-listings.update');
+        Route::delete('moje-ogloszenia/{saleListing}', [MySaleListingController::class, 'destroy'])
+            ->name('my-listings.destroy');
+        Route::post('moje-ogloszenia/{saleListing}/wyslij', [MySaleListingController::class, 'submit'])
+            ->name('my-listings.submit');
+        Route::post('moje-ogloszenia/{saleListing}/sprzedane', [MySaleListingController::class, 'sold'])
+            ->name('my-listings.sold');
+        Route::post('moje-ogloszenia/{saleListing}/kopiuj', [MySaleListingController::class, 'duplicate'])
+            ->name('my-listings.duplicate');
+
         Route::middleware(
             'role:'.UserRole::Admin->value.','.UserRole::Moderator->value,
         )->group(function (): void {
+            Route::get('ogloszenia', [AdminSaleListingController::class, 'index'])
+                ->name('sale-listings.index');
+            Route::get('ogloszenia/{saleListing}/edytuj', [AdminSaleListingController::class, 'edit'])
+                ->name('sale-listings.edit');
+            Route::put('ogloszenia/{saleListing}', [AdminSaleListingController::class, 'update'])
+                ->name('sale-listings.update');
+            Route::post('ogloszenia/{saleListing}/ukryj', [AdminSaleListingController::class, 'hide'])
+                ->name('sale-listings.hide');
+            Route::post('ogloszenia/{saleListing}/pokaz', [AdminSaleListingController::class, 'unhide'])
+                ->name('sale-listings.unhide');
+            Route::post('ogloszenia/{saleListing}/zglos-administratorowi', [AdminSaleListingController::class, 'flag'])
+                ->name('sale-listings.flag');
+
             Route::resource('aktualnosci', AdminPostController::class)
                 ->except('show')
                 ->parameters(['aktualnosci' => 'post'])
@@ -108,6 +152,24 @@ Route::prefix('panel')
 
         Route::middleware('role:'.UserRole::Admin->value)
             ->group(function (): void {
+                Route::post('ogloszenia/{saleListing}/zatwierdz', [AdminSaleListingController::class, 'approve'])
+                    ->name('sale-listings.approve');
+                Route::post('ogloszenia/{saleListing}/odrzuc', [AdminSaleListingController::class, 'reject'])
+                    ->name('sale-listings.reject');
+                Route::post('ogloszenia/{saleListing}/sprzedane', [AdminSaleListingController::class, 'sold'])
+                    ->name('sale-listings.sold');
+                Route::post('ogloszenia/{saleListing}/archiwizuj', [AdminSaleListingController::class, 'archive'])
+                    ->name('sale-listings.archive');
+                Route::delete('ogloszenia/{saleListing}', [AdminSaleListingController::class, 'destroy'])
+                    ->name('sale-listings.destroy');
+                Route::post('ogloszenia/{saleListing}/przywroc', [AdminSaleListingController::class, 'restore'])
+                    ->withTrashed()
+                    ->name('sale-listings.restore');
+                Route::get('ogloszenia-zgloszenia', [SaleListingReportController::class, 'index'])
+                    ->name('sale-listings.reports.index');
+                Route::post('ogloszenia-zgloszenia/{report}/rozpatrz', [SaleListingReportController::class, 'resolve'])
+                    ->name('sale-listings.reports.resolve');
+
                 Route::resource('uzytkownicy', UserController::class)
                     ->except('show')
                     ->parameters(['uzytkownicy' => 'user'])

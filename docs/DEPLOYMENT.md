@@ -30,6 +30,18 @@ startowy skrypt Railpack odświeża optymalizacje także w uruchamianym kontener
 Wolumen nie jest dostępny podczas buildu ani pre-deploy — zostanie zamontowany
 dopiero w uruchomionej usłudze.
 
+## Migracje modułu ogłoszeń
+
+Wdrożenie wykonuje dwie nowe migracje przez istniejące `php artisan migrate --force`:
+
+- `2026_08_02_000900_create_sale_listings_tables.php` tworzy oferty, zdjęcia,
+  historię moderacji i zgłoszenia wraz z kluczami obcymi oraz indeksami,
+- `2026_08_02_001000_create_notifications_table.php` tworzy magazyn powiadomień
+  bazodanowych.
+
+Migracje nie modyfikują historycznych tabel. Przed produkcyjnym wdrożeniem należy
+wykonać standardowy backup PostgreSQL.
+
 ## Trwałe zdjęcia
 
 Lokalny system plików wdrożenia Railway jest efemeryczny. Do usługi aplikacji
@@ -56,8 +68,8 @@ Oba ustawiają:
 - `post_max_size=85M`,
 - `max_file_uploads=20`.
 
-Laravel przyjmuje maksymalnie 6 MB na zdjęcie, do 12 zdjęć galerii i jedno
-zdjęcie główne. Wyższy limit PHP jest celowy: pozwala Laravelowi zwrócić
+Laravel przyjmuje maksymalnie 6 MB na zdjęcie, do 12 zdjęć galerii aktualności
+oraz do 10 zdjęć ogłoszenia. Wyższy limit PHP jest celowy: pozwala Laravelowi zwrócić
 naturalny polski błąd walidacji zamiast odrzucić plik przed uruchomieniem
 aplikacji. `.user.ini` nie jest odczytywany przez FrankenPHP, dlatego sam plik
 w katalogu `public` nie wystarczał do zagwarantowania limitów na Railway.
@@ -82,7 +94,7 @@ DB_URL=${{Postgres.DATABASE_URL}}
 SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
 CACHE_STORE=database
-QUEUE_CONNECTION=sync
+QUEUE_CONNECTION=deferred
 FILESYSTEM_DISK=local
 MEDIA_DISK=public
 RAILPACK_SKIP_MIGRATIONS=true
@@ -100,6 +112,45 @@ MAIL_SCHEME=tls
 MAIL_FROM_ADDRESS=...
 MAIL_FROM_NAME="KS Krokus"
 ```
+
+`ext-gd` jest wymaganym rozszerzeniem PHP. Moduł ogłoszeń wykorzystuje je do
+korekty orientacji JPEG, skalowania, optymalizacji i generowania miniatur bez
+powiększania małych zdjęć.
+
+## Powiadomienia i kolejka
+
+Powiadomienia ogłoszeń są zapisywane w tabeli `notifications` i implementują
+`ShouldQueue`. Zalecane `QUEUE_CONNECTION=deferred` wykonuje je po wysłaniu
+odpowiedzi HTTP i nie wymaga osobnego workera. Jeżeli środowisko zostanie
+przełączone na `QUEUE_CONNECTION=database`, trzeba dodać stale działającą usługę
+z komendą:
+
+```bash
+php artisan queue:work --sleep=3 --tries=3 --timeout=90
+```
+
+## Cron wygasania ogłoszeń
+
+Dodaj na Railway osobną krótkotrwałą usługę z tego samego repozytorium i katalogu
+`/ks-krokus`. Ustaw jej start command na:
+
+```bash
+php artisan schedule:run
+```
+
+W polu Cron Schedule ustaw:
+
+```text
+*/5 * * * *
+```
+
+Railway interpretuje harmonogram cron w UTC i dopuszcza minimalny odstęp 5 minut.
+Uruchamianie `schedule:run` co 5 minut pozwala Laravelowi samodzielnie respektować
+`Europe/Warsaw` oraz zmianę czasu; właściwa komenda `listings:expire` jest należna
+codziennie o 01:15. Usługa cron musi mieć te same zmienne aplikacji i dostęp do
+PostgreSQL, a proces ma zakończyć się po wykonaniu komendy. Alternatywnie można
+uruchamiać bezpośrednio `php artisan listings:expire` raz dziennie w UTC, ale wtedy
+trzeba ręcznie uwzględniać zmianę czasu w Polsce.
 
 Dla starszej konfiguracji `CONTACT_TO_ADDRESS` nadal działa jako wartość
 awaryjna, ale nowe środowiska powinny używać `CONTACT_RECIPIENT_EMAIL`.
@@ -123,3 +174,5 @@ RAILPACK_PHP_ROOT_DIR=/app/public
 7. Sprawdź stan migracji: `php artisan migrate:status`.
 8. Sprawdź cache: `php artisan about --only=cache`; konfiguracja, zdarzenia,
    trasy i widoki powinny być oznaczone jako zapisane w cache.
+9. Dodaj ogłoszenie z 10 zdjęciami, zatwierdź je i sprawdź miniatury po redeployu.
+10. Uruchom ręcznie `php artisan listings:expire` i sprawdź log usługi cron.

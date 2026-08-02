@@ -4,6 +4,91 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-02 — moderowane ogłoszenia sprzedaży
+
+### Cel
+
+Dodać kompletną, moderowaną tablicę ogłoszeń członków klubu: część publiczną,
+strefę właściciela, kolejkę moderatora i administratora, galerię zdjęć,
+powiadomienia, zgłoszenia nadużyć oraz automatyczne wygasanie bez płatności i
+pośrednictwa w transakcji.
+
+### Wykonane
+
+- [x] Dodano `SaleListing`, `SaleListingImage`, `SaleListingModeration` i
+  `SaleListingReport`, fabryki, relacje, klucze obce, indeksy, unikalny slug,
+  pola audytowe i soft delete.
+- [x] Dodano enumy statusu, kategorii, rodzaju, stanu, przyczyny zgłoszenia i
+  działania moderacyjnego z polskimi etykietami.
+- [x] `SaleListingWorkflow` kontroluje wysłanie, zatwierdzenie, odrzucenie,
+  sprzedaż, ukrycie, archiwizację, wygaśnięcie i historię operacji. Zwykły
+  użytkownik nie może zatwierdzić ogłoszenia ani edytować cudzej oferty, a edycja
+  zatwierdzonej oferty ponownie uruchamia moderację.
+- [x] Dodano Policy dla publicznego podglądu, właściciela, moderatora i
+  administratora oraz serwerową ochronę każdej akcji.
+- [x] Publiczne `/ogloszenia` ma wyszukiwanie, filtry kategorii, rodzaju, kalibru
+  i ceny, cztery sposoby sortowania, karty ofert oraz szczegóły z galerią,
+  parametrami, terminem, disclaimerem i kontaktem respektującym osobne zgody.
+- [x] Strefa `/panel/moje-ogloszenia` obsługuje szkice, ponowne wysłanie,
+  sprzedaż, kopiowanie, usuwanie i publiczny podgląd. Formularz ma siedem sekcji,
+  pełne polskie błędy, `old()`, ARIA i tekstową treść bez dowolnego HTML.
+- [x] Kolejka `/panel/ogloszenia` ma widoki statusów, filtry autora, kategorii i
+  dat, pełny podgląd zdjęć, odrzucenie z obowiązkowym powodem, ukrywanie,
+  sprzedaż, archiwizację, kosz, przywracanie i historię moderacji. Moderator może
+  edytować, ukrywać i zgłaszać administratorowi, ale nie zatwierdza ani nie
+  odrzuca.
+- [x] Galeria przyjmuje 1–10 zdjęć przy wysłaniu do moderacji (szkic może być
+  niekompletny), obsługuje drag and drop, podgląd, nazwę, usunięcie, kolejność,
+  zdjęcie główne, alt i podpis. Wspólny `MEDIA_DISK` zapisuje oryginał przed
+  optymalizacją; GD koryguje EXIF, skaluje bez powiększania i tworzy miniaturę.
+- [x] Publiczne zgłoszenia mają CSRF, limit 3/h, honeypot, walidację i deduplikację
+  po skrócie zgłaszającego, ogłoszenia oraz przyczynie; trafiają do panelu admina.
+- [x] Przywrócono Laravel Notifications i tabelę `notifications`. Administrator
+  dostaje informację o kolejce, autor o zatwierdzeniu, odrzuceniu z powodem oraz
+  terminie. Kolejka `deferred` wykonuje zapis po odpowiedzi bez workera.
+- [x] Idempotentna komenda `listings:expire` wysyła jednokrotne przypomnienie 7
+  dni przed końcem i wygasza ofertę po 365 dniach. Harmonogram uruchamia ją o
+  01:15 `Europe/Warsaw`; opisano osobną usługę Railway Cron.
+- [x] Dodano modułowe style light/dark, breakpointy od 320 px, bezpieczne tabele,
+  mobilne filtry, karty, galerię, formularz i kolejkę oraz pozycje nawigacji.
+
+### Testy i kontrole
+
+- [x] `composer test` — 88 testów, 697 asercji, wszystkie poprawne.
+- [x] Testy modułu — 19 testów Feature/Unit, 102 asercje: role, workflow,
+  publiczność, walidacja, obrazy, prywatność, filtry, zgłoszenia, powiadomienia,
+  wygasanie i soft delete.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite; osobny moduł galerii 4,34 kB.
+- [x] `php artisan route:list` — 82 trasy, w tym komplet tras ogłoszeń.
+- [x] `php artisan schedule:list` — `listings:expire` codziennie o 01:15.
+- [x] `php artisan migrate:fresh --seed --force` wykonano wyłącznie na
+  `ks_krokus_testing`; 13 migracji i wszystkie seedery zakończone poprawnie.
+- [x] `composer validate --strict`, `php artisan view:cache` i `git diff --check`
+  — poprawne.
+
+### Migracje i konfiguracja
+
+- `2026_08_02_000900_create_sale_listings_tables.php` — oferty, zdjęcia, historia
+  moderacji i zgłoszenia.
+- `2026_08_02_001000_create_notifications_table.php` — powiadomienia bazodanowe.
+- Nie dodano nowych wymaganych zmiennych środowiskowych. Zalecane
+  `QUEUE_CONNECTION` zmieniono z `sync` na `deferred`; `MEDIA_DISK=public`
+  pozostaje wspólne dla wszystkich uploadów.
+- `ext-gd` przeniesiono do wymaganych rozszerzeń produkcyjnych Composera.
+
+### Znane ograniczenia i czynności wdrożeniowe
+
+- Railway wymaga osobnej usługi Cron uruchamiającej `php artisan schedule:run`
+  co 5 minut oraz istniejącego wolumenu `/app/storage/app/public`.
+- Nie wykonano produkcyjnego smoke testu crona, powiadomień, uploadu 10 zdjęć ani
+  trwałości miniatur po redeployu.
+- Soft delete celowo zachowuje pliki ogłoszenia do przywrócenia. Brak interfejsu
+  force delete; politykę trwałego czyszczenia starych rekordów należy ustalić po
+  określeniu okresu retencji.
+- Automatyczne testy i responsywne breakpointy nie zastępują fizycznego audytu
+  nowych ekranów z NVDA/VoiceOver oraz na urządzeniach produkcyjnych.
+
 ## Bieżąca sesja — 2026-07-31 — końcowa refaktoryzacja i gotowość produkcyjna
 
 ### Cel
