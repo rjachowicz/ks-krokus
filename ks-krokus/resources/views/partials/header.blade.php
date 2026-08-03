@@ -1,5 +1,5 @@
 <header class="site-header" data-site-header>
-    <div class="nav-container">
+    <div class="nav-container page-container">
         <a class="logo" href="{{ route('home') }}" aria-label="KS Krokus — strona główna">
             <span class="logo-mark" aria-hidden="true">KS</span>
 

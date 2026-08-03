@@ -9,7 +9,7 @@
         description="Przypisz rezultat do wydarzenia, konkurencji i opcjonalnie konta użytkownika."
     />
 
-    <form method="POST" action="{{ route('admin.results.store') }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.results.store') }}" class="form-layout panel-card">
         @csrf
         @include('admin.results._form')
     </form>

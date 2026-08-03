@@ -16,10 +16,10 @@
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section" aria-labelledby="news-list-title">
+    <section class="page-container page-section" aria-labelledby="news-list-title">
         <x-section-heading id="news-list-title" title="Wszystkie aktualności" meta="NEWS_ARCHIVE" />
 
-        <form method="GET" class="content-toolbar" aria-label="Filtrowanie aktualności">
+        <form method="GET" class="content-toolbar panel-card ui-cluster" aria-label="Filtrowanie aktualności">
             <x-form-errors />
 
             <label for="news-filter-query">
@@ -47,13 +47,13 @@
         </form>
 
         @if ($posts->isEmpty())
-            <p class="content-empty">
+            <p class="empty-state">
                 {{ request()->filled('q')
                     ? 'Nie znaleziono aktualności pasujących do wyszukiwanej frazy.'
                     : 'Nie opublikowano jeszcze żadnej aktualności.' }}
             </p>
         @else
-            <div class="news-grid">
+            <div class="news-grid ui-grid ui-grid--3">
                 @foreach ($posts as $post)
                     <x-content-card class="news-card">
                         @if ($post->coverUrl())
@@ -63,6 +63,10 @@
                                     alt="{{ $post->cover_image_alt ?: $post->title }}"
                                     loading="lazy"
                                 >
+                            </div>
+                        @else
+                            <div class="news-card__media">
+                                <x-image-placeholder label="Brak zdjęcia aktualności" />
                             </div>
                         @endif
 

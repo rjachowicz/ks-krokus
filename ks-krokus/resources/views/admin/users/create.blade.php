@@ -9,7 +9,7 @@
         description="Utwórz konto i przypisz rolę systemową."
     />
 
-    <form method="POST" action="{{ route('admin.users.store') }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.users.store') }}" class="form-layout panel-card">
         @csrf
         @include('admin.users._form')
     </form>

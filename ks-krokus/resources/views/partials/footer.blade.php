@@ -1,7 +1,7 @@
 @php($club = config('club'))
 
 <footer class="site-footer">
-    <div class="footer-container">
+    <div class="footer-container page-container">
         <address class="footer-address">
             <strong>{{ $club['name'] }}</strong>
             <p>{{ $club['address']['formatted'] }}</p>

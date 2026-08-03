@@ -13,7 +13,7 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter">
+    <form method="GET" class="admin-filter panel-card">
         <label>
             Szukaj
             <input id="user-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Imię, e-mail lub telefon" autocomplete="off"
@@ -106,9 +106,11 @@
                 @empty
                     <tr>
                         <td colspan="6">
-                            {{ request()->hasAny(['q', 'role', 'active'])
-                                ? 'Brak użytkowników spełniających wybrane kryteria.'
-                                : 'Nie dodano jeszcze żadnego użytkownika.' }}
+                            <div class="empty-state">
+                                {{ request()->hasAny(['q', 'role', 'active'])
+                                    ? 'Brak użytkowników spełniających wybrane kryteria.'
+                                    : 'Nie dodano jeszcze żadnego użytkownika.' }}
+                            </div>
                         </td>
                     </tr>
                 @endforelse

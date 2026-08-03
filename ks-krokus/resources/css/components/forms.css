@@ -10,7 +10,6 @@ textarea {
     .content-toolbar,
     .calendar-picker,
     .admin-filter,
-    .admin-form,
     .form-layout,
     .listing-filters,
     .listing-sort
@@ -29,7 +28,6 @@ textarea {
     .content-toolbar,
     .calendar-picker,
     .admin-filter,
-    .admin-form,
     .form-layout,
     .listing-filters,
     .listing-sort
@@ -54,7 +52,6 @@ textarea {
     .content-toolbar,
     .calendar-picker,
     .admin-filter,
-    .admin-form,
     .form-layout,
     .listing-filters,
     .listing-sort
@@ -142,11 +139,25 @@ select {
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     gap: 18px;
 }
 
-.form-grid--full {
+.form-grid > * {
+    min-width: 0;
+}
+
+.form-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.form-grid--full,
+.form-grid--span-full {
     grid-column: 1 / -1;
+}
+
+.form-grid--span-2 {
+    grid-column: span 2;
 }
 
 .form-section {
@@ -199,6 +210,18 @@ select {
     justify-content: space-between;
     gap: 12px;
     padding-top: 4px;
+}
+
+.form-actions--sticky {
+    position: sticky;
+    z-index: 10;
+    bottom: 0;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    background: var(--header-bg);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(12px);
 }
 
 .form-actions__primary,
@@ -447,11 +470,14 @@ select {
 }
 
 @media (max-width: 680px) {
-    .form-grid {
+    .form-grid,
+    .form-grid--3 {
         grid-template-columns: 1fr;
     }
 
-    .form-grid--full {
+    .form-grid--full,
+    .form-grid--span-full,
+    .form-grid--span-2 {
         grid-column: auto;
     }
 

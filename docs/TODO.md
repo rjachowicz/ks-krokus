@@ -129,6 +129,11 @@
 - [x] Zweryfikować wszystkie ekrany ogłoszeń przy 320, 375, 768, 1024, 1366 i
   1920 px w light/dark oraz interakcję galerii — 96 wariantów bez overflow i
   błędów konsoli.
+- [x] Ujednolicić geometrię wszystkich widoków neutralnymi prymitywami kontenera,
+  sekcji, stosu, klastra, siatki, karty, formularza, sidebara i pustego stanu.
+- [x] Przeprowadzić pełny audyt 38 tras przy 320, 375, 480, 768, 1024, 1280,
+  1366, 1440 i 1920 px w light/dark oraz usunąć konflikt mobilnej siatki formularza.
+- [x] Dodać wspólny placeholder dla obrazów, których plik nie może zostać załadowany.
 
 ## P3 — dalszy rozwój
 

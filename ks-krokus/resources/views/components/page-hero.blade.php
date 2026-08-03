@@ -7,7 +7,7 @@
     'visualSecondary' => null,
 ])
 
-<section {{ $attributes->class(['hero']) }} aria-labelledby="{{ $id }}">
+<section {{ $attributes->class(['hero', 'page-container']) }} aria-labelledby="{{ $id }}">
     <div class="hero-content">
         <span class="category-tag">{{ $eyebrow }}</span>
 

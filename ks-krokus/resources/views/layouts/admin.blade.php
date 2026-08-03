@@ -149,7 +149,7 @@
                 </div>
             </header>
 
-            <main id="admin-main-content" class="admin-content" tabindex="-1" data-admin-content>
+            <main id="admin-main-content" class="admin-content page-container" tabindex="-1" data-admin-content>
                 <x-form-errors />
                 @yield('content')
             </main>

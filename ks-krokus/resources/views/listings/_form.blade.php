@@ -14,7 +14,7 @@
     </header>
     <div class="form-grid">
         <label class="form-grid--full">
-            Tytuł ogłoszenia <span aria-hidden="true">*</span>
+            Tytuł ogłoszenia *
             <input id="listing-title" name="title" type="text" maxlength="255" required value="{{ $fieldValue('title') }}"
                 placeholder="np. Pistolet sportowy z kaburą" autocomplete="off"
                 @error('title') aria-invalid="true" aria-describedby="listing-title-error" @enderror>
@@ -23,7 +23,7 @@
         </label>
 
         <label>
-            Kategoria <span aria-hidden="true">*</span>
+            Kategoria
             <select id="listing-category" name="category" required @error('category') aria-invalid="true" aria-describedby="listing-category-error" @enderror>
                 <option value="">Wybierz kategorię</option>
                 @foreach ($categories as $value => $label)

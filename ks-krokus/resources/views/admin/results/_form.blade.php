@@ -11,9 +11,9 @@
     );
 @endphp
 
-<div class="admin-form-grid">
-    <h2 class="admin-section-title span-full">Wydarzenie i zawodnik</h2>
-    <label class="span-full">
+<div class="form-grid">
+    <h2 class="admin-section-title form-grid--span-full">Wydarzenie i zawodnik</h2>
+    <label class="form-grid--span-full">
         Wydarzenie i konkurencja
         <select id="result-event-competition" name="event_competition_id" required autofocus
             @disabled($eventCompetitions->isEmpty())
@@ -73,7 +73,7 @@
         @error('participant_name') <span id="result-participant-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <h2 class="admin-section-title span-full">Wynik i klasyfikacja</h2>
+    <h2 class="admin-section-title form-grid--span-full">Wynik i klasyfikacja</h2>
 
     <label>
         Klub
@@ -127,14 +127,14 @@
         @error('status') <span id="result-status-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full">
+    <label class="form-grid--span-full">
         Uwagi
         <textarea id="result-notes" name="notes" autocomplete="off" @error('notes') aria-invalid="true" aria-describedby="result-notes-error" @enderror>{{ old('notes', $result->notes ?? '') }}</textarea>
         @error('notes') <span id="result-notes-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 </div>
 
-<div class="admin-form-actions">
+<div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary" @disabled($eventCompetitions->isEmpty())
         @if ($eventCompetitions->isEmpty()) aria-describedby="result-event-competition-empty" @endif>
         Zapisz wynik

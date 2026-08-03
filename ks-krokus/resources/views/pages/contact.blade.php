@@ -31,16 +31,16 @@
         </x-slot:actions>
     </x-page-hero>
 
-    <section class="hero-stats-bar" aria-label="Organizacje i kanały kontaktu">
+    <section class="hero-stats-bar page-container ui-grid ui-grid--3" aria-label="Organizacje i kanały kontaktu">
         <x-stat-card value="LOK" label="Liga Obrony Kraju" />
         <x-stat-card value="PZSS" label="Polski Związek Strzelectwa Sportowego" />
         <x-stat-card value="24/7" label="kontakt e-mail" />
     </section>
 
-    <section class="features-section" aria-labelledby="address-title">
+    <section class="page-container page-section" aria-labelledby="address-title">
         <x-section-heading id="address-title" title="Dane teleadresowe" meta="HQ_DATA" />
 
-        <div class="bento-grid">
+        <div class="bento-grid ui-grid ui-grid--3">
             <x-content-card
                 code="SIEDZIBA KLUBU"
                 title="{{ $club['name'] }}"
@@ -72,15 +72,15 @@
         </div>
     </section>
 
-    <section class="features-section" aria-labelledby="positions-title">
+    <section class="page-container page-section" aria-labelledby="positions-title">
         <x-section-heading id="positions-title" title="Władze i funkcje klubowe" meta="CLUB_DIRECTORY" />
 
         @if ($positions->isEmpty())
-            <p class="content-empty">
+            <p class="empty-state">
                 Lista osób funkcyjnych nie została jeszcze uzupełniona w panelu administracyjnym.
             </p>
         @else
-            <div class="bento-grid">
+            <div class="bento-grid ui-grid ui-grid--3">
                 @foreach ($positions as $position)
                     <x-content-card
                         code="{{ mb_strtoupper($position->name) }}"
@@ -121,15 +121,15 @@
         @endif
     </section>
 
-    <section class="features-section" aria-labelledby="trainers-title">
+    <section class="page-container page-section" aria-labelledby="trainers-title">
         <x-section-heading id="trainers-title" title="Trenerzy i instruktorzy" meta="TRAINING_STAFF" />
 
         @if ($trainers->isEmpty())
-            <p class="content-empty">
+            <p class="empty-state">
                 Lista trenerów nie została jeszcze uzupełniona w panelu.
             </p>
         @else
-            <div class="trainers-grid">
+            <div class="trainers-grid ui-grid ui-grid--2">
                 @foreach ($trainers as $trainer)
                     <div class="trainer-card">
                         <strong class="trainer-name">{{ $trainer->name }}</strong>
@@ -155,74 +155,10 @@
         @endif
     </section>
 
-    <section id="formularz-kontaktowy" class="features-section" aria-labelledby="contact-form-title">
-        <x-section-heading id="contact-form-title" title="Napisz do zarządu" meta="CONTACT_FORM" />
-
-        <form method="POST" action="{{ route('contact.send') }}" class="contact-form">
-            @csrf
-            <x-form-errors />
-
-            <div class="contact-form__grid">
-                <label for="contact-name">
-                    Imię i nazwisko
-                    <input id="contact-name" type="text" name="name" value="{{ old('name') }}" autocomplete="name"
-                        minlength="2" maxlength="120" required
-                        @error('name') aria-invalid="true" aria-describedby="contact-name-error" @enderror>
-                    @error('name') <span id="contact-name-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-                </label>
-
-                <label for="contact-email">
-                    Adres e-mail
-                    <input id="contact-email" type="email" name="email" value="{{ old('email') }}" autocomplete="email"
-                        maxlength="255" required
-                        @error('email') aria-invalid="true" aria-describedby="contact-email-error" @enderror>
-                    @error('email') <span id="contact-email-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-                </label>
-
-                <label for="contact-phone">
-                    Telefon <span class="form-optional">(opcjonalnie)</span>
-                    <input id="contact-phone" type="tel" name="phone" value="{{ old('phone') }}" autocomplete="tel" inputmode="tel"
-                        maxlength="32"
-                        @error('phone') aria-invalid="true" aria-describedby="contact-phone-error" @enderror>
-                    @error('phone') <span id="contact-phone-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-                </label>
-
-                <label for="contact-subject">
-                    Temat
-                    <input id="contact-subject" type="text" name="subject" value="{{ old('subject') }}"
-                        minlength="3" maxlength="150" autocomplete="off" required
-                        @error('subject') aria-invalid="true" aria-describedby="contact-subject-error" @enderror>
-                    @error('subject') <span id="contact-subject-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-                </label>
-
-                <label class="contact-form__message" for="contact-message">
-                    Wiadomość
-                    <textarea id="contact-message" name="message" rows="8" minlength="10" maxlength="5000" required
-                        aria-describedby="contact-message-help @error('message') contact-message-error @enderror"
-                        @error('message') aria-invalid="true" @enderror>{{ old('message') }}</textarea>
-                    <span id="contact-message-help" class="form-help">Od 10 do 5000 znaków.</span>
-                    @error('message') <span id="contact-message-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-                </label>
-            </div>
-
-            <div class="honeypot" aria-hidden="true">
-                <label for="contact-website">Strona internetowa</label>
-                <input id="contact-website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
-            </div>
-
-            <p class="contact-form__privacy">
-                Wysyłając formularz, przekazujesz dane w celu obsługi wiadomości.
-                Szczegóły znajdziesz w <a href="{{ route('rodo') }}">klauzuli RODO</a>.
-            </p>
-
-            <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
-        </form>
-    </section>
-
-    <section id="lokalizacje" class="features-section" aria-labelledby="locations-title">
+    <section id="lokalizacje" class="page-container page-section" aria-labelledby="locations-title">
         <x-section-heading id="locations-title" title="Lokalizacje i mapy dojazdu" meta="GEO_LOCATIONS" />
 
-        <div class="bento-grid">
+        <div class="bento-grid ui-grid ui-grid--3">
             @foreach ($club['locations'] as $location)
                 <x-content-card
                     class="{{ $location['span'] === 2 ? 'bento-span-2' : '' }}"
@@ -256,5 +192,77 @@
                 </x-content-card>
             @endforeach
         </div>
+    </section>
+
+    <section id="formularz-kontaktowy" class="page-container page-section" aria-labelledby="contact-form-title">
+        <x-section-heading id="contact-form-title" title="Napisz do zarządu" meta="CONTACT_FORM" />
+
+        <form method="POST" action="{{ route('contact.send') }}" class="contact-form form-layout panel-card">
+            @csrf
+            <x-form-errors />
+
+            <div class="contact-form__grid form-grid">
+                <label for="contact-name">
+                    Imię i nazwisko
+                    <input id="contact-name" type="text" name="name" value="{{ old('name') }}" autocomplete="name"
+                        minlength="2" maxlength="120" required
+                        @error('name') aria-invalid="true" aria-describedby="contact-name-error" @enderror>
+                    @error('name') <span id="contact-name-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label for="contact-email">
+                    Adres e-mail
+                    <input id="contact-email" type="email" name="email" value="{{ old('email') }}" autocomplete="email"
+                        maxlength="255" required
+                        @error('email') aria-invalid="true" aria-describedby="contact-email-error" @enderror>
+                    @error('email') <span id="contact-email-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label for="contact-phone">
+                    Telefon *
+                    <input id="contact-phone" type="tel" name="phone" value="{{ old('phone') }}" autocomplete="tel" inputmode="tel"
+                        maxlength="32"
+                        @error('phone') aria-invalid="true" aria-describedby="contact-phone-error" @enderror>
+                    @error('phone') <span id="contact-phone-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label for="contact-subject">
+                    Temat
+                    <input id="contact-subject" type="text" name="subject" value="{{ old('subject') }}"
+                        minlength="3" maxlength="150" autocomplete="off" required
+                        @error('subject') aria-invalid="true" aria-describedby="contact-subject-error" @enderror>
+                    @error('subject') <span id="contact-subject-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+
+                <label class="contact-form__message form-grid--span-full" for="contact-message">
+                    Wiadomość
+                    <textarea id="contact-message" name="message" rows="8" minlength="10" maxlength="5000" required
+                        aria-describedby="contact-message-help @error('message') contact-message-error @enderror"
+                        @error('message') aria-invalid="true" @enderror>{{ old('message') }}</textarea>
+                    <span id="contact-message-help" class="form-help">Od 10 do 5000 znaków.</span>
+                    @error('message') <span id="contact-message-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
+            </div>
+
+            <div class="honeypot" aria-hidden="true">
+                <label for="contact-website">Strona internetowa</label>
+                <input id="contact-website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
+            </div>
+
+            <p class="contact-form__privacy">
+                * - opcjonalne
+            </p>
+
+            <p class="contact-form__privacy">
+                Wysyłając formularz, przekazujesz dane w celu obsługi wiadomości.
+                Szczegóły znajdziesz w <a href="{{ route('rodo') }}">klauzuli RODO</a>.
+            </p>
+
+            <div class="form-actions">
+                <div class="form-actions__primary">
+                    <button type="submit" class="btn btn-primary">Wyślij wiadomość</button>
+                </div>
+            </div>
+        </form>
     </section>
 @endsection

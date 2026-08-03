@@ -9,7 +9,7 @@
         description="Utwórz rolę organizacyjną i przypisz do niej użytkowników."
     />
 
-    <form method="POST" action="{{ route('admin.positions.store') }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.positions.store') }}" class="form-layout panel-card">
         @csrf
         @include('admin.positions._form')
     </form>

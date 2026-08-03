@@ -23,8 +23,8 @@
     ]));
 @endphp
 
-<div class="admin-form-grid">
-    <h2 class="admin-section-title span-full">Dane funkcji</h2>
+<div class="form-grid">
+    <h2 class="admin-section-title form-grid--span-full">Dane funkcji</h2>
     <label>
         Nazwa funkcji
         <input id="position-name" type="text" name="name" value="{{ old('name', $position->name ?? '') }}" autocomplete="off" required autofocus
@@ -48,10 +48,17 @@
         @error('sort_order') <span id="position-order-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
+    <label class="form-grid--span-full"> Opis
+        <textarea id="position-description" name="description" autocomplete="off"
+            @error('description') aria-invalid="true" aria-describedby="position-description-error" @enderror>{{ old('description', $position->description ?? '') }}</textarea>
+        @error('description') <span id="position-description-error" class="form-error">{{ $message }}</span> @enderror
+    </label>
+
+
     <label class="admin-check-option">
         <input type="hidden" name="is_active" value="0">
         <input id="position-active" type="checkbox" name="is_active" value="1" @checked(old('is_active', $position->is_active ?? true))
-            @error('is_active') aria-invalid="true" aria-describedby="position-active-error" @enderror>
+        @error('is_active') aria-invalid="true" aria-describedby="position-active-error" @enderror>
         <span>
             <strong>Funkcja aktywna</strong><br>
             Widoczna na publicznej stronie kontaktowej.
@@ -59,14 +66,7 @@
         @error('is_active') <span id="position-active-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full">
-        Opis
-        <textarea id="position-description" name="description" autocomplete="off"
-            @error('description') aria-invalid="true" aria-describedby="position-description-error" @enderror>{{ old('description', $position->description ?? '') }}</textarea>
-        @error('description') <span id="position-description-error" class="form-error">{{ $message }}</span> @enderror
-    </label>
-
-    <fieldset class="admin-choice-section span-full">
+    <fieldset class="admin-choice-section form-grid--span-full">
         <legend class="admin-section-title">Przypisani użytkownicy</legend>
         <p class="form-help">
             Zaznacz osoby i ustaw ich kolejność. Niższa liczba oznacza wcześniejsze miejsce.
@@ -113,7 +113,7 @@
                     </div>
                 </div>
             @empty
-                <p class="content-empty admin-choice-empty">
+                <p class="empty-state admin-choice-empty">
                     Brak użytkowników, których można przypisać do tej funkcji.
                     <a href="{{ route('admin.users.create') }}">Dodaj użytkownika</a>.
                 </p>
@@ -122,7 +122,7 @@
     </fieldset>
 </div>
 
-<div class="admin-form-actions">
+<div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary">Zapisz funkcję</button>
     <a href="{{ route('admin.positions.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

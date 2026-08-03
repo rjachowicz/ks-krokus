@@ -24,8 +24,8 @@
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section calendar-section" aria-labelledby="calendar-month-title">
-        <form method="GET" class="content-toolbar calendar-filters" aria-label="Filtry kalendarza">
+    <section class="page-container page-container--wide page-section calendar-section" aria-labelledby="calendar-month-title">
+        <form method="GET" class="content-toolbar panel-card ui-cluster calendar-filters" aria-label="Filtry kalendarza">
             <x-form-errors />
 
             <input type="hidden" name="month" value="{{ $displayDate->month }}">
@@ -119,7 +119,7 @@
         </div>
 
         @if ($events->isEmpty())
-            <p class="content-empty">Brak wydarzeń spełniających wybrane kryteria w tym miesiącu.</p>
+            <p class="empty-state">Brak wydarzeń spełniających wybrane kryteria w tym miesiącu.</p>
         @else
             <div class="month-calendar">
                 <div class="month-calendar__weekdays" aria-hidden="true">

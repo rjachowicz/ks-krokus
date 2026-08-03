@@ -3,13 +3,77 @@ main {
     padding-top: 108px;
 }
 
-.features-section {
+.page-container {
     width: min(var(--container-width), calc(100% - var(--page-gutter)));
-    margin: var(--section-space) auto;
+    min-width: 0;
+    margin-inline: auto;
 }
 
-.features-section.features-section--flush {
+.page-container--wide {
+    width: min(1500px, calc(100% - var(--page-gutter)));
+}
+
+.page-section {
+    margin-block: var(--section-space);
+}
+
+.page-section--flush {
     margin-top: 0;
+}
+
+.ui-stack {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: var(--content-gap);
+}
+
+.ui-stack--sm {
+    gap: 10px;
+}
+
+.ui-stack--lg {
+    gap: var(--layout-gap);
+}
+
+.ui-cluster {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.ui-cluster--between {
+    justify-content: space-between;
+}
+
+.ui-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    align-items: stretch;
+    gap: var(--content-gap);
+}
+
+.ui-grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ui-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sidebar-layout {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 370px);
+    align-items: start;
+    gap: var(--layout-gap);
+}
+
+.sidebar-layout > * {
+    min-width: 0;
 }
 
 .section-header {
@@ -38,4 +102,21 @@ main {
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+}
+
+@media (max-width: 920px) {
+    .sidebar-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .page-section {
+        margin-block: 64px;
+    }
+
+    .ui-grid--2,
+    .ui-grid--3 {
+        grid-template-columns: 1fr;
+    }
 }

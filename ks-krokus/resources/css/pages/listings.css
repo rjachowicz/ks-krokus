@@ -18,17 +18,12 @@
 .listing-filters {
     min-width: 0;
     margin-bottom: clamp(28px, 4vw, 42px);
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
 }
 
 .listing-filters__primary {
     display: grid;
     grid-template-columns: minmax(240px, 1fr) minmax(190px, .36fr) auto;
-    align-items: end;
+    align-items: start;
     gap: 14px;
 }
 
@@ -91,7 +86,7 @@
 .listing-filters__advanced {
     display: grid;
     grid-template-columns: repeat(4, minmax(140px, 1fr));
-    align-items: end;
+    align-items: start;
     gap: 14px;
     padding-top: 14px;
 }
@@ -157,6 +152,13 @@
     padding-block: 9px;
 }
 
+.listing-filters__primary > .btn,
+.listing-admin-filter__primary > .btn,
+.listing-admin-filter__advanced > .btn {
+    align-self: start;
+    margin-top: calc(1em + 7px);
+}
+
 .listing-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -165,14 +167,10 @@
 
 .listing-card {
     display: flex;
-    min-width: 0;
     min-height: 100%;
+    padding: 0;
     overflow: hidden;
     flex-direction: column;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
     transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
@@ -308,14 +306,12 @@
     text-align: right;
 }
 
-.listing-empty h3,
-.listing-panel-empty h2 {
+.listing-empty h3 {
     margin-bottom: 6px;
     font-family: var(--font-heading);
 }
 
-.listing-empty p,
-.listing-panel-empty p {
+.listing-empty p {
     margin-bottom: 18px;
 }
 
@@ -358,16 +354,11 @@
 }
 
 .listing-detail__layout {
-    display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(310px, 370px);
-    gap: clamp(18px, 3vw, 28px);
-    align-items: start;
 }
 
 .listing-detail__main {
-    display: grid;
     min-width: 0;
-    gap: var(--content-gap);
 }
 
 .listing-gallery {
@@ -444,17 +435,6 @@
     height: 100%;
     border-radius: 5px;
     object-fit: cover;
-}
-
-.listing-detail__panel,
-.listing-contact-card,
-.listing-report-section {
-    min-width: 0;
-    padding: clamp(20px, 3vw, 28px);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
 }
 
 .listing-detail__panel h2,
@@ -601,7 +581,6 @@
 .listing-report-section {
     max-width: 860px;
     margin-top: var(--content-gap);
-    box-shadow: none;
 }
 
 .listing-report > p {
@@ -865,32 +844,19 @@
     color: var(--danger);
 }
 
-.listing-panel-empty {
-    padding: 38px;
-    border: 1px dashed var(--line-strong);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
-    text-align: center;
-}
-
 .listing-owner-filter {
     max-width: 680px;
 }
 
 .owner-listing-list {
-    display: grid;
     gap: 14px;
 }
 
 .owner-listing-card {
     display: grid;
     grid-template-columns: 180px minmax(0, 1fr);
-    min-width: 0;
+    padding: 0;
     overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
 }
 
 .owner-listing-card__image {
@@ -1075,7 +1041,7 @@
 .listing-admin-filter__primary {
     display: grid;
     grid-template-columns: repeat(3, minmax(160px, 1fr)) auto;
-    align-items: end;
+    align-items: start;
     gap: 12px;
 }
 
@@ -1097,7 +1063,7 @@
 .listing-admin-filter__advanced {
     display: grid;
     grid-template-columns: repeat(3, minmax(150px, 1fr));
-    align-items: end;
+    align-items: start;
     gap: 12px;
     padding-top: 12px;
 }
@@ -1215,14 +1181,7 @@
 }
 
 .listing-moderation-layout {
-    display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(300px, 370px);
-    gap: var(--content-gap);
-    align-items: start;
-}
-
-.listing-moderation-layout > * {
-    min-width: 0;
 }
 
 .listing-moderation-sidebar {
@@ -1407,7 +1366,7 @@
         gap: var(--content-gap);
     }
 
-    .listing-moderation-sidebar .admin-card:first-child {
+    .listing-moderation-sidebar .panel-card:first-child {
         grid-row: span 2;
     }
 }
@@ -1462,7 +1421,7 @@
         grid-template-columns: 1fr;
     }
 
-    .listing-moderation-sidebar .admin-card:first-child {
+    .listing-moderation-sidebar .panel-card:first-child {
         grid-row: auto;
     }
 }
@@ -1476,10 +1435,6 @@
     .listing-facts,
     .moderation-secondary-actions {
         grid-template-columns: 1fr;
-    }
-
-    .listing-filters {
-        padding: 14px;
     }
 
     .listing-filters__primary .btn,
@@ -1513,11 +1468,6 @@
 
     .listing-card__place-date {
         text-align: left;
-    }
-
-    .listing-detail__panel,
-    .listing-report-section {
-        padding: 18px 14px;
     }
 
     .listing-detail__price,

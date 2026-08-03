@@ -13,7 +13,7 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter">
+    <form method="GET" class="admin-filter panel-card">
         <label>
             Szukaj zawodnika
             <input id="result-filter-query" type="search" name="q" value="{{ request('q') }}" autocomplete="off"
@@ -105,9 +105,11 @@
                     </tr>
                 @empty
                     <tr><td colspan="7">
-                        {{ request()->hasAny(['q', 'event_id', 'user_id'])
-                            ? 'Brak wyników spełniających wybrane kryteria.'
-                            : 'Nie dodano jeszcze żadnego wyniku.' }}
+                        <div class="empty-state">
+                            {{ request()->hasAny(['q', 'event_id', 'user_id'])
+                                ? 'Brak wyników spełniających wybrane kryteria.'
+                                : 'Nie dodano jeszcze żadnego wyniku.' }}
+                        </div>
                     </td></tr>
                 @endforelse
             </tbody>

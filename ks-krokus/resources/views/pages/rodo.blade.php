@@ -19,7 +19,7 @@
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section features-section--flush" aria-label="Treść klauzuli RODO">
+    <section class="page-container page-section page-section--flush" aria-label="Treść klauzuli RODO">
         <article class="card regulamin-card">
             <span class="card-code">[ DOC_ID: RODO-2026 ]</span>
 

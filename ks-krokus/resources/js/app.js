@@ -4,12 +4,14 @@ import { initTheme } from './modules/theme';
 import { initToasts } from './modules/toasts';
 import { initAdminUi } from './modules/admin-ui';
 import { initFormStates } from './modules/form-state';
+import { initImageFallbacks } from './modules/image-fallback';
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initMobileMenu();
     initStickyHeader();
     initToasts();
+    initImageFallbacks();
 
     if (document.querySelector('[data-admin-sidebar]')) {
         initAdminUi();

@@ -1,9 +1,5 @@
 .hero-stats-bar {
-    width: min(var(--container-width), calc(100% - var(--page-gutter)));
-    margin: 0 auto var(--section-space);
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--content-gap);
+    margin-bottom: var(--section-space);
 }
 
 .stat-card {
@@ -53,9 +49,6 @@
 }
 
 .bento-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--content-gap);
     align-items: stretch;
 }
 
@@ -74,7 +67,7 @@
     min-height: 100%;
     flex-direction: column;
     justify-content: space-between;
-    padding: clamp(24px, 3vw, 34px);
+    padding: var(--panel-padding);
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: var(--radius-panel);
@@ -85,6 +78,28 @@
         border-color 180ms ease,
         background 180ms ease,
         box-shadow 180ms ease;
+}
+
+.panel-card {
+    min-width: 0;
+    padding: var(--panel-padding);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.panel-card > :first-child {
+    margin-top: 0;
+}
+
+.panel-card > :last-child {
+    margin-bottom: 0;
+}
+
+.panel-card h2,
+.panel-card h3 {
+    font-family: var(--font-heading);
 }
 
 .card::after {
@@ -279,4 +294,15 @@
     font-family: var(--font-heading);
     font-size: .9rem;
     letter-spacing: .03em;
+}
+
+.image-placeholder--generated {
+    min-height: inherit;
+    aspect-ratio: inherit;
+}
+
+@media (max-width: 680px) {
+    .panel-card {
+        padding: 18px 14px;
+    }
 }

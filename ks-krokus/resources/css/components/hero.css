@@ -1,5 +1,4 @@
 .hero {
-    width: min(var(--container-width), calc(100% - var(--page-gutter)));
     margin: 32px auto 64px;
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);

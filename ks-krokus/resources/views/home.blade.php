@@ -32,16 +32,16 @@
         </x-slot:actions>
     </x-page-hero>
 
-    <section class="hero-stats-bar" aria-label="Najważniejsze informacje o klubie">
+    <section class="hero-stats-bar page-container ui-grid ui-grid--3" aria-label="Najważniejsze informacje o klubie">
         <x-stat-card :value="(now()->year - $club['founded_year']).'+'" label="lat tradycji" />
         <x-stat-card :value="$club['annual_events'].'+'" label="zawodów rocznie" />
         <x-stat-card value="PZSS" label="licencja klubowa" />
     </section>
 
-    <section class="features-section" aria-labelledby="about-title">
+    <section class="page-container page-section" aria-labelledby="about-title">
         <x-section-heading id="about-title" title="O Klubie Strzeleckim" meta="KS_KROKUS / 01" />
 
-        <div class="bento-grid">
+        <div class="bento-grid ui-grid ui-grid--3">
             <x-content-card
                 class="bento-span-2"
                 code="SEC_01 // TRENINGI I KOMPETENCJE"
@@ -100,7 +100,7 @@
     </section>
 
 
-    <section class="features-section" aria-labelledby="latest-news-title">
+    <section class="page-container page-section" aria-labelledby="latest-news-title">
         <x-section-heading
             id="latest-news-title"
             title="Najnowsze aktualności"
@@ -108,11 +108,11 @@
         />
 
         @if ($latestNews->isEmpty())
-            <p class="content-empty">
+            <p class="empty-state">
                 Aktualności pojawią się po opublikowaniu pierwszego wpisu w panelu.
             </p>
         @else
-            <div class="news-grid">
+            <div class="news-grid ui-grid ui-grid--3">
                 @foreach ($latestNews as $post)
                     <x-content-card class="news-card">
                         @if ($post->coverUrl())
@@ -122,6 +122,10 @@
                                     alt="{{ $post->cover_image_alt ?: $post->title }}"
                                     loading="lazy"
                                 >
+                            </div>
+                        @else
+                            <div class="news-card__media">
+                                <x-image-placeholder label="Brak zdjęcia aktualności" />
                             </div>
                         @endif
 
@@ -154,7 +158,7 @@
         @endif
     </section>
 
-    <section class="features-section" aria-labelledby="upcoming-events-title">
+    <section class="page-container page-section" aria-labelledby="upcoming-events-title">
         <x-section-heading
             id="upcoming-events-title"
             title="Najbliższe wydarzenia"
@@ -162,11 +166,11 @@
         />
 
         @if ($upcomingEvents->isEmpty())
-            <p class="content-empty">
+            <p class="empty-state">
                 Brak zaplanowanych publicznych zawodów i treningów.
             </p>
         @else
-            <div class="event-grid">
+            <div class="event-grid ui-grid ui-grid--3">
                 @foreach ($upcomingEvents as $event)
                     <x-content-card class="event-card">
                         <div class="event-card__meta">
@@ -207,14 +211,14 @@
     </section>
 
     @if ($recentResultEvents->isNotEmpty())
-        <section class="features-section" aria-labelledby="recent-results-title">
+        <section class="page-container page-section" aria-labelledby="recent-results-title">
             <x-section-heading
                 id="recent-results-title"
                 title="Ostatnie rezultaty"
                 meta="RESULTS_ARCHIVE"
             />
 
-            <div class="results-event-grid">
+            <div class="results-event-grid ui-grid ui-grid--3">
                 @foreach ($recentResultEvents as $event)
                     <x-content-card
                         code="{{ $event->competition_system?->label() ?? 'SPORT' }}"
@@ -233,7 +237,7 @@
         </section>
     @endif
 
-    <section id="historia" class="features-section" aria-labelledby="history-title">
+    <section id="historia" class="page-container page-section" aria-labelledby="history-title">
         <x-section-heading id="history-title" title="Historia Klubu Krokus" meta="CHRONOLOGY_LOG" />
 
         <div class="timeline">
@@ -283,7 +287,7 @@
         </div>
     </section>
 
-    <section class="features-section" aria-labelledby="join-title">
+    <section class="page-container page-section" aria-labelledby="join-title">
         <x-section-heading id="join-title" title="Jak dołączyć do Krokusa?" meta="JOIN_PROTOCOL" />
 
         <div class="steps-grid">

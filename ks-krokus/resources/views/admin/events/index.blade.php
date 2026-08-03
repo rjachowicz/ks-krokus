@@ -13,7 +13,7 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter">
+    <form method="GET" class="admin-filter panel-card">
         <label>
             Szukaj
             <input id="event-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Nazwa lub miejsce" autocomplete="off"
@@ -114,9 +114,11 @@
                     </tr>
                 @empty
                     <tr><td colspan="7">
-                        {{ request()->hasAny(['q', 'event_type', 'status'])
-                            ? 'Brak wydarzeń spełniających wybrane kryteria.'
-                            : 'Nie dodano jeszcze żadnego wydarzenia.' }}
+                        <div class="empty-state">
+                            {{ request()->hasAny(['q', 'event_type', 'status'])
+                                ? 'Brak wydarzeń spełniających wybrane kryteria.'
+                                : 'Nie dodano jeszcze żadnego wydarzenia.' }}
+                        </div>
                     </td></tr>
                 @endforelse
             </tbody>

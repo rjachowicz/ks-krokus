@@ -13,7 +13,7 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter">
+    <form method="GET" class="admin-filter panel-card">
         <label>
             Szukaj
             <input id="post-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Tytuł lub opis" autocomplete="off"
@@ -96,9 +96,11 @@
                     </tr>
                 @empty
                     <tr><td colspan="5">
-                        {{ request()->hasAny(['q', 'status'])
-                            ? 'Brak aktualności spełniających wybrane kryteria.'
-                            : 'Nie dodano jeszcze żadnej aktualności.' }}
+                        <div class="empty-state">
+                            {{ request()->hasAny(['q', 'status'])
+                                ? 'Brak aktualności spełniających wybrane kryteria.'
+                                : 'Nie dodano jeszcze żadnej aktualności.' }}
+                        </div>
                     </td></tr>
                 @endforelse
             </tbody>

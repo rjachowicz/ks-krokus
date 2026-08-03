@@ -4,6 +4,71 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-03 — audyt geometrii i wspólny system układu
+
+### Cel
+
+Przeprowadzić pełny audyt geometrii widoków publicznych, paneli i formularzy,
+ze szczególnym uwzględnieniem ogłoszeń sprzedaży, a następnie usunąć wspólne
+przyczyny rozbieżności bez zmiany logiki biznesowej, logowania ani rejestracji.
+
+### Najważniejsze potwierdzone problemy
+
+- Kontenery stron, sekcje, karty, siatki, puste stany i układy z sidebarem miały
+  kilka równoległych implementacji, przez co podobne ekrany różniły się szerokością,
+  paddingiem i odstępami.
+- Formularze panelu opierały geometrię na klasach `admin-*`; pola w jednym rzędzie
+  były podatne na przesuwanie przez opisy i błędy, a akcje sticky korzystały z
+  ujemnych marginesów.
+- Wysokość kontrolek nie była wspólna: część przycisków i input kolejności miały
+  mniejszy wymiar niż inputy oraz selecty.
+- Reguła dwukolumnowego `.form-grid--3` z arkusza panelu wygrywała na 320 i 375 px
+  z regułą mobilną formularzy i powodowała poziomy overflow formularza wydarzenia.
+- Obrazy z brakującym plikiem pozostawały widoczne jako uszkodzone; sam placeholder
+  renderowany wyłącznie przy braku relacji w bazie nie obsługiwał błędu zasobu.
+
+### Wykonane
+
+- [x] Dodano neutralny system `page-container`, `page-section`, `ui-stack`,
+  `ui-cluster`, `ui-grid`, `form-grid`, `form-section`, `form-actions`, `panel-card`,
+  `sidebar-layout` i `empty-state`, oparty na wspólnych tokenach odstępów, paddingu
+  oraz wysokości kontrolek.
+- [x] Przeniesiono publiczne sekcje, karty, gridy, puste stany, layouty szczegółów,
+  formularz kontaktowy i formularze CRUD panelu na wspólne prymitywy. Formularz
+  zwykłego użytkownika nie korzysta z klas `admin-*`.
+- [x] Uporządkowano listę i szczegóły ogłoszeń, „Moje ogłoszenia”, formularz wraz
+  z uploadem, kolejkę i kartę decyzji moderacyjnej, filtry oraz sortowanie.
+- [x] Usunięto ujemne marginesy, redundantne deklaracje powierzchni kart,
+  powielone kontenery szerokości, osobne puste stany oraz duplikaty gridów i akcji.
+- [x] Ujednolicono wysokość interaktywnych kontrolek do 48 px i wymuszono
+  `min-width: 0` dla dzieci siatek, aby tekst pomocy i błędy nie rozszerzały kolumn.
+- [x] Dodano lekki wspólny fallback JavaScript, który po błędzie ładowania obrazu
+  ukrywa uszkodzony element i wstawia neutralny placeholder.
+- [x] Nie zmieniono logowania, rejestracji, tras, workflow ogłoszeń, uprawnień,
+  zapytań, walidacji ani innych reguł biznesowych.
+
+### Testy i kontrole
+
+- [x] Edge headless — audyt 38 tras przy 320, 375, 480, 768, 1024, 1280, 1366,
+  1440 i 1920 px w light/dark (684 renderowania). Audyt ujawnił konflikt mobilnej
+  siatki wydarzenia; po poprawce wykonano 162 kontrole regresyjne kluczowych ekranów
+  oraz ponowną diagnostykę 320 px bez poziomego overflow.
+- [x] Zweryfikowano brak widocznych uszkodzonych obrazów, działanie placeholderów,
+  równe wysokości kontrolek i zgodne początki kolumn sidebar/main na desktopie.
+- [x] `composer test` — 89 testów, 713 asercji, wszystkie poprawne.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 58 modułów.
+- [x] `php artisan view:cache` i `git diff --check` — poprawne.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Nie dodano migracji ani nowych zmiennych środowiskowych.
+- Syntetyczne rekordy audytowe usunięto z lokalnej bazy po testach. Pomocniczy
+  katalog Playwright pozostał wyłącznie w systemowym `%TEMP%`, poza repozytorium,
+  ponieważ jego automatyczne usunięcie zablokowała polityka wykonawcza.
+- Test headless nie zastępuje końcowej kontroli na fizycznych urządzeniach i z
+  rzeczywistymi plikami ze storage produkcyjnego.
+
 ## Bieżąca sesja — 2026-08-02 — spójny interfejs ogłoszeń sprzedaży
 
 ### Cel

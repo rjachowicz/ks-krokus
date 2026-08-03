@@ -8,7 +8,7 @@
         <x-slot:actions><a href="{{ route('admin.my-listings.create') }}" class="btn btn-primary">Dodaj ogłoszenie</a></x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter listing-owner-filter" aria-label="Filtrowanie moich ogłoszeń">
+    <form method="GET" class="admin-filter panel-card listing-owner-filter" aria-label="Filtrowanie moich ogłoszeń">
         <label for="my-listings-status">Status
             <select id="my-listings-status" name="status" @error('status') aria-invalid="true" aria-describedby="my-listings-status-error" @enderror>
                 <option value="">Wszystkie statusy</option>
@@ -21,7 +21,7 @@
     </form>
 
     @if ($listings->isEmpty())
-        <div class="listing-panel-empty">
+        <div class="empty-state listing-panel-empty">
             <h2>Brak ogłoszeń</h2>
             <p>{{ request('status') ? 'Nie masz ogłoszeń o wybranym statusie.' : 'Dodaj pierwsze ogłoszenie i zapisz je jako szkic albo wyślij do moderacji.' }}</p>
             @if (request('status'))
@@ -31,13 +31,13 @@
             @endif
         </div>
     @else
-        <div class="owner-listing-list">
+        <div class="owner-listing-list ui-stack">
             @foreach ($listings as $listing)
                 @php
                     $isEditPrimary = in_array($listing->status, [\App\Enums\SaleListingStatus::Draft, \App\Enums\SaleListingStatus::Rejected], true);
                     $isDuplicatePrimary = in_array($listing->status, [\App\Enums\SaleListingStatus::Sold, \App\Enums\SaleListingStatus::Expired, \App\Enums\SaleListingStatus::Archived], true);
                 @endphp
-                <article class="owner-listing-card">
+                <article class="owner-listing-card panel-card">
                     <div class="owner-listing-card__image">
                         @if ($listing->primaryImage)
                             <img src="{{ $listing->primaryImage->thumbnailUrl() }}" alt="{{ $listing->primaryImage->alt_text ?: $listing->title }}" loading="lazy">

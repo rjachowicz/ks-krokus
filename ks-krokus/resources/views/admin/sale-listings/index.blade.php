@@ -18,7 +18,7 @@
         @if (auth()->user()->isAdmin())<a href="{{ route('admin.sale-listings.index', ['trashed' => 'only']) }}" @if (request('trashed') === 'only') aria-current="page" @endif>Kosz</a>@endif
     </nav>
 
-    <form method="GET" class="admin-filter listing-admin-filter" aria-label="Filtrowanie moderowanych ogłoszeń">
+    <form method="GET" class="admin-filter panel-card listing-admin-filter" aria-label="Filtrowanie moderowanych ogłoszeń">
         <div class="listing-admin-filter__primary">
             <label for="admin-listing-status">Status
                 <select id="admin-listing-status" name="status" @error('status') aria-invalid="true" aria-describedby="admin-listing-status-error" @enderror>
@@ -113,7 +113,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5"><div class="listing-table-empty"><strong>Brak ogłoszeń</strong><span>Żadne ogłoszenie nie spełnia wybranych kryteriów.</span></div></td></tr>
+                    <tr><td colspan="5"><div class="empty-state listing-table-empty"><strong>Brak ogłoszeń</strong><span>Żadne ogłoszenie nie spełnia wybranych kryteriów.</span></div></td></tr>
                 @endforelse
             </tbody>
         </table>

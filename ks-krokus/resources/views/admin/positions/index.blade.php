@@ -64,7 +64,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5">Nie dodano jeszcze żadnej funkcji klubowej.</td></tr>
+                    <tr><td colspan="5"><div class="empty-state">Nie dodano jeszcze żadnej funkcji klubowej.</div></td></tr>
                 @endforelse
             </tbody>
         </table>

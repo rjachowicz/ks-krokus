@@ -6,7 +6,7 @@
 @section('content')
     <x-admin-page-header :title="$editedUser->name" :description="$editedUser->email" />
 
-    <form method="POST" action="{{ route('admin.users.update', $editedUser) }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.users.update', $editedUser) }}" class="form-layout panel-card">
         @csrf
         @method('PUT')
         @include('admin.users._form')

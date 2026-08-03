@@ -23,7 +23,7 @@
     <form
         method="POST"
         action="{{ route('admin.posts.update', $post) }}"
-        class="admin-card admin-form"
+        class="form-layout panel-card"
         enctype="multipart/form-data"
     >
         @csrf

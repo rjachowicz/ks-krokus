@@ -24,7 +24,7 @@
         </x-slot:actions>
     </x-page-hero>
 
-    <section class="features-section" aria-label="Tabela wyników">
+    <section class="page-container page-section" aria-label="Tabela wyników">
         @forelse ($resultCompetitions as $eventCompetition)
             <article class="result-section">
                 <h2>
@@ -71,7 +71,7 @@
                 </div>
             </article>
         @empty
-            <p class="content-empty">Brak wyników dla tego wydarzenia.</p>
+            <p class="empty-state">Brak wyników dla tego wydarzenia.</p>
         @endforelse
     </section>
 @endsection

@@ -22,25 +22,27 @@
     ]));
 @endphp
 
-<div class="admin-form-grid">
-    <h2 class="admin-section-title span-full">Treść aktualności</h2>
-    <label class="span-full">
+<div class="form-grid">
+    <h2 class="admin-section-title form-grid--span-full">Treść aktualności</h2>
+    <label class="form-grid--span-full">
         Tytuł
-        <input id="post-title" type="text" name="title" value="{{ old('title', $post->title ?? '') }}" autocomplete="off" required autofocus
-            @error('title') aria-invalid="true" aria-describedby="post-title-error" @enderror>
+        <input id="post-title" type="text" name="title" value="{{ old('title', $post->title ?? '') }}"
+               autocomplete="off" required autofocus
+               @error('title') aria-invalid="true" aria-describedby="post-title-error" @enderror>
         @error('title') <span id="post-title-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full">
+    <label class="form-grid--span-full">
         Krótkie streszczenie
         <textarea id="post-excerpt" name="excerpt" rows="3" autocomplete="off"
-            aria-describedby="post-excerpt-help @error('excerpt') post-excerpt-error @enderror"
-            @error('excerpt') aria-invalid="true" @enderror>{{ old('excerpt', $post->excerpt ?? '') }}</textarea>
-        <span id="post-excerpt-help" class="form-help">Widoczne na listach aktualności i jako wprowadzenie do artykułu.</span>
+                  aria-describedby="post-excerpt-help @error('excerpt') post-excerpt-error @enderror"
+                  @error('excerpt') aria-invalid="true" @enderror>{{ old('excerpt', $post->excerpt ?? '') }}</textarea>
+        <span id="post-excerpt-help"
+              class="form-help">Widoczne na listach aktualności i jako wprowadzenie do artykułu.</span>
         @error('excerpt') <span id="post-excerpt-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <div class="form-field span-full">
+    <div class="form-field form-grid--span-full">
         <label id="post-content-label" for="post-content">Treść</label>
         <input type="hidden" name="content_format" value="html">
         <textarea
@@ -59,11 +61,12 @@
         @error('content') <span id="post-content-error" class="form-error" role="alert">{{ $message }}</span> @enderror
     </div>
 
-    <h2 class="admin-section-title span-full">Publikacja</h2>
+    <h2 class="admin-section-title form-grid--span-full">Publikacja</h2>
 
     <label>
         Status
-        <select id="post-status" name="status" required @error('status') aria-invalid="true" aria-describedby="post-status-error" @enderror>
+        <select id="post-status" name="status" required @error('status') aria-invalid="true"
+                aria-describedby="post-status-error" @enderror>
             @foreach ($statuses as $value => $label)
                 <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
             @endforeach
@@ -74,50 +77,53 @@
     <label>
         Data publikacji
         <input id="post-published-at" type="datetime-local" name="published_at" value="{{ $publishedAt }}"
-            aria-describedby="post-published-at-help @error('published_at') post-published-at-error @enderror"
-            @error('published_at') aria-invalid="true" @enderror>
+               aria-describedby="post-published-at-help @error('published_at') post-published-at-error @enderror"
+               @error('published_at') aria-invalid="true" @enderror>
         <span id="post-published-at-help" class="form-help">Przy statusie „Opublikowane” puste pole zostanie ustawione na bieżący czas.</span>
         @error('published_at') <span id="post-published-at-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <h2 class="admin-section-title span-full">Zdjęcie główne</h2>
+    <h2 class="admin-section-title form-grid--span-full">Zdjęcie główne</h2>
 
     @if (isset($post) && $post->coverUrl())
-        <div class="span-full image-edit-card">
+        <div class="form-grid--span-full image-edit-card">
             <img src="{{ $post->coverUrl() }}" alt="{{ $post->cover_image_alt ?: $post->title }}">
             <div class="image-edit-card__body">
                 <label class="form-check">
                     <input id="post-remove-cover" type="checkbox" name="remove_cover" value="1"
-                        data-cover-remove
-                        @checked(old('remove_cover', false))
-                        @error('remove_cover') aria-invalid="true" aria-describedby="post-remove-cover-error" @enderror>
+                           data-cover-remove
+                           @checked(old('remove_cover', false))
+                           @error('remove_cover') aria-invalid="true"
+                           aria-describedby="post-remove-cover-error" @enderror>
                     Usuń obecne zdjęcie główne
-                    @error('remove_cover') <span id="post-remove-cover-error" class="form-error">{{ $message }}</span> @enderror
+                    @error('remove_cover') <span id="post-remove-cover-error"
+                                                 class="form-error">{{ $message }}</span> @enderror
                 </label>
             </div>
         </div>
     @endif
 
     <div
-        class="file-upload"
+        class="file-upload form-grid--span-full"
         data-file-upload
-        data-max-files="1"
+        data-max-files="{{ config('content.gallery_max_images') }}"
         data-max-size-kb="{{ config('content.image_max_size_kb') }}"
     >
         <label class="file-upload__dropzone">
             <strong>Nowe zdjęcie główne</strong>
             <span>Przeciągnij obraz tutaj lub wybierz plik</span>
             <input id="post-cover-image" type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
-                data-cover-file
-                aria-describedby="post-cover-image-help @error('cover_image') cover-image-error @enderror"
-                @error('cover_image') aria-invalid="true" @enderror>
+                   data-cover-file
+                   aria-describedby="post-cover-image-help @error('cover_image') cover-image-error @enderror"
+                   @error('cover_image') aria-invalid="true" @enderror>
             <small id="post-cover-image-help">
                 JPG, PNG lub WebP, maksymalnie 6 MB.
                 @if (isset($post) && $post->coverUrl())
                     Nowy plik zastąpi obecne zdjęcie.
                 @endif
             </small>
-            @error('cover_image') <span id="cover-image-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+            @error('cover_image') <span id="cover-image-error" class="form-error"
+                                        role="alert">{{ $message }}</span> @enderror
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
         <p class="form-error" data-file-error aria-live="assertive" hidden></p>
@@ -137,11 +143,10 @@
         <span id="post-cover-alt-help" class="form-help">Krótki opis dla dostępności i wyszukiwarek.</span>
         @error('cover_image_alt') <span id="post-cover-alt-error" class="form-error">{{ $message }}</span> @enderror
     </label>
-
-    <h2 class="admin-section-title span-full">Galeria zdjęć</h2>
+    <h2 class="admin-section-title form-grid--span-full">Galeria zdjęć</h2>
 
     <div
-        class="file-upload span-full"
+        class="file-upload form-grid--span-full"
         data-file-upload
         data-max-files="{{ config('content.gallery_max_images') }}"
         data-max-size-kb="{{ config('content.image_max_size_kb') }}"
@@ -162,8 +167,10 @@
                 @endif
             >
             <small id="post-gallery-images-help">Łącznie maksymalnie 12 zdjęć, każde do 6 MB.</small>
-            @error('gallery_images') <span id="gallery-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
-            @error('gallery_images.*') <span id="gallery-image-items-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+            @error('gallery_images') <span id="gallery-images-error" class="form-error"
+                                           role="alert">{{ $message }}</span> @enderror
+            @error('gallery_images.*') <span id="gallery-image-items-error" class="form-error"
+                                             role="alert">{{ $message }}</span> @enderror
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
         <p class="form-error" data-file-error aria-live="assertive" hidden></p>
@@ -171,17 +178,17 @@
 
     @if (isset($post) && $post->images->isNotEmpty())
         @error('existing_images')
-            <span id="post-existing-images-error" class="form-error span-full" role="alert">{{ $message }}</span>
+        <span id="post-existing-images-error" class="form-error form-grid--span-full" role="alert">{{ $message }}</span>
         @enderror
         @error('delete_images.*')
-            <span id="post-delete-images-error" class="form-error span-full" role="alert">{{ $message }}</span>
+        <span id="post-delete-images-error" class="form-error form-grid--span-full" role="alert">{{ $message }}</span>
         @enderror
 
         <div
-            class="image-preview-grid span-full"
+            class="image-preview-grid form-grid--span-full"
             @if ($errors->has('existing_images') || $errors->has('delete_images.*'))
                 aria-invalid="true"
-                aria-describedby="@error('existing_images') post-existing-images-error @enderror @error('delete_images.*') post-delete-images-error @enderror"
+            aria-describedby="@error('existing_images') post-existing-images-error @enderror @error('delete_images.*') post-delete-images-error @enderror"
             @endif
         >
             @foreach ($post->images as $image)
@@ -197,10 +204,11 @@
                                 name="existing_images[{{ $image->id }}][alt_text]"
                                 value="{{ old("existing_images.{$image->id}.alt_text", $image->alt_text) }}"
                                 autocomplete="off"
-                                @error("existing_images.{$image->id}.alt_text") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-alt-error" @enderror
+                                @error("existing_images.{$image->id}.alt_text") aria-invalid="true"
+                                aria-describedby="post-image-{{ $image->id }}-alt-error" @enderror
                             >
                             @error("existing_images.{$image->id}.alt_text")
-                                <span id="post-image-{{ $image->id }}-alt-error" class="form-error">{{ $message }}</span>
+                            <span id="post-image-{{ $image->id }}-alt-error" class="form-error">{{ $message }}</span>
                             @enderror
                         </label>
 
@@ -211,10 +219,12 @@
                                 name="existing_images[{{ $image->id }}][caption]"
                                 rows="3"
                                 autocomplete="off"
-                                @error("existing_images.{$image->id}.caption") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-caption-error" @enderror
+                                @error("existing_images.{$image->id}.caption") aria-invalid="true"
+                                aria-describedby="post-image-{{ $image->id }}-caption-error" @enderror
                             >{{ old("existing_images.{$image->id}.caption", $image->caption) }}</textarea>
                             @error("existing_images.{$image->id}.caption")
-                                <span id="post-image-{{ $image->id }}-caption-error" class="form-error">{{ $message }}</span>
+                            <span id="post-image-{{ $image->id }}-caption-error"
+                                  class="form-error">{{ $message }}</span>
                             @enderror
                         </label>
 
@@ -226,10 +236,11 @@
                                 name="existing_images[{{ $image->id }}][sort_order]"
                                 min="0"
                                 value="{{ old("existing_images.{$image->id}.sort_order", $image->sort_order) }}"
-                                @error("existing_images.{$image->id}.sort_order") aria-invalid="true" aria-describedby="post-image-{{ $image->id }}-order-error" @enderror
+                                @error("existing_images.{$image->id}.sort_order") aria-invalid="true"
+                                aria-describedby="post-image-{{ $image->id }}-order-error" @enderror
                             >
                             @error("existing_images.{$image->id}.sort_order")
-                                <span id="post-image-{{ $image->id }}-order-error" class="form-error">{{ $message }}</span>
+                            <span id="post-image-{{ $image->id }}-order-error" class="form-error">{{ $message }}</span>
                             @enderror
                         </label>
 
@@ -253,7 +264,7 @@
     @endif
 </div>
 
-<div class="admin-form-actions">
+<div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary">Zapisz aktualność</button>
     <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

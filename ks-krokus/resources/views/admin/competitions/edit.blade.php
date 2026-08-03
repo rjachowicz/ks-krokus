@@ -6,7 +6,7 @@
 @section('content')
     <x-admin-page-header :title="$definition->name" :description="$definition->code" />
 
-    <form method="POST" action="{{ route('admin.competitions.update', $definition) }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.competitions.update', $definition) }}" class="form-layout panel-card">
         @csrf
         @method('PUT')
         @include('admin.competitions._form')

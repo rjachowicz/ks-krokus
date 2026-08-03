@@ -10,7 +10,7 @@
 @endphp
 
 @section('content')
-    <section class="features-section listing-detail" aria-labelledby="listing-title">
+    <section class="page-container page-section listing-detail" aria-labelledby="listing-title">
         <a href="{{ route('listings.index') }}" class="content-back">← Wróć do ogłoszeń</a>
         <x-form-errors />
 
@@ -22,8 +22,8 @@
             </div>
         </header>
 
-        <div class="listing-detail__layout">
-            <div class="listing-detail__main">
+        <div class="listing-detail__layout sidebar-layout">
+            <div class="listing-detail__main ui-stack">
                 <section class="listing-gallery" aria-labelledby="listing-gallery-title" data-listing-gallery>
                     <h2 id="listing-gallery-title" class="sr-only">Galeria zdjęć ogłoszenia</h2>
 
@@ -62,12 +62,12 @@
                     @endif
                 </section>
 
-                <section class="listing-detail__panel" aria-labelledby="listing-description-heading">
+                <section class="listing-detail__panel panel-card" aria-labelledby="listing-description-heading">
                     <h2 id="listing-description-heading">Opis</h2>
                     <div class="listing-description">{!! nl2br(e($listing->description)) !!}</div>
                 </section>
 
-                <section class="listing-detail__panel" aria-labelledby="listing-parameters-heading">
+                <section class="listing-detail__panel panel-card" aria-labelledby="listing-parameters-heading">
                     <h2 id="listing-parameters-heading">Parametry</h2>
                     <dl class="listing-facts">
                         <div><dt>Kategoria</dt><dd>{{ $listing->category->label() }}</dd></div>
@@ -83,7 +83,7 @@
                 </section>
             </div>
 
-            <aside class="listing-contact-card" aria-labelledby="listing-contact-heading">
+            <aside class="listing-contact-card panel-card" aria-labelledby="listing-contact-heading">
                 <div class="listing-detail__price">
                     <span>Cena</span>
                     <strong>{{ $listing->formattedPrice() }}</strong>
@@ -119,7 +119,7 @@
             </aside>
         </div>
 
-        <section class="listing-report-section" aria-labelledby="listing-report-heading">
+        <section class="listing-report-section panel-card" aria-labelledby="listing-report-heading">
             <details class="listing-report" @if ($errors->hasAny(['reason', 'details', 'website'])) open @endif>
                 <summary id="listing-report-heading">Zgłoś nieaktualne lub niewłaściwe ogłoszenie</summary>
                 <p>Zgłoszenie trafi do administratora i nie jest widoczne dla sprzedającego.</p>

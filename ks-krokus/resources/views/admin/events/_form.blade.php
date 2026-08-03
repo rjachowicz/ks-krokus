@@ -42,9 +42,9 @@
     );
 @endphp
 
-<div class="admin-form-grid admin-form-grid--3">
-    <h2 class="admin-section-title span-full">Podstawowe informacje</h2>
-    <label class="span-full">
+<div class="form-grid form-grid--3">
+    <h2 class="admin-section-title form-grid--span-full">Podstawowe informacje</h2>
+    <label class="form-grid--span-full">
         Nazwa wydarzenia
         <input id="event-title" type="text" name="title" value="{{ old('title', $event->title ?? '') }}" autocomplete="off" required autofocus
             @error('title') aria-invalid="true" aria-describedby="event-title-error" @enderror>
@@ -82,7 +82,7 @@
         @error('is_public') <span id="event-public-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <h2 class="admin-section-title span-full">Termin i zapisy</h2>
+    <h2 class="admin-section-title form-grid--span-full">Termin i zapisy</h2>
 
     <label>
         Początek
@@ -128,7 +128,7 @@
         @error('registration_url') <span id="event-registration-url-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <h2 class="admin-section-title span-full">Miejsce i klasyfikacja</h2>
+    <h2 class="admin-section-title form-grid--span-full">Miejsce i klasyfikacja</h2>
 
     <label>
         Nazwa miejsca
@@ -137,7 +137,7 @@
         @error('location_name') <span id="event-location-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-2">
+    <label class="form-grid--span-2">
         Adres
         <input id="event-address" type="text" name="address" value="{{ old('address', $event->address ?? '') }}" autocomplete="street-address"
             @error('address') aria-invalid="true" aria-describedby="event-address-error" @enderror>
@@ -166,14 +166,14 @@
         @error('competition_system') <span id="event-system-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full">
+    <label class="form-grid--span-full">
         Opis
         <textarea id="event-description" name="description" rows="10" autocomplete="off"
             @error('description') aria-invalid="true" aria-describedby="event-description-error" @enderror>{{ old('description', $event->description ?? '') }}</textarea>
         @error('description') <span id="event-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <fieldset class="admin-choice-section span-full">
+    <fieldset class="admin-choice-section form-grid--span-full">
         <legend class="admin-section-title">Konkurencje wydarzenia</legend>
         <p class="form-help">
             Dla treningów możesz wybrać ćwiczone konkurencje. Dla zawodów wybór definiuje pozycje dostępne
@@ -206,7 +206,7 @@
                     @endforeach
                 </fieldset>
             @empty
-                <p class="content-empty admin-choice-empty">
+                <p class="empty-state admin-choice-empty">
                     Brak aktywnych konkurencji do wyboru.
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('admin.competitions.create') }}">Dodaj pierwszą konkurencję</a>.
@@ -219,7 +219,7 @@
     </fieldset>
 </div>
 
-<div class="admin-form-actions">
+<div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary">Zapisz wydarzenie</button>
     <a href="{{ route('admin.events.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

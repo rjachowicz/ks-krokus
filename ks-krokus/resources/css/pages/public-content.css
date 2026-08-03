@@ -8,15 +8,13 @@
 }
 
 .content-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    gap: 16px;
+    align-items: start;
     margin-bottom: 28px;
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
+}
+
+.content-toolbar > :where(button, .btn) {
+    align-self: start;
+    margin-top: calc(1em + 7px);
 }
 
 .content-toolbar label {
@@ -32,9 +30,7 @@
 .news-grid,
 .event-grid,
 .results-event-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--content-gap);
+    align-items: stretch;
 }
 
 .news-card,
@@ -45,12 +41,23 @@
 
 .news-card__media {
     aspect-ratio: 16 / 10;
-    margin: calc(clamp(24px, 3vw, 34px) * -1);
     margin-bottom: 24px;
     overflow: hidden;
     background:
         linear-gradient(135deg, var(--gold-soft), transparent),
         var(--surface-muted);
+}
+
+.news-card {
+    padding: 0;
+}
+
+.news-card .card-content-inner > :not(.news-card__media) {
+    margin-inline: var(--panel-padding);
+}
+
+.news-card .card-footer {
+    margin: 28px var(--panel-padding) var(--panel-padding);
 }
 
 .news-card__media img {
@@ -77,17 +84,8 @@
     text-transform: uppercase;
 }
 
-.content-empty {
-    margin: 0;
-    padding: 42px;
-    border: 1px dashed var(--line-strong);
-    border-radius: 14px;
-    color: var(--text-muted);
-    text-align: center;
-}
-
 .article-shell {
-    width: min(980px, calc(100% - var(--page-gutter)));
+    max-width: 980px;
     margin: 24px auto 80px;
 }
 
@@ -162,17 +160,11 @@
 }
 
 .event-detail-grid {
-    display: grid;
     grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
-    gap: var(--content-gap);
 }
 
 .event-panel {
-    padding: 28px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-panel);
-    background: var(--surface);
-    box-shadow: var(--shadow-sm);
+    min-width: 0;
 }
 
 .event-panel h2,
@@ -331,9 +323,9 @@
 }
 
 @media (max-width: 1000px) {
-    .news-grid,
-    .event-grid,
-    .results-event-grid {
+    .news-grid.ui-grid--3,
+    .event-grid.ui-grid--3,
+    .results-event-grid.ui-grid--3 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -343,9 +335,9 @@
 }
 
 @media (max-width: 680px) {
-    .news-grid,
-    .event-grid,
-    .results-event-grid,
+    .news-grid.ui-grid--3,
+    .event-grid.ui-grid--3,
+    .results-event-grid.ui-grid--3,
     .article-gallery {
         grid-template-columns: 1fr;
     }

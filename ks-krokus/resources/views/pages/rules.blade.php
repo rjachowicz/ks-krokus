@@ -12,7 +12,7 @@
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section features-section--flush" aria-label="Treść regulaminu">
+    <section class="page-container page-section page-section--flush" aria-label="Treść regulaminu">
         <article class="card regulamin-card">
             <span class="card-code">[ DOC_ID: REG-LOK-2024 ]</span>
 

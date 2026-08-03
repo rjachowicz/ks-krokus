@@ -25,8 +25,8 @@
         </x-slot:actions>
     </x-page-hero>
 
-    <section class="features-section event-detail-grid" aria-label="Szczegóły wydarzenia">
-        <article class="event-panel">
+    <section class="page-container page-section sidebar-layout event-detail-grid" aria-label="Szczegóły wydarzenia">
+        <article class="panel-card event-panel">
             <h2>Opis wydarzenia</h2>
 
             <div class="article-body">
@@ -48,7 +48,7 @@
             @endif
         </article>
 
-        <aside class="event-panel">
+        <aside class="panel-card event-panel">
             <h2>Informacje</h2>
 
             <dl class="event-facts">

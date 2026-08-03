@@ -3,8 +3,8 @@
     $currentRole = old('role', $editedUser->role->value ?? \App\Enums\UserRole::User->value);
 @endphp
 
-<div class="admin-form-grid">
-    <h2 class="admin-section-title span-full">Dane konta</h2>
+<div class="form-grid">
+    <h2 class="admin-section-title form-grid--span-full">Dane konta</h2>
     <label>
         Imię i nazwisko
         <input id="user-name" type="text" name="name" value="{{ old('name', $editedUser->name ?? '') }}" autocomplete="name" required autofocus
@@ -52,7 +52,7 @@
         @error('password_confirmation') <span id="user-password-confirmation-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <h2 class="admin-section-title span-full">Uprawnienia i widoczność</h2>
+    <h2 class="admin-section-title form-grid--span-full">Uprawnienia i widoczność</h2>
 
     <label class="admin-check-option">
         <input type="hidden" name="is_active" value="0">
@@ -109,7 +109,7 @@
         @error('show_phone_publicly') <span id="user-public-phone-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full" data-trainer-bio-field>
+    <label class="form-grid--span-full" data-trainer-bio-field>
         Opis trenera
         <textarea id="user-trainer-bio" name="trainer_bio" data-trainer-bio
             aria-describedby="user-trainer-bio-help @error('trainer_bio') user-trainer-bio-error @enderror"
@@ -119,7 +119,7 @@
     </label>
 </div>
 
-<div class="admin-form-actions">
+<div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary">Zapisz użytkownika</button>
     <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

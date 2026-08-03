@@ -4,7 +4,7 @@
 @section('meta_description', $post->excerpt ?: \Illuminate\Support\Str::limit($post->plainTextContent(), 155))
 
 @section('content')
-    <article class="article-shell">
+    <article class="article-shell page-container">
         <header class="article-header">
             <div class="news-card__meta">
                 <span>{{ $post->published_at?->format('d.m.Y H:i') }}</span>
@@ -55,10 +55,10 @@
     </article>
 
     @if ($morePosts->isNotEmpty())
-        <section class="features-section" aria-labelledby="more-news-title">
+        <section class="page-container page-section" aria-labelledby="more-news-title">
             <x-section-heading id="more-news-title" title="Więcej aktualności" meta="READ_MORE" />
 
-            <div class="news-grid">
+            <div class="news-grid ui-grid ui-grid--3">
                 @foreach ($morePosts as $morePost)
                     <x-content-card
                         title="{{ $morePost->title }}"

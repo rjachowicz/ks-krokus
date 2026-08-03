@@ -29,10 +29,10 @@
         @endauth
     </x-page-hero>
 
-    <section class="features-section features-section--flush" aria-labelledby="listings-heading">
+    <section class="page-container page-section page-section--flush" aria-labelledby="listings-heading">
         <x-form-errors />
 
-        <form method="GET" action="{{ route('listings.index') }}" class="listing-filters" aria-label="Filtrowanie ogłoszeń">
+        <form method="GET" action="{{ route('listings.index') }}" class="listing-filters panel-card" aria-label="Filtrowanie ogłoszeń">
             @if (request()->filled('sort'))
                 <input type="hidden" name="sort" value="{{ request('sort') }}">
             @endif
@@ -131,8 +131,7 @@
                     @endif
                 @endforeach
                 <label for="listing-sort">
-                    Sortuj
-                    <select id="listing-sort" name="sort" @error('sort') aria-invalid="true" aria-describedby="listing-sort-error" @enderror>
+                    <select id="listing-sort" name="sort" aria-label="Kolejność ogłoszeń" @error('sort') aria-invalid="true" aria-describedby="listing-sort-error" @enderror>
                         <option value="newest" @selected(request('sort', 'newest') === 'newest')>Najnowsze</option>
                         <option value="oldest" @selected(request('sort') === 'oldest')>Najstarsze</option>
                         <option value="price_asc" @selected(request('sort') === 'price_asc')>Cena rosnąco</option>
@@ -145,7 +144,7 @@
         </div>
 
         @if ($listings->isEmpty())
-            <div class="content-empty listing-empty">
+            <div class="empty-state listing-empty">
                 <h3>Brak ogłoszeń</h3>
                 <p>{{ $hasFilters ? 'Nie znaleziono aktualnych ofert spełniających wybrane kryteria.' : 'Nie opublikowano jeszcze żadnych ofert.' }}</p>
                 @if ($hasFilters)
@@ -153,7 +152,7 @@
                 @endif
             </div>
         @else
-            <div class="listing-grid">
+            <div class="listing-grid ui-grid ui-grid--3">
                 @foreach ($listings as $listing)
                     @php
                         $keyParameters = collect([
@@ -162,7 +161,7 @@
                             $listing->condition?->label(),
                         ])->filter()->take(2);
                     @endphp
-                    <article class="listing-card">
+                    <article class="listing-card panel-card">
                         <a href="{{ route('listings.show', $listing) }}" class="listing-card__image" aria-label="Zobacz ogłoszenie: {{ $listing->title }}">
                             @if ($listing->primaryImage)
                                 <img src="{{ $listing->primaryImage->thumbnailUrl() }}" alt="{{ $listing->primaryImage->alt_text ?: $listing->title }}" loading="lazy">

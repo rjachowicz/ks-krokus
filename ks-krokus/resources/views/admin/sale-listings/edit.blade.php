@@ -24,15 +24,15 @@
         </div>
     @endif
 
-    <div class="listing-moderation-layout">
+    <div class="listing-moderation-layout sidebar-layout">
         <form method="POST" action="{{ route('admin.sale-listings.update', $listing) }}" class="form-layout listing-form" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             @include('listings._form')
         </form>
 
-        <aside class="listing-moderation-sidebar" aria-label="Narzędzia moderacji">
-            <section class="admin-card moderation-card">
+        <aside class="listing-moderation-sidebar ui-stack" aria-label="Narzędzia moderacji">
+            <section class="panel-card moderation-card">
                 <header class="moderation-card__header">
                     <span class="moderation-card__eyebrow">Stan ogłoszenia</span>
                     <h2>Decyzja moderacyjna</h2>
@@ -79,7 +79,7 @@
             </section>
 
             @can('flag', $listing)
-                <section class="admin-card moderation-card">
+                <section class="panel-card moderation-card">
                     <header class="moderation-card__header"><span class="moderation-card__eyebrow">Eskalacja</span><h2>Zgłoś administratorowi</h2></header>
                     <form method="POST" action="{{ route('admin.sale-listings.flag', $listing) }}" class="form-layout moderation-inline-form">
                         @csrf
@@ -92,7 +92,7 @@
                 </section>
             @endcan
 
-            <section class="admin-card moderation-card">
+            <section class="panel-card moderation-card">
                 <header class="moderation-card__header"><span class="moderation-card__eyebrow">Audyt</span><h2>Historia moderacji</h2></header>
                 <ol class="listing-history">
                     @forelse ($listing->moderations as $entry)

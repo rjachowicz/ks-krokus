@@ -9,7 +9,7 @@
         description="Utwórz zawody lub trening i przypisz konkurencje."
     />
 
-    <form method="POST" action="{{ route('admin.events.store') }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.events.store') }}" class="form-layout panel-card">
         @csrf
         @include('admin.events._form')
     </form>

@@ -16,10 +16,10 @@
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section" aria-labelledby="results-list-title">
+    <section class="page-container page-section" aria-labelledby="results-list-title">
         <x-section-heading id="results-list-title" title="Archiwum wyników" meta="RESULTS_DATABASE" />
 
-        <form method="GET" class="content-toolbar" aria-label="Filtrowanie wyników">
+        <form method="GET" class="content-toolbar panel-card ui-cluster" aria-label="Filtrowanie wyników">
             <x-form-errors />
 
             <label for="results-filter-query">
@@ -77,13 +77,13 @@
         </form>
 
         @if ($events->isEmpty())
-            <p class="content-empty">
+            <p class="empty-state">
                 {{ request()->hasAny(['q', 'discipline', 'competition_system'])
                     ? 'Nie znaleziono wyników spełniających wybrane kryteria.'
                     : 'Nie opublikowano jeszcze żadnych wyników.' }}
             </p>
         @else
-            <div class="results-event-grid">
+            <div class="results-event-grid ui-grid ui-grid--3">
                 @foreach ($events as $event)
                     <x-content-card
                         class="results-event-card"

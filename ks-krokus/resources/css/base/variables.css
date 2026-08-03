@@ -32,7 +32,9 @@ html[data-theme="light"] {
     --page-gutter: 32px;
     --section-space: clamp(56px, 7vw, 84px);
     --content-gap: clamp(16px, 2vw, 20px);
-    --control-height: 46px;
+    --layout-gap: clamp(18px, 3vw, 28px);
+    --panel-padding: clamp(20px, 3vw, 28px);
+    --control-height: 48px;
     --radius-control: 9px;
     --radius-panel: 14px;
 }

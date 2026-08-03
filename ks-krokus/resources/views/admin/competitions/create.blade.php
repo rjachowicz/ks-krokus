@@ -9,7 +9,7 @@
         description="Rozszerz listę konkurencji ISSF lub IPSC."
     />
 
-    <form method="POST" action="{{ route('admin.competitions.store') }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.competitions.store') }}" class="form-layout panel-card">
         @csrf
         @include('admin.competitions._form')
     </form>

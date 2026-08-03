@@ -22,7 +22,7 @@
                         <td data-label="Operacje"><div class="admin-table__actions">@if ($report->listing && !$report->listing->trashed())<a href="{{ route('admin.sale-listings.edit', $report->listing) }}" class="btn btn-secondary">Otwórz ogłoszenie</a>@endif<form method="POST" action="{{ route('admin.sale-listings.reports.resolve', $report) }}">@csrf<button class="btn btn-primary" type="submit">Oznacz jako rozpatrzone</button></form></div></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5"><div class="listing-table-empty"><strong>Brak zgłoszeń</strong><span>Wszystkie zgłoszenia zostały rozpatrzone.</span></div></td></tr>
+                    <tr><td colspan="5"><div class="empty-state listing-table-empty"><strong>Brak zgłoszeń</strong><span>Wszystkie zgłoszenia zostały rozpatrzone.</span></div></td></tr>
                 @endforelse
             </tbody>
         </table>

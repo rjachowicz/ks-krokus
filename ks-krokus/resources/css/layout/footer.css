@@ -17,8 +17,6 @@
 }
 
 .footer-container {
-    width: min(var(--container-width), calc(100% - var(--page-gutter)));
-    margin-inline: auto;
     display: grid;
     grid-template-columns: 1.2fr 1fr auto;
     align-items: center;

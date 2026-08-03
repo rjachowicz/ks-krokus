@@ -1,5 +1,5 @@
 .calendar-section {
-    width: min(1500px, calc(100% - var(--page-gutter)));
+    min-width: 0;
 }
 
 .calendar-toolbar {

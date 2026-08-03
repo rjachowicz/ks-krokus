@@ -1,5 +1,5 @@
-<div class="admin-form-grid">
-    <h2 class="admin-section-title span-full">Dane konkurencji</h2>
+<div class="form-grid">
+    <h2 class="admin-section-title form-grid--span-full">Dane konkurencji</h2>
     <label>
         Kod
         <input id="competition-code" type="text" name="code" value="{{ old('code', $definition->code ?? '') }}" autocomplete="off" required autofocus
@@ -64,7 +64,7 @@
         @error('is_active') <span id="competition-active-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <label class="span-full">
+    <label class="form-grid--span-full">
         Opis
         <textarea id="competition-description" name="description" autocomplete="off"
             @error('description') aria-invalid="true" aria-describedby="competition-description-error" @enderror>{{ old('description', $definition->description ?? '') }}</textarea>
@@ -72,7 +72,7 @@
     </label>
 </div>
 
-<div class="admin-form-actions">
+<div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary">Zapisz konkurencję</button>
     <a href="{{ route('admin.competitions.index') }}" class="btn btn-secondary">Anuluj</a>
 </div>

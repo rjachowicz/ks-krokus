@@ -9,7 +9,7 @@
         :description="$result->eventCompetition->event->title.' — '.$result->eventCompetition->competition->name"
     />
 
-    <form method="POST" action="{{ route('admin.results.update', $result) }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.results.update', $result) }}" class="form-layout panel-card">
         @csrf
         @method('PUT')
         @include('admin.results._form')

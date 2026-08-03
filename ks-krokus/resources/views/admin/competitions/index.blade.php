@@ -13,7 +13,7 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter">
+    <form method="GET" class="admin-filter panel-card">
         <label>
             System
             <select id="competition-filter-system" name="competition_system" @error('competition_system') aria-invalid="true" aria-describedby="competition-filter-system-error" @enderror>
@@ -87,9 +87,11 @@
                     </tr>
                 @empty
                     <tr><td colspan="6">
-                        {{ request()->hasAny(['competition_system', 'discipline'])
-                            ? 'Brak konkurencji spełniających wybrane kryteria.'
-                            : 'Nie dodano jeszcze żadnej konkurencji.' }}
+                        <div class="empty-state">
+                            {{ request()->hasAny(['competition_system', 'discipline'])
+                                ? 'Brak konkurencji spełniających wybrane kryteria.'
+                                : 'Nie dodano jeszcze żadnej konkurencji.' }}
+                        </div>
                     </td></tr>
                 @endforelse
             </tbody>

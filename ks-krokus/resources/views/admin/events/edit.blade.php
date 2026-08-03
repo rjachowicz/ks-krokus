@@ -32,7 +32,7 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="POST" action="{{ route('admin.events.update', $event) }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.events.update', $event) }}" class="form-layout panel-card">
         @csrf
         @method('PUT')
         @include('admin.events._form')

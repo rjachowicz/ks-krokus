@@ -20,9 +20,9 @@
         </x-slot:description>
     </x-page-hero>
 
-    <section class="features-section features-section--flush" aria-label="Informacje i procedury klubowe">
+    <section class="page-container page-section page-section--flush" aria-label="Informacje i procedury klubowe">
         <h2 class="sr-only">Informacje i procedury klubowe</h2>
-        <div class="bento-grid">
+        <div class="bento-grid ui-grid ui-grid--3">
             <x-content-card
                 id="finanse"
                 class="bento-span-2"
@@ -137,7 +137,63 @@
                     </a>
                 </x-slot:footer>
             </x-content-card>
+            <x-content-card
+                id="pozwolenie"
+                class="bento-span-2 card-highlight-download"
+                code="SEC_05 // PROCEDURY URZĘDOWE"
+                badge="UCHWAŁA DO POBRANIA"
+                title="Pozwolenie na broń – zaświadczenia klubowe"
+                footer-class="card-footer-actions"
+            >
+                <p>
+                    Członkowie mogą wystąpić do Komendanta Wojewódzkiego Policji z wnioskiem o wydanie decyzji
+                    uprawniającej do posiadania broni do celów sportowych i kolekcjonerskich.
+                </p>
 
+                <h4 class="club-subtitle">Procedura wydawania zaświadczeń:</h4>
+                <ol class="club-steps">
+                    <li>
+                        Prześlij zapytanie na
+                        <a href="mailto:{{ $club['email'] }}" class="club-link">{{ $club['email'] }}</a>
+                        (podaj imię, nazwisko, rodzaj zaświadczeń oraz informację, czy to pierwsza decyzja,
+                        czy rozszerzenie).
+                    </li>
+                    <li>
+                        Zaświadczenia są podpisywane podpisem zaufanym, wysyłane zwrotnie na e-mail
+                        oraz bezpośrednio do WPA do <strong>1 dnia roboczego</strong>.
+                    </li>
+                    <li>
+                        Wydrukuj zaświadczenie i dołącz do wniosku wraz z pobraną uchwałą o kolekcjonerstwie.
+                    </li>
+                </ol>
+
+                <div class="wpa-box">
+                    <strong>{{ $club['firearm_permit']['office']['name'] }}</strong><br>
+                    {{ $club['firearm_permit']['office']['address'] }} |
+                    Tel: {{ implode('; ', $club['firearm_permit']['office']['phones']) }}<br>
+                    <strong>Godziny przyjęć:</strong> {{ $club['firearm_permit']['office']['hours'] }}
+                </div>
+
+                <x-slot:footer>
+                    @if (is_file(public_path($club['documents']['collectors_resolution'])))
+                        <a href="{{ asset($club['documents']['collectors_resolution']) }}"
+                           class="btn-action"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           aria-label="Pobierz uchwałę kolekcjonerską PDF — otwiera w nowej karcie">
+                            POBIERZ UCHWAŁĘ KOLEKCJONERSKĄ ↗
+                        </a>
+                    @endif
+
+                    <a href="{{ $club['firearm_permit']['wpa_url'] }}"
+                       class="btn-action"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="Strona WPA Kraków — otwiera w nowej karcie">
+                        STRONA WPA KRAKÓW ↗
+                    </a>
+                </x-slot:footer>
+            </x-content-card>
 
             @if ($trainers->isNotEmpty())
                 <x-content-card
@@ -217,63 +273,7 @@
                 </x-slot:footer>
             </x-content-card>
 
-            <x-content-card
-                id="pozwolenie"
-                class="bento-span-2 card-highlight-download"
-                code="SEC_05 // PROCEDURY URZĘDOWE"
-                badge="UCHWAŁA DO POBRANIA"
-                title="Pozwolenie na broń – zaświadczenia klubowe"
-                footer-class="card-footer-actions"
-            >
-                <p>
-                    Członkowie mogą wystąpić do Komendanta Wojewódzkiego Policji z wnioskiem o wydanie decyzji
-                    uprawniającej do posiadania broni do celów sportowych i kolekcjonerskich.
-                </p>
 
-                <h4 class="club-subtitle">Procedura wydawania zaświadczeń:</h4>
-                <ol class="club-steps">
-                    <li>
-                        Prześlij zapytanie na
-                        <a href="mailto:{{ $club['email'] }}" class="club-link">{{ $club['email'] }}</a>
-                        (podaj imię, nazwisko, rodzaj zaświadczeń oraz informację, czy to pierwsza decyzja,
-                        czy rozszerzenie).
-                    </li>
-                    <li>
-                        Zaświadczenia są podpisywane podpisem zaufanym, wysyłane zwrotnie na e-mail
-                        oraz bezpośrednio do WPA do <strong>1 dnia roboczego</strong>.
-                    </li>
-                    <li>
-                        Wydrukuj zaświadczenie i dołącz do wniosku wraz z pobraną uchwałą o kolekcjonerstwie.
-                    </li>
-                </ol>
-
-                <div class="wpa-box">
-                    <strong>{{ $club['firearm_permit']['office']['name'] }}</strong><br>
-                    {{ $club['firearm_permit']['office']['address'] }} |
-                    Tel: {{ implode('; ', $club['firearm_permit']['office']['phones']) }}<br>
-                    <strong>Godziny przyjęć:</strong> {{ $club['firearm_permit']['office']['hours'] }}
-                </div>
-
-                <x-slot:footer>
-                    @if (is_file(public_path($club['documents']['collectors_resolution'])))
-                        <a href="{{ asset($club['documents']['collectors_resolution']) }}"
-                           class="btn-action"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           aria-label="Pobierz uchwałę kolekcjonerską PDF — otwiera w nowej karcie">
-                            POBIERZ UCHWAŁĘ KOLEKCJONERSKĄ ↗
-                        </a>
-                    @endif
-
-                    <a href="{{ $club['firearm_permit']['wpa_url'] }}"
-                       class="btn-action"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       aria-label="Strona WPA Kraków — otwiera w nowej karcie">
-                        STRONA WPA KRAKÓW ↗
-                    </a>
-                </x-slot:footer>
-            </x-content-card>
 
             <x-content-card
                 code="SEC_06 // SPOŁECZNOŚĆ"

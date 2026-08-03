@@ -9,7 +9,7 @@
         description="Edytuj opis, kolejność oraz przypisane osoby."
     />
 
-    <form method="POST" action="{{ route('admin.positions.update', $position) }}" class="admin-card admin-form">
+    <form method="POST" action="{{ route('admin.positions.update', $position) }}" class="form-layout panel-card">
         @csrf
         @method('PUT')
         @include('admin.positions._form')

@@ -20,7 +20,7 @@
     </x-admin-page-header>
 
     @if ($metrics !== null)
-        <section class="admin-metrics" aria-label="Statystyki panelu">
+        <section class="admin-metrics ui-grid" aria-label="Statystyki panelu">
             @if ($metrics['users'] !== null)
                 <div class="admin-metric">
                     <span class="admin-metric__value">{{ $metrics['users'] }}</span>
@@ -46,11 +46,11 @@
         </section>
     @endif
 
-    <section class="admin-card">
+    <section class="panel-card">
         <h2>Najbliższe wydarzenia</h2>
 
         @if ($upcomingEvents->isEmpty())
-            <p>Brak zaplanowanych wydarzeń.</p>
+            <p class="empty-state">Brak zaplanowanych wydarzeń.</p>
         @else
             <div class="admin-table-wrap" role="region" aria-label="Najbliższe wydarzenia" tabindex="0">
                 <table class="admin-table">
@@ -86,10 +86,10 @@
         @endif
     </section>
 
-    <section class="admin-card">
+    <section class="panel-card">
         <h2>Powiadomienia</h2>
         @if ($notifications->isEmpty())
-            <p>Nie masz nowych informacji dotyczących ogłoszeń.</p>
+            <p class="empty-state">Nie masz nowych informacji dotyczących ogłoszeń.</p>
         @else
             <ul class="dashboard-notifications">
                 @foreach ($notifications as $notification)
@@ -105,11 +105,11 @@
         @endif
     </section>
 
-    <section class="admin-card">
+    <section class="panel-card">
         <h2>Moje wyniki</h2>
 
         @if ($ownResults->isEmpty())
-            <p>Do Twojego konta nie przypisano jeszcze wyników.</p>
+            <p class="empty-state">Do Twojego konta nie przypisano jeszcze wyników.</p>
         @else
             <div class="admin-table-wrap" role="region" aria-label="Moje wyniki" tabindex="0">
                 <table class="admin-table">
