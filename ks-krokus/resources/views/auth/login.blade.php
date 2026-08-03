@@ -67,6 +67,10 @@
         </form>
 
         <p class="auth-card__account-request">
+            <a href="{{ route('password.request') }}">Nie pamiętasz hasła?</a>
+        </p>
+
+        <p class="auth-card__account-request">
             <a href="{{ route('account-requests.create') }}">Jesteś członkiem klubu i nie masz konta? Złóż wniosek</a>
         </p>
     </section>

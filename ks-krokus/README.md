@@ -25,8 +25,12 @@ npm run build
 Uzupełnij połączenie PostgreSQL i konfigurację poczty w `.env`. Do pracy
 deweloperskiej użyj `composer dev`; polecenie uruchamia serwer PHP z limitami
 uploadu zgodnymi z aplikacją, podgląd logów i Vite (8 MB na poziomie PHP, 6 MB
-na poziomie walidacji). Aplikacja nie używa obecnie zadań asynchronicznych, więc
-nie wymaga lokalnego ani produkcyjnego workera kolejki.
+na poziomie walidacji). W osobnym terminalu uruchom worker wiadomości i
+powiadomień:
+
+```bash
+php artisan queue:work --sleep=3 --tries=3 --timeout=90
+```
 
 ## Jakość
 

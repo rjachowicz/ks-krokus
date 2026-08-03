@@ -241,16 +241,23 @@ final class AccountRequestModuleTest extends TestCase
         self::assertSame(AccountRequestStatus::Approved, $accountRequest->status);
         self::assertSame($admin->id, $accountRequest->reviewed_by);
         self::assertNotNull($accountRequest->reviewed_at);
+        self::assertSame($admin->id, $createdUser->password_link_sent_by);
+        self::assertNotNull($createdUser->password_link_sent_at);
         self::assertDatabaseHas('password_reset_tokens', ['email' => $createdUser->email]);
 
         $capturedToken = null;
         Notification::assertSentTo(
             $createdUser,
             SetInitialPasswordNotification::class,
-            function (SetInitialPasswordNotification $notification) use (&$capturedToken): bool {
+            function (SetInitialPasswordNotification $notification) use (&$capturedToken, $createdUser, $accountRequest): bool {
                 $capturedToken = $notification->token;
+                $message = $notification->toMail($createdUser);
+                $content = implode(' ', $message->introLines);
 
-                return $notification->token !== '';
+                return $notification->token !== ''
+                    && str_starts_with((string) $message->actionUrl, config('app.url'))
+                    && ! str_contains($content, $accountRequest->phone)
+                    && ! str_contains($content, $accountRequest->pzss_license_number);
             },
         );
 
@@ -258,7 +265,7 @@ final class AccountRequestModuleTest extends TestCase
         $this->post(route('logout'))->assertRedirect(route('home'));
         $this->get(route('password.reset', ['token' => $capturedToken, 'email' => $createdUser->email]))
             ->assertOk()
-            ->assertSeeText('Ustaw własne hasło');
+            ->assertSeeText('Ustaw nowe hasło');
 
         $this->post(route('password.update'), [
             'token' => $capturedToken,

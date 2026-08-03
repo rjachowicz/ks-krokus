@@ -30,11 +30,12 @@ final class ContactFormTest extends TestCase
 
         $response
             ->assertRedirect(route('contact').'#formularz-kontaktowy')
-            ->assertSessionHas('success', 'Dziękujemy. Wiadomość została wysłana.');
+            ->assertSessionHas('success', 'Dziękujemy. Wiadomość została przyjęta do wysłania.');
 
-        Mail::assertSent(ContactMessage::class, function (ContactMessage $mail): bool {
+        Mail::assertQueued(ContactMessage::class, function (ContactMessage $mail): bool {
             return $mail->hasTo('zarzad@ks-krokus.pl')
-                && $mail->hasReplyTo('jan@example.com');
+                && $mail->hasReplyTo('jan@example.com')
+                && $mail->hasFrom((string) config('mail.from.address'));
         });
     }
 
@@ -50,7 +51,7 @@ final class ContactFormTest extends TestCase
             'message' => '  Proszę o informację dotyczącą treningu.  ',
         ])->assertSessionHasNoErrors();
 
-        Mail::assertSent(ContactMessage::class, function (ContactMessage $mail): bool {
+        Mail::assertQueued(ContactMessage::class, function (ContactMessage $mail): bool {
             return $mail->formData === [
                 'name' => 'Jan Kowalski',
                 'email' => 'jan@example.com',
@@ -75,7 +76,7 @@ final class ContactFormTest extends TestCase
                 'message' => 'Wpisz treść wiadomości.',
             ]);
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_honeypot_rejects_spam(): void
@@ -90,7 +91,7 @@ final class ContactFormTest extends TestCase
             'website' => 'https://spam.example.com',
         ])->assertSessionHasErrors('website');
 
-        Mail::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     public function test_inactive_trainers_are_not_shown_publicly(): void

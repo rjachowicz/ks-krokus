@@ -1,5 +1,28 @@
 # TODO.md
 
+## P0 — gotowość produkcyjna poczty, kolejki i storage
+
+- [x] Ujednolicić `.env.example` i konfigurację SMTP z poprawnym nadawcą,
+  `Reply-To`, polskimi treściami i absolutnymi linkami opartymi o `APP_URL`.
+- [x] Dodać neutralne odzyskiwanie hasła dla aktywnych kont przez standardowy
+  broker Laravel, token 60 minut, throttling i pełne polskie komunikaty.
+- [x] Dodać administratorowi ponowne wysłanie linku ustawienia hasła dla
+  zatwierdzonego wniosku i aktywnego użytkownika wraz z audytem nadawcy i czasu.
+- [x] Ustawić produkcyjną kolejkę `database`, worker z trzema próbami,
+  `timeout=90`, `retry_after=120` oraz kolejkę dla SMTP i Notifications.
+- [x] Potwierdzić idempotencję `listings:expire`, pojedyncze przypomnienie,
+  pojedyncze wygaszenie i harmonogram `Europe/Warsaw`.
+- [x] Potwierdzić jeden `MEDIA_DISK`, formaty JPG/PNG/WebP, limity 6 MB,
+  maksymalnie 10 zdjęć ogłoszenia, placeholdery i zachowanie plików po soft delete.
+- [x] Ujednolicić `AdminUserSeeder` z `ADMIN_USER_*`, `Hash::make`,
+  `updateOrCreate`, aktywną rolą admin i zachowaniem idempotentnym.
+- [x] Udokumentować worker Railway/VPS, restart, błędy i monitoring kolejki,
+  cron, Volume, seedery oraz pierwsze uruchomienie produkcji.
+- [ ] Skonfigurować produkcyjne SMTP i wykonać smoke test dostarczenia wszystkich
+  typów wiadomości bez ujawniania tokenów w logach.
+- [ ] Uruchomić osobną usługę workera na Railway i podłączyć alert zaległych oraz
+  nieudanych zadań.
+
 ## P0 — wnioski o konto członków
 
 - [x] Dodać publiczne `GET/POST /wniosek-o-konto` bez pola hasła i bez

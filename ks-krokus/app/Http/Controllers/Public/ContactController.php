@@ -38,7 +38,7 @@ final class ContactController extends Controller
 
         try {
             Mail::to((string) config('contact.recipient'))
-                ->send(new ContactMessage($data));
+                ->queue(new ContactMessage($data));
         } catch (Throwable $exception) {
             report($exception);
 
@@ -51,6 +51,6 @@ final class ContactController extends Controller
 
         return redirect()
             ->to(route('contact').'#formularz-kontaktowy')
-            ->with('success', 'Dziękujemy. Wiadomość została wysłana.');
+            ->with('success', 'Dziękujemy. Wiadomość została przyjęta do wysłania.');
     }
 }

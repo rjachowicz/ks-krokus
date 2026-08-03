@@ -82,6 +82,10 @@ final class AccountRequestWorkflow
 
             /** @var string $generatedToken */
             $generatedToken = Password::broker()->createToken($user);
+            $user->forceFill([
+                'password_link_sent_by' => $reviewer->getKey(),
+                'password_link_sent_at' => now(),
+            ])->save();
             $token = $generatedToken;
             $created = true;
 

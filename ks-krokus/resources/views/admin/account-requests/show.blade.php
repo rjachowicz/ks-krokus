@@ -50,6 +50,14 @@
                         @endif
                     </dd></div>
                     <div><dt>Powód odrzucenia</dt><dd>{{ $accountRequest->rejection_reason ?: '—' }}</dd></div>
+                    <div><dt>Ostatni link hasła</dt><dd>
+                        @if ($accountRequest->createdUser?->password_link_sent_at)
+                            {{ $accountRequest->createdUser->password_link_sent_at->format('d.m.Y H:i') }}
+                            — {{ $accountRequest->createdUser->passwordLinkSender?->name ?? 'usunięty administrator' }}
+                        @else
+                            —
+                        @endif
+                    </dd></div>
                 </dl>
             </section>
         </div>
@@ -96,6 +104,18 @@
                             <button type="submit" class="btn btn-danger-outline">Potwierdź odrzucenie</button>
                         </form>
                     </details>
+                </section>
+            @endif
+
+            @if ($accountRequest->status === \App\Enums\AccountRequestStatus::Approved && $accountRequest->createdUser)
+                <section class="panel-card">
+                    <h2>Dostęp do konta</h2>
+                    @error('password_link')<p class="form-error" role="alert">{{ $message }}</p>@enderror
+                    <form method="POST" action="{{ route('admin.account-requests.password.resend', $accountRequest) }}"
+                        data-confirm="Wysłać nowy link ustawienia hasła? Poprzedni link przestanie działać.">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary">Wyślij ponownie link ustawienia hasła</button>
+                    </form>
                 </section>
             @endif
         </aside>

@@ -4,7 +4,88 @@
 
 `main`
 
-## Bieżąca sesja — 2026-08-03 — wnioski o konto i zatwierdzanie członków
+## Bieżąca sesja — 2026-08-03 — gotowość produkcyjna poczty, haseł, kolejki i storage
+
+### Cel
+
+Ustabilizować SMTP, odzyskiwanie i administracyjne ustawianie hasła, kolejkę,
+scheduler, trwały storage oraz pierwszy bootstrap produkcji bez wykonywania
+operacji zapisujących historię Git.
+
+### Znalezione problemy
+
+- `.env.example` i dokumentacja wskazywały `MAIL_MAILER=log` oraz niespójne
+  `QUEUE_CONNECTION=deferred`, mimo że aplikacja ma kolejkowane Notifications.
+- Formularz kontaktowy czekał na SMTP w żądaniu HTTP.
+- Brakowało publicznego żądania resetu hasła, neutralnej odpowiedzi dla
+  nieistniejącego i nieaktywnego konta oraz polskiego reset notification.
+- Administrator nie mógł ponowić linku ustawienia hasła ani sprawdzić, kto i kiedy
+  wysłał ostatni link.
+- `retry_after` kolejki bazodanowej był równy timeoutowi workera, co groziło
+  równoległym wykonaniem wolnego zadania.
+- `AdminUserSeeder` korzystał ze starych nazw `ADMIN_*`, miał domyślną nazwę i nie
+  używał wymaganego `updateOrCreate`.
+- Literalne `MAIL_SCHEME=tls` nie jest obsługiwane przez Symfony Mailer; bez
+  mapowania transport zgłaszał `UnsupportedSchemeException`.
+
+### Wykonane
+
+- [x] Ustawiono przykład i domyślną konfigurację SMTP, poprawny `From`, `Reply-To`
+  kontaktu, polskie treści oraz absolutne linki oparte o `APP_URL`. Wymagane
+  `MAIL_SCHEME=tls` jest mapowane na `smtp`, czyli STARTTLS na porcie 587.
+- [x] Kontakt, odrzucenie wniosku, pierwsze hasło i reset hasła są kolejkowane;
+  zadania z treścią kontaktu lub tokenem implementują `ShouldBeEncrypted`.
+- [x] Dodano `/nie-pamietam-hasla`, neutralny POST, throttling trasy i brokera,
+  polskie powiadomienie oraz reset tylko aktywnego konta z tokenem 60 minut,
+  potwierdzeniem hasła i zdarzeniem `PasswordReset`.
+- [x] Dodano administracyjne akcje POST ponownego wysłania dla aktywnego
+  użytkownika i zatwierdzonego wniosku. Broker unieważnia poprzedni token, konto
+  nie jest duplikowane, a `password_link_sent_by/password_link_sent_at` zapisują
+  minimalny audyt bez tokenu.
+- [x] Produkcyjna kolejka używa `database`, publikuje po commit, ma
+  `DB_QUEUE_RETRY_AFTER=120`, worker `--tries=3 --timeout=90` i restart po
+  migracjach. Udokumentowano Railway, VPS, failed/retry oraz monitor backlogu.
+- [x] Rozszerzono testy `listings:expire` o niezmienność dat i pojedynczy efekt.
+  Harmonogram pozostaje 01:15 w `Europe/Warsaw` i jest uruchamiany przez Railway
+  co 5 minut lub cron VPS co minutę.
+- [x] Potwierdzono wspólny `MEDIA_DISK=public`, publiczne URL-e, placeholdery,
+  zachowanie po soft delete i sprzątanie jawnie usuwanych plików. Dodano testy
+  JPG, PNG, rzeczywistego WebP, limitu 6 MB, wielu zdjęć oraz dokładnie 10 zdjęć.
+- [x] `AdminUserSeeder` korzysta z cache'owanej konfiguracji `ADMIN_USER_*`, nie ma
+  wartości domyślnych, używa `Hash::make` i `updateOrCreate`, przywraca konto oraz
+  ustawia aktywną rolę admin. Udokumentowano klasyfikację seederów i bootstrap.
+- [x] Zaktualizowano `PROJECT_GUIDE`, `ARCHITECTURE`, `DEPLOYMENT`, README, TODO,
+  `.env.example` oraz skrypt Railway.
+
+### Testy i kontrole
+
+- [x] `composer validate --strict` — poprawny.
+- [x] `composer audit` — 0 znanych podatności.
+- [x] `composer test` — 123 testy, 1071 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm audit` — 0 znanych podatności.
+- [x] `npm run build` — poprawny build Vite, 58 modułów.
+- [x] `php artisan route:list` — 95 tras.
+- [x] `php artisan schedule:list` — `listings:expire` codziennie o 01:15.
+- [x] `php artisan view:cache`, `config:cache`, `event:cache` — poprawne.
+- [x] Transport dla `MAIL_SCHEME=tls`, portu 587 i testowego hosta tworzy poprawny
+  `EsmtpTransport` bez połączenia z zewnętrznym SMTP.
+- [x] Nowa migracja wykonana poprawnie na lokalnym PostgreSQL.
+
+### Migracje, zmienne i ograniczenia
+
+- Dodano `2026_08_03_000200_add_password_link_audit_to_users_table.php`.
+- Nowe/ujednolicone zmienne: `QUEUE_CONNECTION=database`,
+  `DB_QUEUE_RETRY_AFTER=120`, komplet `MAIL_*`, `CONTACT_RECIPIENT_EMAIL` oraz
+  `ADMIN_USER_NAME`, `ADMIN_USER_EMAIL`, `ADMIN_USER_PASSWORD`.
+- Lokalny `queue:monitor database:default --max=100` wykazał 2 zastane zadania
+  oczekujące, najstarsze około godziny. Nie uruchomiono ich, aby bez świadomej
+  decyzji nie wysyłać rzeczywistych wiadomości.
+- Rzeczywiste SMTP, Railway worker/cron/Volume, trwałość po redeployu oraz
+  produkcyjny pierwszy bootstrap wymagają dostępu do infrastruktury.
+- Nie wykonano commita, pusha ani innej operacji zapisującej historię Git.
+
+## Poprzednia sesja — 2026-08-03 — wnioski o konto i zatwierdzanie członków
 
 ### Cel
 

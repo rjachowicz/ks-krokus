@@ -1,79 +1,19 @@
-# Wdrożenie produkcyjne — Railway
+# Wdrożenie produkcyjne KS Krokus
 
-## Usługa aplikacji
+## Założenia
 
-1. Ustaw katalog główny usługi na `/ks-krokus`.
-2. Użyj automatycznego buildera Railpack dla Laravel/PHP 8.4. Railpack
-   rozpoznaje Laravel i uruchamia aplikację przez FrankenPHP z katalogiem
-   dokumentów `/app/public`. Composer jawnie wymaga rozszerzeń `fileinfo`, `PDO`
-   i `pdo_pgsql`, dlatego Railpack dołącza obsługę PostgreSQL do obrazu.
-3. Jako build command ustaw:
+- katalog aplikacji w repozytorium: `/ks-krokus`,
+- PHP 8.4, Laravel 13 i PostgreSQL,
+- publiczny adres HTTPS zapisany w `APP_URL` bez końcowego ukośnika,
+- strefa aplikacji i schedulera: `Europe/Warsaw`,
+- poczta przez SMTP,
+- kolejka produkcyjna `database` z osobnym, stale działającym workerem,
+- media na jednym dysku `MEDIA_DISK=public`.
 
-   ```bash
-   npm ci && npm run build && php artisan storage:link && php artisan optimize
-   ```
-
-4. Jako pre-deploy command ustaw:
-
-   ```bash
-   chmod +x ./railway/init-app.sh && ./railway/init-app.sh
-   ```
-
-5. Healthcheck kieruj na `/up`.
-6. Ustaw `RAILPACK_SKIP_MIGRATIONS=true`. W przeciwnym razie wygenerowany przez
-   Railpack start command ponownie uruchomi migracje i seeder po wykonaniu
-   własnego pre-deploy command.
-
-Skrypt pre-deploy wykonuje wyłącznie migracje. Link `public/storage` i cache
-konfiguracji, zdarzeń, tras oraz widoków powstają wcześniej w obrazie aplikacji;
-startowy skrypt Railpack odświeża optymalizacje także w uruchamianym kontenerze.
-Wolumen nie jest dostępny podczas buildu ani pre-deploy — zostanie zamontowany
-dopiero w uruchomionej usłudze.
-
-## Migracje modułu ogłoszeń
-
-Wdrożenie wykonuje dwie nowe migracje przez istniejące `php artisan migrate --force`:
-
-- `2026_08_02_000900_create_sale_listings_tables.php` tworzy oferty, zdjęcia,
-  historię moderacji i zgłoszenia wraz z kluczami obcymi oraz indeksami,
-- `2026_08_02_001000_create_notifications_table.php` tworzy magazyn powiadomień
-  bazodanowych.
-
-Migracje nie modyfikują historycznych tabel. Przed produkcyjnym wdrożeniem należy
-wykonać standardowy backup PostgreSQL.
-
-## Trwałe zdjęcia
-
-Lokalny system plików wdrożenia Railway jest efemeryczny. Do usługi aplikacji
-trzeba podłączyć Railway Volume z mount path:
-
-```text
-/app/storage/app/public
-```
-
-Bez wolumenu upload zadziała, ale pliki znikną przy kolejnym wdrożeniu. Po
-podłączeniu wolumenu warto włączyć jego automatyczne backupy. Aplikacja używa
-dysku `public`, a `storage:link` udostępnia pliki pod `/storage/...`.
-
-## Limity uploadu
-
-Repozytorium zawiera dwa warianty konfiguracji serwera:
-
-- główny `php.ini` — używany przez Railpack/FrankenPHP na Railway,
-- `public/.user.ini` — awaryjny wariant dla hostingów CGI/FastCGI.
-
-Oba ustawiają:
-
-- `upload_max_filesize=8M`,
-- `post_max_size=85M`,
-- `max_file_uploads=20`.
-
-Laravel przyjmuje maksymalnie 6 MB na zdjęcie, do 12 zdjęć galerii aktualności
-oraz do 10 zdjęć ogłoszenia. Wyższy limit PHP jest celowy: pozwala Laravelowi zwrócić
-naturalny polski błąd walidacji zamiast odrzucić plik przed uruchomieniem
-aplikacji. `.user.ini` nie jest odczytywany przez FrankenPHP, dlatego sam plik
-w katalogu `public` nie wystarczał do zagwarantowania limitów na Railway.
-Lokalny `composer dev` przekazuje te same limity bezpośrednio do procesu PHP.
+Nie używaj na produkcji `QUEUE_CONNECTION=deferred`. Powiadomienia, wiadomość
+kontaktu oraz linki hasła implementują kolejkę i muszą być obsługiwane przez
+worker. Zadania zawierające treść kontaktu lub token hasła są szyfrowane kluczem
+aplikacji. Tokeny haseł nie są zapisywane w komunikatach interfejsu ani logach.
 
 ## Minimalne zmienne środowiskowe
 
@@ -94,7 +34,8 @@ DB_URL=${{Postgres.DATABASE_URL}}
 SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
 CACHE_STORE=database
-QUEUE_CONNECTION=deferred
+QUEUE_CONNECTION=database
+DB_QUEUE_RETRY_AFTER=120
 FILESYSTEM_DISK=local
 MEDIA_DISK=public
 RAILPACK_SKIP_MIGRATIONS=true
@@ -102,7 +43,6 @@ RAILPACK_SKIP_MIGRATIONS=true
 LOG_CHANNEL=stderr
 LOG_LEVEL=warning
 
-CONTACT_RECIPIENT_EMAIL=zarzad@ks-krokus.pl
 MAIL_MAILER=smtp
 MAIL_HOST=...
 MAIL_PORT=587
@@ -111,68 +51,222 @@ MAIL_PASSWORD=...
 MAIL_SCHEME=tls
 MAIL_FROM_ADDRESS=...
 MAIL_FROM_NAME="KS Krokus"
+CONTACT_RECIPIENT_EMAIL=zarzad@ks-krokus.pl
+
+ADMIN_USER_NAME=...
+ADMIN_USER_EMAIL=...
+ADMIN_USER_PASSWORD=...
 ```
 
-`ext-gd` jest wymaganym rozszerzeniem PHP. Moduł ogłoszeń wykorzystuje je do
-korekty orientacji JPEG, skalowania, optymalizacji i generowania miniatur bez
-powiększania małych zdjęć.
+`MAIL_FROM_ADDRESS` powinien być adresem zaakceptowanym przez dostawcę SMTP.
+Formularz kontaktowy zawsze używa tego nadawcy, a adres osoby piszącej ustawia
+jako `Reply-To`. `APP_URL` steruje absolutnymi adresami w e-mailach, dlatego na
+produkcji musi wskazywać właściwą domenę HTTPS. Nie zapisuj kluczy, haseł SMTP,
+hasła administratora ani prawdziwego `APP_KEY` w repozytorium.
 
-## Powiadomienia i kolejka
+Laravel 13 korzysta z Symfony Mailer, który dla STARTTLS na porcie 587 oczekuje
+wewnętrznego schematu `smtp`, nie literalnego `tls`. `config/mail.php` świadomie
+mapuje wymagane środowiskowe `MAIL_SCHEME=tls` na `smtp`; szyfrowanie STARTTLS
+pozostaje włączane automatycznie przez transport. Port 465 wymagałby `smtps`.
 
-Powiadomienia ogłoszeń są zapisywane w tabeli `notifications` i implementują
-`ShouldQueue`. Zalecane `QUEUE_CONNECTION=deferred` wykonuje je po wysłaniu
-odpowiedzi HTTP i nie wymaga osobnego workera. Jeżeli środowisko zostanie
-przełączone na `QUEUE_CONNECTION=database`, trzeba dodać stale działającą usługę
-z komendą:
+## Usługa aplikacji na Railway
+
+1. Ustaw Root Directory na `/ks-krokus`.
+2. Użyj Railpack dla Laravel/PHP 8.4. Katalog dokumentów powinien wskazywać
+   `/app/public`; w razie problemu ustaw `RAILPACK_PHP_ROOT_DIR=/app/public`.
+3. Build Command:
+
+   ```bash
+   npm ci && npm run build && php artisan storage:link && php artisan optimize
+   ```
+
+4. Pre-deploy Command:
+
+   ```bash
+   chmod +x ./railway/init-app.sh && ./railway/init-app.sh
+   ```
+
+5. Healthcheck: `/up`.
+6. Ustaw `RAILPACK_SKIP_MIGRATIONS=true`, ponieważ `railway/init-app.sh`
+   wykonuje `php artisan migrate --force`. Skrypt wysyła też sygnał
+   `queue:restart`; nie uruchamia seedera ani danych demonstracyjnych.
+
+Wolumen nie jest dostępny podczas builda ani pre-deploy. Link `public/storage`
+powstaje w obrazie, a jego cel zostanie przykryty trwałym wolumenem po starcie.
+
+## Worker kolejki
+
+Tabele `jobs`, `job_batches` i `failed_jobs` tworzy istniejąca migracja. Worker ma
+timeout 90 sekund, a `DB_QUEUE_RETRY_AFTER=120`, więc zadanie nie zostanie pobrane
+ponownie przed zakończeniem poprzedniej próby. Każde zadanie ma maksymalnie trzy
+próby.
+
+### Railway
+
+Dodaj osobną stale działającą usługę z tego samego repozytorium, Root Directory
+`/ks-krokus`, tymi samymi zmiennymi aplikacji i połączeniem PostgreSQL. Start
+Command:
 
 ```bash
 php artisan queue:work --sleep=3 --tries=3 --timeout=90
 ```
 
-## Cron wygasania ogłoszeń
+Po wdrożeniu wykonaj `php artisan queue:restart`. Skrypt pre-deploy aplikacji robi
+to automatycznie przez wspólny cache bazodanowy, ale po zmianie konfiguracji
+workera lub awaryjnym wdrożeniu można wydać komendę ręcznie w shellu Railway.
+Proces workera powinien mieć włączoną politykę automatycznego restartu.
 
-Dodaj na Railway osobną krótkotrwałą usługę z tego samego repozytorium i katalogu
-`/ks-krokus`. Ustaw jej start command na:
+### VPS i systemd
+
+W katalogu `/var/www/ks-krokus` uruchamiaj tę samą komendę pod kontrolą systemd
+lub Supervisora:
+
+```bash
+php artisan queue:work --sleep=3 --tries=3 --timeout=90
+```
+
+Po każdym deployu:
+
+```bash
+cd /var/www/ks-krokus
+php artisan queue:restart
+```
+
+### Diagnostyka i monitoring
+
+```bash
+php artisan queue:failed
+php artisan queue:retry all
+php artisan queue:monitor database:default --max=100
+```
+
+`queue:monitor` zwraca błąd, gdy kolejka `default` przekroczy 100 oczekujących
+zadań, więc można podpiąć wynik pod monitoring. Dodatkowo monitoruj czas
+najstarszego wpisu oraz liczbę rekordów w tabeli `jobs`, stan usługi workera i
+przyrost `failed_jobs`. Po naprawieniu przyczyny użyj `queue:retry all`; nie
+usuwaj nieprzeanalizowanych błędów tylko po to, aby wyzerować licznik.
+
+## Scheduler i wygasanie ogłoszeń
+
+`listings:expire` jest jedynym automatycznym mechanizmem przypomnień i wygaszania.
+Komenda jest idempotentna: znacznik `expiration_reminder_sent_at` zapobiega
+drugiemu przypomnieniu, a workflow zmienia tylko zatwierdzone, przeterminowane
+ogłoszenia. Laravel planuje ją codziennie o 01:15 w `Europe/Warsaw` i stosuje
+`withoutOverlapping`.
+
+Railway: utwórz osobną usługę cron z tym samym repozytorium, katalogiem aplikacji,
+zmiennymi i bazą. Command:
 
 ```bash
 php artisan schedule:run
 ```
 
-W polu Cron Schedule ustaw:
+Cron Schedule:
 
 ```text
 */5 * * * *
 ```
 
-Railway interpretuje harmonogram cron w UTC i dopuszcza minimalny odstęp 5 minut.
-Uruchamianie `schedule:run` co 5 minut pozwala Laravelowi samodzielnie respektować
-`Europe/Warsaw` oraz zmianę czasu; właściwa komenda `listings:expire` jest należna
-codziennie o 01:15. Usługa cron musi mieć te same zmienne aplikacji i dostęp do
-PostgreSQL, a proces ma zakończyć się po wykonaniu komendy. Alternatywnie można
-uruchamiać bezpośrednio `php artisan listings:expire` raz dziennie w UTC, ale wtedy
-trzeba ręcznie uwzględniać zmianę czasu w Polsce.
+Railway uruchamia cron w UTC, ale wywołanie schedulera co 5 minut pozwala
+Laravelowi obsłużyć `Europe/Warsaw` i zmianę czasu.
 
-Dla starszej konfiguracji `CONTACT_TO_ADDRESS` nadal działa jako wartość
-awaryjna, ale nowe środowiska powinny używać `CONTACT_RECIPIENT_EMAIL`.
-Nie zapisuj sekretów ani prawdziwego `APP_KEY` w repozytorium.
+VPS — crontab:
 
-Jeżeli automatyczne wykrywanie aplikacji Laravel nie ustawi katalogu publicznego,
-ustaw dodatkowo:
-
-```env
-RAILPACK_PHP_ROOT_DIR=/app/public
+```cron
+* * * * * cd /var/www/ks-krokus && php artisan schedule:run >> /dev/null 2>&1
 ```
+
+Po konfiguracji sprawdź `php artisan schedule:list`, a następnie uruchom ręcznie
+`php artisan listings:expire` i zweryfikuj log procesu oraz stan testowego
+ogłoszenia.
+
+## Trwały storage
+
+W aplikacji wszystkie uploady używają `MEDIA_DISK`:
+
+- okładki i galerie aktualności,
+- oryginały i miniatury ogłoszeń.
+
+Nie ma obecnie uploadu dokumentów ani avatarów. Dokumenty klubu są statycznymi
+plikami publicznymi. Każdy przyszły upload obrazu powinien również korzystać z
+`MEDIA_DISK`, a dane prywatne nie powinny trafiać na dysk publiczny.
+
+Na Railway podłącz Volume do usługi aplikacji pod dokładną ścieżką:
+
+```text
+/app/storage/app/public
+```
+
+Następnie:
+
+1. potwierdź istnienie linku `public/storage` (`php artisan storage:link` jest
+   bezpieczne do ponownego uruchomienia),
+2. dodaj obraz i sprawdź adres `/storage/...`,
+3. wykonaj redeploy i potwierdź, że obraz oraz miniatura nadal istnieją,
+4. włącz backupy wolumenu.
+
+Widoki nie renderują pustych `img`; przy braku relacji pokazują komponent
+placeholdera, a wspólny skrypt zastępuje również obraz, którego plik fizycznie
+zniknął. Podmiana lub jawne usunięcie pojedynczego zdjęcia sprząta jego pliki.
+Soft delete aktualności i ogłoszenia zachowuje media, aby rekord dało się
+przywrócić. Brak obecnie automatycznego force-delete starych aktualności.
+
+Obsługiwane formaty to JPG/JPEG, PNG i WebP, do 6 MB na plik, maksymalnie 12 zdjęć
+w galerii aktualności i 10 w ogłoszeniu. PHP ma kopertę 8 MB na plik, 85 MB na
+żądanie i 20 plików (`php.ini`; `public/.user.ini` jest wariantem CGI/FastCGI).
+
+## Pierwsze uruchomienie produkcji
+
+1. Ustaw wszystkie zmienne, utwórz PostgreSQL i Volume.
+2. Wygeneruj `APP_KEY` poza repozytorium.
+3. Uruchom migracje:
+
+   ```bash
+   php artisan migrate --force
+   ```
+
+4. Utwórz administratora po ustawieniu `ADMIN_USER_NAME`, `ADMIN_USER_EMAIL` i
+   silnego `ADMIN_USER_PASSWORD`:
+
+   ```bash
+   php artisan db:seed --class=AdminUserSeeder --force
+   ```
+
+`AdminUserSeeder` nie ma domyślnego hasła, używa `Hash::make`, `updateOrCreate`,
+przywraca miękko usunięte konto i zawsze ustawia rolę admin oraz aktywność. Jest
+idempotentny, ale ponowne uruchomienie świadomie ustawia hasło na bieżącą wartość
+`ADMIN_USER_PASSWORD`; po bootstrapie usuń tę zmienną z usługi, jeśli nie chcesz
+używać seedera do rotacji hasła, a następnie wykonaj redeploy lub ponownie zbuduj
+cache konfiguracji, aby sekret nie pozostał w aktywnym `config.php`.
+
+Klasyfikacja seederów:
+
+- bezpieczne produkcyjnie: `AdminUserSeeder`, `CompetitionDefinitionSeeder`,
+  `ClubPositionSeeder`, `ClubDirectorySeeder`,
+- deweloperskie/demo: obecnie brak osobnego seedera danych demo.
+
+`ClubDirectorySeeder` zapisuje rzeczywisty katalog skonfigurowany w `contacts.php`,
+więc uruchamiaj go tylko wtedy, gdy te dane mają zostać opublikowane. Nie uruchamiaj
+fabryk ani ad-hoc danych testowych na produkcji. `DatabaseSeeder` składa wyłącznie
+wymienione seedery produkcyjne, ale do pierwszego konta zalecana jest precyzyjna
+komenda `--class=AdminUserSeeder`.
 
 ## Kontrola po wdrożeniu
 
-1. Otwórz `/up`, stronę główną i panel.
-2. Dodaj aktualność ze zdjęciem większym niż 2 MB i mniejszym niż 6 MB.
-3. Sprawdź publiczny adres obrazu pod `/storage/...`.
-4. Podmień zdjęcie i potwierdź usunięcie poprzedniego pliku z wolumenu.
-5. Wykonaj redeploy i potwierdź, że zdjęcie nadal jest dostępne.
-6. Wyślij formularz kontaktowy i sprawdź logi `stderr`.
-7. Sprawdź stan migracji: `php artisan migrate:status`.
-8. Sprawdź cache: `php artisan about --only=cache`; konfiguracja, zdarzenia,
-   trasy i widoki powinny być oznaczone jako zapisane w cache.
-9. Dodaj ogłoszenie z 10 zdjęciami, zatwierdź je i sprawdź miniatury po redeployu.
-10. Uruchom ręcznie `php artisan listings:expire` i sprawdź log usługi cron.
+1. Sprawdź `/up`, stronę główną, logowanie i panel.
+2. Wykonaj `php artisan migrate:status`, `php artisan route:list` i
+   `php artisan schedule:list`.
+3. Sprawdź aplikację i workera: wiadomość kontaktowa powinna pojawić się w
+   kolejce i dotrzeć z poprawnym `From` oraz `Reply-To`.
+4. Wyślij reset hasła aktywnego konta, sprawdź link HTTPS oraz neutralną odpowiedź
+   dla nieistniejącego i nieaktywnego adresu.
+5. Z panelu wyślij ponownie link ustawienia hasła i sprawdź zapis administratora
+   oraz czasu bez wyświetlania tokenu.
+6. Dodaj aktualność i ogłoszenie z 10 zdjęciami; sprawdź WebP, miniatury,
+   placeholder, usuwanie i trwałość po redeployu.
+7. Uruchom `php artisan listings:expire` dwukrotnie i potwierdź pojedyncze efekty.
+8. Sprawdź `php artisan queue:failed` i licznik `jobs`.
+9. Potwierdź cache konfiguracji, zdarzeń, tras i widoków przez `php artisan about`.
+
+Rzeczywiste dostarczenie SMTP, zachowanie reverse proxy, backup/restore bazy i
+wolumenu oraz alerty wymagają końcowego testu w środowisku produkcyjnym.

@@ -9,12 +9,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
+use App\Support\PasswordSetupLinkService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 final class UserController extends Controller
 {
@@ -86,6 +89,8 @@ final class UserController extends Controller
 
     public function edit(User $user): View
     {
+        $user->load('passwordLinkSender');
+
         return view('admin.users.edit', [
             'editedUser' => $user,
             'roles' => UserRole::options(),
@@ -113,6 +118,29 @@ final class UserController extends Controller
         });
 
         return back()->with('success', 'Dane użytkownika zostały zapisane.');
+    }
+
+    public function resendPasswordSetupLink(
+        Request $request,
+        User $user,
+        PasswordSetupLinkService $passwordLinks,
+    ): RedirectResponse {
+        try {
+            $passwordLinks->send($user, $request->user());
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            Log::error('Nie udało się zakolejkować administracyjnego linku ustawienia hasła.', [
+                'exception_class' => $exception::class,
+                'user_id' => $user->getKey(),
+            ]);
+
+            return back()->withErrors([
+                'password_link' => 'Nie udało się wysłać linku ustawienia hasła. Spróbuj ponownie później.',
+            ]);
+        }
+
+        return back()->with('success', 'Nowy link ustawienia hasła został wysłany do użytkownika.');
     }
 
     public function destroy(Request $request, User $user): RedirectResponse

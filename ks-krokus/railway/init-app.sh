@@ -3,3 +3,4 @@
 set -euo pipefail
 
 php artisan migrate --force
+php artisan queue:restart

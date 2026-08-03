@@ -64,6 +64,18 @@ Ustawienie hasła działa przez `/ustaw-haslo/{token}` i `POST /ustaw-haslo`.
 Kontroler korzysta z `Password::reset`, rotuje `remember_token` i emituje standardowe
 zdarzenie `PasswordReset`.
 
+Publiczne odzyskiwanie hasła działa przez `/nie-pamietam-hasla` i standardowy
+broker Laravel. Odpowiedź jest taka sama dla konta aktywnego, nieaktywnego i
+nieistniejącego. Broker ogranicza tworzenie tokenów, trasa ma dodatkowy throttling,
+a reset ponownie sprawdza `is_active`. `User::sendPasswordResetNotification()`
+wysyła polskie, kolejkowane powiadomienie z absolutnym adresem opartym o `APP_URL`.
+
+`PasswordSetupLinkService` obsługuje administracyjne ponowne wysłanie linku przez
+broker. Działa wyłącznie dla aktywnego użytkownika, nie tworzy konta i zapisuje w
+`users.password_link_sent_by/password_link_sent_at` ostatniego administratora
+oraz czas. Kolejkowane zadania z tokenem są szyfrowane; token nigdy nie trafia do
+interfejsu ani jawnych wpisów logu.
+
 ## Kalendarz
 
 `CalendarController@index`:
@@ -152,9 +164,11 @@ ponieważ rekord można przywrócić; usunięcie pojedynczego zdjęcia sprząta 
 miniaturę po zatwierdzeniu transakcji bazy.
 
 Powiadomienia o wysłaniu, zatwierdzeniu, odrzuceniu i zbliżającym się wygaśnięciu
-używają kanału bazodanowego i kolejki `deferred`, więc nie wymagają workera i są
-wykonywane po odpowiedzi HTTP. Zmiana `QUEUE_CONNECTION` na `database` wymaga
-osobnej usługi `php artisan queue:work`.
+używają kanału bazodanowego i kolejki `database`. Wiadomości SMTP — kontakt,
+odrzucenie wniosku, ustawienie i reset hasła — także są kolejkowane, aby nie
+blokować żądania HTTP. Produkcja wymaga osobnej, stale działającej usługi
+`php artisan queue:work --sleep=3 --tries=3 --timeout=90`; `retry_after` wynosi
+120 sekund, a zadania są publikowane po zatwierdzeniu transakcji.
 
 Komenda `php artisan listings:expire` wysyła jednokrotne przypomnienie 7 dni
 przed terminem i zmienia przeterminowane zatwierdzone oferty na `expired`.

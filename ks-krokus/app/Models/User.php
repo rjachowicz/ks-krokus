@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -58,6 +60,7 @@ class User extends Authenticatable
             'has_range_access' => 'boolean',
             'show_email_publicly' => 'boolean',
             'show_phone_publicly' => 'boolean',
+            'password_link_sent_at' => 'datetime',
         ];
     }
 
@@ -81,6 +84,11 @@ class User extends Authenticatable
         return in_array($this->role, [UserRole::Admin, UserRole::Moderator], true);
     }
 
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification((string) $token));
+    }
+
     public function saleListings(): HasMany
     {
         return $this->hasMany(SaleListing::class);
@@ -94,6 +102,11 @@ class User extends Authenticatable
     public function createdFromAccountRequests(): HasMany
     {
         return $this->hasMany(AccountRequest::class, 'created_user_id');
+    }
+
+    public function passwordLinkSender(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'password_link_sent_by');
     }
 
     public function scopeTrainers(Builder $query): Builder

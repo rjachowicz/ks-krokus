@@ -39,8 +39,9 @@ KS Krokus to aplikacja klubu strzeleckiego z częścią publiczną i panelem adm
 - `/regulamin`
 - `/rodo`
 - `/logowanie`
+- `/nie-pamietam-hasla` — neutralne żądanie linku resetu dla aktywnego konta
 - `/wniosek-o-konto`
-- `/ustaw-haslo/{token}` — bezpieczny link wysyłany po zatwierdzeniu wniosku
+- `/ustaw-haslo/{token}` — standardowy formularz brokera haseł dla resetu i pierwszego hasła
 
 `/informacje-klubowe` przekierowuje do `/klub`.
 
@@ -71,6 +72,9 @@ Zatwierdzenie używa transakcji, blokady rekordu oraz brokera resetu haseł Lara
 Użytkownik nie otrzymuje hasła — dostaje jednorazowy link ważny 60 minut i ustawia
 własne hasło. Dane licencyjne i członkowskie pozostają w audytowalnym wniosku;
 do obecnego profilu użytkownika kopiowane są imię i nazwisko, e-mail oraz telefon.
+Administrator może wysłać nowy link dla zatwierdzonego wniosku lub aktywnego
+użytkownika. Operacja nie tworzy konta, unieważnia poprzedni token i zapisuje
+ostatniego administratora oraz czas wysyłki.
 
 Dostęp kontrolują `auth`, `active` i role.
 

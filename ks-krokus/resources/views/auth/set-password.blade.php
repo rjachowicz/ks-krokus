@@ -9,8 +9,8 @@
             KS KROKUS
         </a>
 
-        <h1>Ustaw własne hasło</h1>
-        <p class="auth-card__intro">Konto zostało zatwierdzone. Ustaw bezpieczne hasło, którego nie znają administratorzy klubu.</p>
+        <h1>Ustaw nowe hasło</h1>
+        <p class="auth-card__intro">Ustaw bezpieczne hasło do konta. Hasło pozostaje znane wyłącznie Tobie.</p>
 
         <form method="POST" action="{{ route('password.update') }}" class="auth-form">
             @csrf
@@ -38,7 +38,7 @@
                 <input id="new-password-confirmation" type="password" name="password_confirmation" autocomplete="new-password" minlength="12" maxlength="4096" required>
             </label>
 
-            <button type="submit" class="btn btn-primary">Ustaw hasło</button>
+            <button type="submit" class="btn btn-primary">Ustaw nowe hasło</button>
         </form>
     </section>
 @endsection

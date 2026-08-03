@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SaleListingReportController;
 use App\Http\Controllers\Admin\SportEventController as AdminSportEventController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetInitialPasswordController;
 use App\Http\Controllers\MySaleListingController;
 use App\Http\Controllers\Public\AccountRequestController as PublicAccountRequestController;
@@ -74,6 +75,12 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/logowanie', [AuthenticatedSessionController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('login.store');
+
+    Route::get('/nie-pamietam-hasla', [ForgotPasswordController::class, 'create'])
+        ->name('password.request');
+    Route::post('/nie-pamietam-hasla', [ForgotPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
 
     Route::get('/ustaw-haslo/{token}', [ResetInitialPasswordController::class, 'create'])
         ->name('password.reset');
@@ -207,6 +214,10 @@ Route::prefix('panel')
                     ->name('account-requests.approve');
                 Route::post('wnioski-o-konto/{accountRequest}/odrzuc', [AdminAccountRequestController::class, 'reject'])
                     ->name('account-requests.reject');
+                Route::post('wnioski-o-konto/{accountRequest}/wyslij-link-hasla', [AdminAccountRequestController::class, 'resendPasswordSetupLink'])
+                    ->name('account-requests.password.resend');
+                Route::post('uzytkownicy/{user}/wyslij-link-hasla', [UserController::class, 'resendPasswordSetupLink'])
+                    ->name('users.password.resend');
 
                 Route::resource('funkcje-klubowe', ClubPositionController::class)
                     ->except('show')

@@ -29,8 +29,11 @@ final class ResetInitialPasswordController extends Controller
 
     public function store(ResetInitialPasswordRequest $request): RedirectResponse
     {
+        $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
+        $credentials['is_active'] = true;
+
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $credentials,
             function (User $user, string $password): void {
                 $user->forceFill([
                     'password' => $password,
@@ -56,7 +59,7 @@ final class ResetInitialPasswordController extends Controller
     {
         return match ($status) {
             Password::INVALID_TOKEN => 'Link ustawienia hasła jest nieprawidłowy lub wygasł.',
-            Password::INVALID_USER => 'Nie udało się ustawić hasła dla podanego konta.',
+            Password::INVALID_USER => 'Link ustawienia hasła jest nieprawidłowy lub wygasł.',
             Password::RESET_THROTTLED => 'Spróbuj ponownie za chwilę.',
             default => 'Nie udało się ustawić hasła. Poproś administratora o nowy link.',
         };

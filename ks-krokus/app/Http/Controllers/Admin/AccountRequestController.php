@@ -12,9 +12,13 @@ use App\Http\Requests\RejectAccountRequest;
 use App\Http\Requests\UpdateAccountRequestNotesRequest;
 use App\Models\AccountRequest;
 use App\Support\AccountRequestWorkflow;
+use App\Support\PasswordSetupLinkService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Throwable;
 
 final class AccountRequestController extends Controller
 {
@@ -66,7 +70,7 @@ final class AccountRequestController extends Controller
 
     public function show(AccountRequest $accountRequest): View
     {
-        $accountRequest->load(['reviewer', 'createdUser']);
+        $accountRequest->load(['reviewer', 'createdUser.passwordLinkSender']);
 
         return view('admin.account-requests.show', [
             'accountRequest' => $accountRequest,
@@ -93,7 +97,20 @@ final class AccountRequestController extends Controller
         AccountRequest $accountRequest,
         AccountRequestWorkflow $workflow,
     ): RedirectResponse {
-        $user = $workflow->approve($accountRequest, auth()->user());
+        try {
+            $user = $workflow->approve($accountRequest, auth()->user());
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            Log::error('Nie udało się zatwierdzić wniosku lub zakolejkować linku ustawienia hasła.', [
+                'exception_class' => $exception::class,
+                'account_request_id' => $accountRequest->getKey(),
+            ]);
+
+            return back()->withErrors([
+                'password_link' => 'Nie udało się zakończyć wysyłki linku ustawienia hasła. Sprawdź stan wniosku i spróbuj ponownie.',
+            ]);
+        }
 
         if (! $user->wasRecentlyCreated) {
             return redirect()
@@ -111,14 +128,60 @@ final class AccountRequestController extends Controller
         AccountRequest $accountRequest,
         AccountRequestWorkflow $workflow,
     ): RedirectResponse {
-        $workflow->reject(
-            $accountRequest,
-            $request->user(),
-            $request->validated('rejection_reason'),
-        );
+        try {
+            $workflow->reject(
+                $accountRequest,
+                $request->user(),
+                $request->validated('rejection_reason'),
+            );
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            Log::error('Nie udało się odrzucić wniosku lub zakolejkować wiadomości.', [
+                'exception_class' => $exception::class,
+                'account_request_id' => $accountRequest->getKey(),
+            ]);
+
+            return back()->withErrors([
+                'status' => 'Nie udało się zakończyć wysyłki wiadomości. Sprawdź stan wniosku i spróbuj ponownie.',
+            ]);
+        }
 
         return redirect()
             ->route('admin.account-requests.show', $accountRequest)
             ->with('success', 'Wniosek został odrzucony. Wnioskodawca otrzymał neutralną wiadomość.');
+    }
+
+    public function resendPasswordSetupLink(
+        AccountRequest $accountRequest,
+        PasswordSetupLinkService $passwordLinks,
+    ): RedirectResponse {
+        $accountRequest->load('createdUser');
+
+        if (
+            $accountRequest->status !== AccountRequestStatus::Approved
+            || $accountRequest->createdUser === null
+        ) {
+            throw ValidationException::withMessages([
+                'password_link' => 'Link można wysłać dopiero po zatwierdzeniu wniosku i utworzeniu konta.',
+            ]);
+        }
+
+        try {
+            $passwordLinks->send($accountRequest->createdUser, auth()->user(), true);
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            Log::error('Nie udało się zakolejkować linku ustawienia hasła dla wniosku.', [
+                'exception_class' => $exception::class,
+                'account_request_id' => $accountRequest->getKey(),
+            ]);
+
+            return back()->withErrors([
+                'password_link' => 'Nie udało się wysłać linku ustawienia hasła. Spróbuj ponownie później.',
+            ]);
+        }
+
+        return back()->with('success', 'Nowy link ustawienia hasła został wysłany do użytkownika.');
     }
 }

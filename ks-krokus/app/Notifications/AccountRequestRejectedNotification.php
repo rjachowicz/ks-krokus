@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-final class AccountRequestRejectedNotification extends Notification implements ShouldQueue
+final class AccountRequestRejectedNotification extends Notification implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
 
@@ -27,6 +28,7 @@ final class AccountRequestRejectedNotification extends Notification implements S
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
+            ->from((string) config('mail.from.address'), (string) config('mail.from.name'))
             ->subject('Informacja o wniosku o konto KS Krokus')
             ->greeting('Dzień dobry,')
             ->line('Wniosek o utworzenie konta nie został zatwierdzony.')

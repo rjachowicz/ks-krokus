@@ -58,6 +58,78 @@ final class SaleListingModuleTest extends TestCase
             ->assertSee('listing-images', false);
     }
 
+    public function test_jpg_png_and_webp_listing_images_are_accepted_and_stored(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $files = [
+            UploadedFile::fake()->image('zdjecie.jpg', 640, 480),
+            UploadedFile::fake()->image('zdjecie.png', 640, 480),
+            $this->webpUpload('zdjecie.webp'),
+        ];
+
+        foreach ($files as $index => $file) {
+            $this->actingAs($user)
+                ->post(route('admin.my-listings.store'), [
+                    ...$this->validData(),
+                    'title' => 'Ogłoszenie format '.($index + 1),
+                    'intent' => 'draft',
+                    'images' => [$file],
+                ])
+                ->assertSessionHasNoErrors();
+        }
+
+        $webpPath = $files[2]->getPathname();
+        if (is_file($webpPath)) {
+            unlink($webpPath);
+        }
+
+        self::assertDatabaseCount('sale_listing_images', 3);
+        foreach (SaleListingImage::query()->get() as $image) {
+            Storage::disk('public')->assertExists($image->path);
+        }
+    }
+
+    public function test_listing_accepts_multiple_images_up_to_the_maximum_of_ten(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $images = array_map(
+            static fn (int $number): UploadedFile => UploadedFile::fake()->image("zdjecie-{$number}.jpg", 320, 240),
+            range(1, 10),
+        );
+
+        $this->actingAs($user)
+            ->post(route('admin.my-listings.store'), [
+                ...$this->validData(),
+                'intent' => 'draft',
+                'images' => $images,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $listing = SaleListing::query()->firstOrFail();
+        self::assertSame(10, $listing->images()->count());
+        self::assertSame(1, $listing->images()->where('is_primary', true)->count());
+    }
+
+    public function test_listing_rejects_an_image_larger_than_six_megabytes(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.my-listings.store'), [
+                ...$this->validData(),
+                'intent' => 'draft',
+                'images' => [UploadedFile::fake()->image('za-duze.jpg')->size(6145)],
+            ])
+            ->assertSessionHasErrors([
+                'images.0' => 'Jedno zdjęcie może mieć maksymalnie 6 MB.',
+            ]);
+
+        self::assertDatabaseCount('sale_listing_images', 0);
+    }
+
     public function test_user_can_submit_a_draft_and_admin_is_notified(): void
     {
         Notification::fake();
@@ -198,12 +270,14 @@ final class SaleListingModuleTest extends TestCase
 
     public function test_expiration_command_is_idempotent_and_does_not_delete_listing(): void
     {
-        $listing = SaleListing::factory()->approved()->create(['expires_at' => now()->subMinute()]);
+        $expiresAt = now()->subMinute();
+        $listing = SaleListing::factory()->approved()->create(['expires_at' => $expiresAt]);
 
         $this->artisan('listings:expire')->assertSuccessful();
         $this->artisan('listings:expire')->assertSuccessful();
 
         self::assertSame(SaleListingStatus::Expired, $listing->fresh()->status);
+        self::assertSame($expiresAt->toDateTimeString(), $listing->fresh()->expires_at->toDateTimeString());
         self::assertFalse($listing->fresh()->trashed());
         self::assertSame(1, $listing->moderations()->where('action', 'expired')->count());
     }
@@ -217,9 +291,11 @@ final class SaleListingModuleTest extends TestCase
         ]);
 
         $this->artisan('listings:expire')->assertSuccessful();
+        $sentAt = $listing->fresh()->expiration_reminder_sent_at;
         $this->artisan('listings:expire')->assertSuccessful();
 
-        self::assertNotNull($listing->fresh()->expiration_reminder_sent_at);
+        self::assertNotNull($sentAt);
+        self::assertTrue($listing->fresh()->expiration_reminder_sent_at->equalTo($sentAt));
         Notification::assertSentToTimes($author, SaleListingExpiringNotification::class, 1);
     }
 
@@ -437,5 +513,21 @@ final class SaleListingModuleTest extends TestCase
     private function admin(): User
     {
         return User::factory()->create(['role' => UserRole::Admin, 'is_active' => true]);
+    }
+
+    private function webpUpload(string $name): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'ks-krokus-webp-');
+
+        if ($path === false) {
+            self::fail('Nie udało się utworzyć pliku testowego WebP.');
+        }
+
+        $image = imagecreatetruecolor(32, 32);
+        self::assertNotFalse($image);
+        self::assertTrue(imagewebp($image, $path));
+        imagedestroy($image);
+
+        return new UploadedFile($path, $name, 'image/webp', null, true);
     }
 }
