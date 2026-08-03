@@ -4,6 +4,54 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-03 — konto i logowanie w głównym headerze
+
+### Cel
+
+Przenieść czytelny dostęp do logowania, wspólnego panelu oraz bezpiecznego
+wylogowania do głównego headera, zachowując jednoliniowy desktop i dostępne menu
+mobilne dla gościa, użytkownika, moderatora i administratora.
+
+### Wykonane
+
+- [x] Potwierdzono, że `/panel` jest wspólnym dashboardem wszystkich aktywnych
+  ról; middleware `auth` i `active` chronią całą strefę, ograniczenia moderatora
+  i administratora pozostają egzekwowane przez middleware roli, Form Requesty
+  oraz `SaleListingPolicy`.
+- [x] Gość otrzymuje w desktopowym headerze przycisk „Zaloguj się” korzystający
+  z istniejącej trasy `login`; na mobile ta sama akcja znajduje się wewnątrz
+  rozwijanej nawigacji.
+- [x] Usunięto skrót z literą `A`. Zalogowany użytkownik ma przycisk z ikoną
+  użytkownika i tekstem „Panel”, rozwijane dane konta z polską etykietą roli,
+  odnośnik do wspólnego dashboardu oraz wylogowanie POST z CSRF.
+- [x] Na mobile panel, dane konta i wylogowanie przeniesiono do menu, pozostawiając
+  obok hamburgera tylko przełącznik motywu. Menu przewija się przy małej wysokości
+  ekranu i nie ściska headera.
+- [x] Ujednolicono wysokość kontrolek headera do 44 px oraz zsynchronizowano
+  breakpoint CSS i JavaScriptu na 1080 px. Oba menu obsługują `aria-expanded`,
+  `aria-hidden`, `inert`, fokus, Escape, klik poza obszarem i zmianę szerokości.
+- [x] Dodano testy regresyjne renderowania headera dla gościa i wszystkich ról,
+  dostępu każdej roli do wspólnego dashboardu, obecności CSRF oraz braku trasy
+  wylogowania metodą GET.
+
+### Testy i kontrole
+
+- [x] `composer test` — 93 testy, 843 asercje.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 58 modułów.
+- [x] Edge headless — 64 kombinacje gość/user/moderator/admin, light/dark oraz
+  320, 375, 768, 960, 1024, 1080, 1081 i 1366 px: bez overflow i błędów konsoli;
+  poprawne kontrolki, breakpointy, fokus, Escape, `inert` i ARIA obu menu.
+- [x] `php artisan view:cache`, `php artisan route:list` i `git diff --check` —
+  poprawne.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Nie dodano migracji ani nowych zmiennych środowiskowych.
+- Tymczasowe konta audytowe usunięto, a lokalne serwery testowe zatrzymano.
+- Nie wykonano commita ani pusha zgodnie z poleceniem.
+- Końcowa kontrola fizycznym czytnikiem ekranu nadal wymaga NVDA lub VoiceOver.
+
 ## Bieżąca sesja — 2026-08-03 — pełne ujednolicenie formularzy
 
 ### Cel

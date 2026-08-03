@@ -6,7 +6,7 @@ export function initMobileMenu() {
         return;
     }
 
-    const mobileNavigation = window.matchMedia('(max-width: 959px)');
+    const mobileNavigation = window.matchMedia('(max-width: 1080px)');
 
     const syncAvailability = () => {
         const hidden = mobileNavigation.matches && !navigation.classList.contains('is-open');
@@ -79,5 +79,69 @@ export function initMobileMenu() {
     });
 
     mobileNavigation.addEventListener('change', closeMenu);
+    closeMenu();
+}
+
+export function initAccountMenu() {
+    const menu = document.querySelector('[data-account-menu]');
+    const button = menu?.querySelector('[data-account-menu-toggle]');
+    const panel = menu?.querySelector('[data-account-menu-panel]');
+
+    if (!menu || !button || !panel) {
+        return;
+    }
+
+    const closeMenu = ({ restoreFocus = false } = {}) => {
+        panel.hidden = true;
+        button.setAttribute('aria-expanded', 'false');
+
+        if (restoreFocus) {
+            button.focus();
+        }
+    };
+
+    const openMenu = ({ moveFocus = false } = {}) => {
+        panel.hidden = false;
+        button.setAttribute('aria-expanded', 'true');
+
+        if (moveFocus) {
+            panel.querySelector('a, button')?.focus();
+        }
+    };
+
+    button.addEventListener('click', () => {
+        panel.hidden ? openMenu() : closeMenu();
+    });
+
+    button.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            openMenu({ moveFocus: true });
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        if (event.target instanceof Node && !menu.contains(event.target)) {
+            closeMenu();
+        }
+    });
+
+    document.addEventListener('focusin', (event) => {
+        if (
+            !panel.hidden
+            && event.target instanceof Node
+            && !menu.contains(event.target)
+        ) {
+            closeMenu();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !panel.hidden) {
+            closeMenu({ restoreFocus: true });
+        }
+    });
+
+    window.matchMedia('(max-width: 1080px)').addEventListener('change', () => closeMenu());
     closeMenu();
 }

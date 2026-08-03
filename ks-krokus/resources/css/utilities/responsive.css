@@ -26,6 +26,11 @@
         display: grid;
     }
 
+    .header-login,
+    .account-menu {
+        display: none;
+    }
+
     .main-nav {
         position: absolute;
         top: calc(100% + 1px);
@@ -48,7 +53,8 @@
     }
 
     .main-nav.is-open {
-        max-height: 420px;
+        max-height: min(680px, calc(100dvh - 72px));
+        overflow-y: auto;
         border-color: var(--line);
         opacity: 1;
         transform: translateY(0);
@@ -63,6 +69,50 @@
 
     .main-nav a {
         padding: 12px 14px;
+    }
+
+    .main-nav__account {
+        display: grid;
+        gap: 4px;
+        margin-top: 6px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+    }
+
+    .main-nav__account-label {
+        padding: 0 14px 5px;
+        color: var(--text-soft);
+        font-size: 0.72rem;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .main-nav .main-nav__account-link,
+    .main-nav__logout {
+        display: flex;
+        width: 100%;
+        min-height: 44px;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-muted);
+        font: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1.2;
+        text-align: left;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 160ms ease, color 160ms ease;
+    }
+
+    .main-nav .main-nav__account-link:hover,
+    .main-nav__logout:hover {
+        background: var(--gold-soft);
+        color: var(--gold-strong);
     }
 
     .no-js .site-header {

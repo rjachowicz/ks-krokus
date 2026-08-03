@@ -138,6 +138,8 @@
 - [x] Przeprowadzić pełny audyt 38 tras przy 320, 375, 480, 768, 1024, 1280,
   1366, 1440 i 1920 px w light/dark oraz usunąć konflikt mobilnej siatki formularza.
 - [x] Dodać wspólny placeholder dla obrazów, których plik nie może zostać załadowany.
+- [x] Przenieść logowanie, wspólny panel roli i wylogowanie POST+CSRF do głównego
+  headera oraz zsynchronizować dostępne menu desktopowe i mobilne.
 
 ## P3 — dalszy rozwój
 

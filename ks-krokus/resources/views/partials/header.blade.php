@@ -68,15 +68,86 @@
                         Kontakt
                     </a>
                 </li>
+
+                <li class="main-nav__account">
+                    @guest
+                        <a class="main-nav__account-link" href="{{ route('login') }}">
+                            <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4"></circle>
+                                <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+                            </svg>
+                            Zaloguj się
+                        </a>
+                    @else
+                        <span class="main-nav__account-label">
+                            Konto: {{ auth()->user()->name }} · {{ auth()->user()->role->label() }}
+                        </span>
+
+                        <a class="main-nav__account-link" href="{{ route('admin.dashboard') }}">
+                            <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4"></circle>
+                                <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+                            </svg>
+                            Panel
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="main-nav__logout" type="submit">
+                                <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M14 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-3"></path>
+                                    <path d="M10 12h11M18 9l3 3-3 3"></path>
+                                </svg>
+                                Wyloguj się
+                            </button>
+                        </form>
+                    @endguest
+                </li>
             </ul>
         </nav>
 
         <div class="header-actions">
-            @auth
-                <a class="icon-button" href="{{ route('admin.dashboard') }}" aria-label="Panel użytkownika" title="Panel">
-                    <span aria-hidden="true">A</span>
-                </a>
-            @endauth
+            @guest
+                <a class="header-login" href="{{ route('login') }}">Zaloguj się</a>
+            @else
+                <div class="account-menu" data-account-menu>
+                    <button
+                        class="account-menu__trigger"
+                        type="button"
+                        aria-controls="account-menu-panel"
+                        aria-expanded="false"
+                        data-account-menu-toggle
+                    >
+                        <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+                        </svg>
+                        <span>Panel</span>
+                        <svg class="account-menu__chevron" viewBox="0 0 12 8" aria-hidden="true">
+                            <path d="m1 1 5 5 5-5"></path>
+                        </svg>
+                    </button>
+
+                    <div
+                        id="account-menu-panel"
+                        class="account-menu__panel"
+                        data-account-menu-panel
+                        hidden
+                    >
+                        <p class="account-menu__identity">
+                            <strong>{{ auth()->user()->name }}</strong>
+                            <span>{{ auth()->user()->role->label() }}</span>
+                        </p>
+
+                        <a href="{{ route('admin.dashboard') }}">Przejdź do panelu</a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Wyloguj się</button>
+                        </form>
+                    </div>
+                </div>
+            @endguest
 
             <button
                 class="icon-button"

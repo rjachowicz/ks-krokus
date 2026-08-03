@@ -1,4 +1,4 @@
-import { initMobileMenu } from './modules/mobile-menu';
+import { initAccountMenu, initMobileMenu } from './modules/mobile-menu';
 import { initStickyHeader } from './modules/sticky-header';
 import { initTheme } from './modules/theme';
 import { initToasts } from './modules/toasts';
@@ -9,6 +9,7 @@ import { initImageFallbacks } from './modules/image-fallback';
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     initMobileMenu();
+    initAccountMenu();
     initStickyHeader();
     initToasts();
     initImageFallbacks();
