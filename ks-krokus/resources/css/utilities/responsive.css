@@ -28,6 +28,7 @@
 
     .header-login,
     .header-account-request,
+    .header-notifications,
     .account-menu {
         display: none;
     }

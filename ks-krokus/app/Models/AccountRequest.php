@@ -38,6 +38,7 @@ final class AccountRequest extends Model
         'rejection_reason',
         'internal_notes',
         'created_user_id',
+        'anonymized_at',
     ];
 
     protected function casts(): array
@@ -50,6 +51,7 @@ final class AccountRequest extends Model
             'data_processing_consent' => 'boolean',
             'status' => AccountRequestStatus::class,
             'reviewed_at' => 'datetime',
+            'anonymized_at' => 'datetime',
         ];
     }
 

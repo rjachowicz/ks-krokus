@@ -145,6 +145,18 @@
                         {{ auth()->user()->role->label() }}
                     </span>
 
+                    <a
+                        class="admin-notifications-link"
+                        href="{{ route('notifications.index') }}"
+                        aria-label="Powiadomienia{{ $unreadNotificationsCount > 0 ? ': '.$unreadNotificationsCount.' nieprzeczytanych' : '' }}"
+                        title="Powiadomienia"
+                    >
+                        <span aria-hidden="true">●</span>
+                        @if ($unreadNotificationsCount > 0)
+                            <span class="notification-count" aria-hidden="true">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
+                        @endif
+                    </a>
+
                     <button
                         class="admin-theme-toggle"
                         type="button"

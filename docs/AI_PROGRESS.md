@@ -4,6 +4,85 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-03 — końcowa stabilizacja UI, powiadomień, retencji i bezpieczeństwa
+
+### Cel
+
+Zweryfikować cały interfejs po wdrożeniu infrastruktury i profilu użytkownika,
+dodać kompletne centrum powiadomień, konfigurowalną retencję odrzuconych wniosków
+oraz domknąć podstawowe zabezpieczenia produkcyjne i zasady logowania bez dodawania
+dużego modułu i bez operacji zapisujących historię Git.
+
+### Znalezione problemy
+
+- Bazodanowe powiadomienia były widoczne tylko na dashboardzie; brakowało licznika
+  w headerze, pełnej listy, paginacji i właścicielskich operacji odczytu.
+- Odrzucone wnioski przechowywały dane bez procesu retencji, konfiguracji, znacznika
+  anonimizacji i harmonogramu.
+- Ekran żądania resetu oraz przyszłe centrum powiadomień nie były objęte kompletem
+  prywatnych nagłówków `no-store`/`noindex`.
+- Limity tras były anonimowymi parametrami liczbowymi, a trusted proxies nie miały
+  jawnej konfiguracji wdrożeniowej.
+- Kontekst Monolog nie miał centralnego maskowania danych. Pierwszy test integracyjny
+  wykazał też, że tap musi przyjmować wrapper `Illuminate\Log\Logger`, a nie bezpośrednio
+  Monolog; poprawiono rzeczywiste podpięcie i powtórzono kontrolę kanału.
+- Lokalny ignorowany `.env` nie był parsowalny z powodu niecytowanej wartości SMTP
+  zawierającej spacje. Dodano wyłącznie cudzysłowy, bez zmiany i ujawnienia sekretu.
+
+### Wykonane
+
+- [x] Dodano `/powiadomienia` z listą 15 wpisów na stronę, rozróżnieniem stanu,
+  pustym stanem, paginacją, pojedynczym i zbiorczym oznaczaniem jako przeczytane.
+- [x] Operacja pojedyncza pobiera UUID wyłącznie przez relację zalogowanego
+  użytkownika; test potwierdza 404 i brak zmiany cudzego powiadomienia.
+- [x] Dodano licznik oraz zwarty link w publicznym headerze, mobilnym menu konta i
+  topbarze panelu. Dashboard używa tego samego komponentu ostatnich powiadomień.
+- [x] Dodano `ACCOUNT_REQUEST_RETENTION_MONTHS=12` i preferowane `anonymize` oraz
+  opcjonalne `delete`. Komenda przetwarza tylko stare `rejected` według `reviewed_at`,
+  zachowuje minimalny audyt decyzji, nie loguje PII i zwraca statystyki.
+- [x] Dodano `anonymized_at`, indeks retencji, blokady rekordów, idempotencję oraz
+  harmonogram 02:15 `Europe/Warsaw` z `withoutOverlapping`.
+- [x] Nazwano limitery logowania, resetu/ustawiania hasła, kontaktu, wniosku,
+  zgłoszenia ogłoszenia i operacji powiadomień. Dodano jawne `TRUSTED_PROXIES`,
+  `ASSET_URL`, `SESSION_SECURE_COOKIE`, `SESSION_HTTP_ONLY` i `SESSION_SAME_SITE`.
+- [x] Rozszerzono prywatne `no-store`/`noindex`, zachowując wymuszane CSP z nonce,
+  produkcyjne HSTS i źródła faktycznie używane przez Google Maps/Fonts, Vite,
+  storage oraz obrazy Unsplash.
+- [x] Dodano rekurencyjne maskowanie kontekstu logów dla haseł, tokenów, danych
+  licencyjnych, dat urodzenia, danych kontaktowych, wniosków i prywatnych notatek.
+  Kontrola realnego kanału potwierdziła brak trzech sztucznych wartości w zapisie.
+- [x] Uzupełniono przewodniki UI, walidacji, architektury i wdrożenia o retencję,
+  autoryzację, rate limiting, CSP, proxy oraz rotację Railway/VPS.
+
+### Audyt UI i bezpieczeństwa
+
+- Statyczny audyt nie wykazał ujemnych marginesów. Formularze nadal używają
+  wspólnych kontrolek 48 px, a radio/checkbox 20 px z `appearance: none`, złotym
+  zaznaczeniem i stanami hover/focus/disabled/error bez usuwania inputów z DOM.
+- Edge headless: 24 główne trasy, szerokości 320, 375, 480, 768, 1024, 1280,
+  1366, 1440 i 1920 px, light/dark — 432 kontrole, 0 poziomych przepełnień,
+  0 zbyt małych kontrolek powiadomień i 0 błędów konsoli/CSP.
+- Audyt śledzonych plików: brak `.env` poza przykładem, brak Debugbar/Telescope,
+  brak rzeczywistych sekretów; trafienia skanera to wyłącznie asercje pustych
+  wartości w teście `.env.example`.
+- Composer i npm: 0 znanych podatności.
+
+### Testy, migracja i ograniczenia
+
+- [x] `composer test` — 141 testów, 1292 asercje.
+- [x] `vendor/bin/pint --test` — bez błędów po formatowaniu dwóch nowych klas.
+- [x] `npm.cmd run build` — poprawny build Vite, 58 modułów.
+- [x] Migracja `2026_08_03_000400_add_retention_audit_to_account_requests_table.php`
+  wykonana lokalnie na PostgreSQL.
+- Okres 12 miesięcy i akcja retencji wymagają formalnego zatwierdzenia przez klub;
+  nie są przedstawiane jako ostateczna decyzja prawna.
+- Produkcyjne nagłówki za Railway, cookie, SMTP, cron/worker, log drain, backup,
+  fizyczny NVDA/VoiceOver i test rzeczywistych urządzeń wymagają środowiska wdrożeniowego.
+- Tymczasowe konto i powiadomienia audytowe usunięto. Edge pozostawił wyłącznie
+  profil w systemowym `%TEMP%`, którego rekurencyjne usunięcie zablokowała polityka
+  wykonawcza; katalog znajduje się poza repozytorium.
+- Nie wykonano commita, pusha, brancha, PR, merge, rebase ani resetu.
+
 ## Bieżąca sesja — 2026-08-03 — moje konto i minimalny profil członkowski
 
 ### Cel

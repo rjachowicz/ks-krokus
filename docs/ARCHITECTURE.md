@@ -16,6 +16,8 @@ Kontrolery publiczne:
 Kontrolery konta zalogowanego użytkownika:
 - `AccountController` — podgląd własnego konta oraz rozdzielone aktualizacje profilu,
   adresu e-mail i hasła pod `/moje-konto`
+- `NotificationController` — paginowana lista bazodanowych powiadomień oraz
+  właścicielskie oznaczanie pojedynczego lub wszystkich jako przeczytane
 
 Kontrolery administracyjne:
 - `DashboardController`
@@ -80,6 +82,34 @@ wcześniej wniosków z `created_user_id`.
 Odrzucenie wymaga powodu, zachowuje rekord i wysyła neutralną wiadomość bez powodu
 oraz bez notatek wewnętrznych. Trasy `/panel/wnioski-o-konto*` są objęte
 middleware `auth`, `active` i rolą `admin`.
+
+Odrzucone wnioski podlegają konfigurowalnej retencji liczonej od `reviewed_at`.
+Komenda `account-requests:apply-retention` domyślnie anonimizuje dane osobowe po
+`ACCOUNT_REQUEST_RETENTION_MONTHS`, zachowując status, datę decyzji i administratora
+do minimalnego audytu. Opcjonalna akcja `delete` usuwa kwalifikujący rekord. Znacznik
+`anonymized_at`, ponowna selekcja pod blokadą i ograniczenie do statusu `rejected`
+zapewniają idempotencję; `pending` i `approved` nie są przetwarzane.
+
+## Powiadomienia
+
+Kanał bazodanowy przechowuje wyłącznie krótki tytuł, komunikat, wewnętrzny URL i
+techniczny identyfikator rekordu. Publiczny header i topbar panelu pobierają tylko
+licznik nieprzeczytanych. Pełna lista działa pod `/powiadomienia`, używa paginacji
+i jest chroniona przez `auth` oraz `active`. Operacja pojedyncza rozpoczyna zapytanie
+od relacji użytkownika, dlatego sam UUID cudzego powiadomienia nie daje dostępu.
+
+## Bezpieczeństwo i logi
+
+`AddSecurityHeaders` ustawia CSP z nonce, HSTS w produkcji, `nosniff`, politykę
+referrera i uprawnień oraz ochronę izolacji. Prywatne formularze, konto, panel i
+powiadomienia otrzymują `no-store` i `noindex`. CSP dopuszcza aktualnie własne
+zasoby/storage, Google Fonts, osadzone Google Maps, obrazy Unsplash oraz dokładny
+origin aktywnego Vite w trybie lokalnym.
+
+`RedactSensitiveLogContext` jest podpięty do kanałów Monolog i rekursywnie maskuje
+znane klucze danych osobowych, haseł oraz tokenów. Kontrolery raportują klasę
+wyjątku i techniczny identyfikator, nie pełne żądanie. Zaufane proxy są wyłączone
+bez jawnego `TRUSTED_PROXIES`; ma to znaczenie dla poprawnego HTTPS, IP i limiterów.
 
 Ustawienie hasła działa przez `/ustaw-haslo/{token}` i `POST /ustaw-haslo`.
 Kontroler korzysta z `Password::reset`, rotuje `remember_token` i emituje standardowe

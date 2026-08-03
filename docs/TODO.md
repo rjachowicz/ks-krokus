@@ -1,5 +1,22 @@
 # TODO.md
 
+## P0 — końcowa stabilizacja UI, powiadomień, retencji i bezpieczeństwa
+
+- [x] Potwierdzić wspólne prymitywy geometrii, brak ujemnych marginesów oraz
+  spójne kontrolki 48 px, radio/checkbox 20 px i stany dostępności.
+- [x] Dodać centrum powiadomień z licznikiem, ostatnimi wpisami, paginacją,
+  oznaczeniem pojedynczego i wszystkich oraz autoryzacją właściciela.
+- [x] Dodać konfigurowalną, idempotentną retencję odrzuconych wniosków z domyślną
+  anonimizacją, statystykami, harmonogramem i testami.
+- [x] Uzupełnić prywatne `no-store`/`noindex`, nazwane rate limitery, jawne trusted
+  proxies, ustawienia sesji/asset URL i test HSTS/CSP.
+- [x] Dodać rekurencyjne maskowanie kontekstu logów i opisać kanały oraz rotację
+  na Railway i VPS.
+- [ ] Uzyskać formalne zatwierdzenie klubu dla okresu
+  `ACCOUNT_REQUEST_RETENTION_MONTHS` i akcji retencji przed produkcyjnym cronem.
+- [ ] Po wdrożeniu wykonać fizyczny audyt NVDA/VoiceOver, test urządzeń i kontrolę
+  końcowych nagłówków/cookies/CSP za reverse proxy.
+
 ## P0 — gotowość produkcyjna poczty, kolejki i storage
 
 - [x] Ujednolicić `.env.example` i konfigurację SMTP z poprawnym nadawcą,

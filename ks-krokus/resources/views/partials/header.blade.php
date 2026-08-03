@@ -94,6 +94,13 @@
                             Moje konto
                         </a>
 
+                        <a class="main-nav__account-link" href="{{ route('notifications.index') }}">
+                            Powiadomienia
+                            @if ($unreadNotificationsCount > 0)
+                                <span class="notification-count" aria-label="nieprzeczytane powiadomienia: {{ $unreadNotificationsCount }}">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
+                            @endif
+                        </a>
+
                         @if (auth()->user()->canManageContent())
                             <a class="main-nav__account-link" href="{{ route('admin.dashboard') }}">Panel administracyjny</a>
                         @endif
@@ -118,6 +125,21 @@
                 <a class="header-account-request" href="{{ route('account-requests.create') }}">Wniosek o konto</a>
                 <a class="header-login" href="{{ route('login') }}">Zaloguj się</a>
             @else
+                <a
+                    class="header-notifications"
+                    href="{{ route('notifications.index') }}"
+                    aria-label="Powiadomienia{{ $unreadNotificationsCount > 0 ? ': '.$unreadNotificationsCount.' nieprzeczytanych' : '' }}"
+                    title="Powiadomienia"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                        <path d="M10 21h4"></path>
+                    </svg>
+                    @if ($unreadNotificationsCount > 0)
+                        <span class="notification-count" aria-hidden="true">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
+                    @endif
+                </a>
+
                 <div class="account-menu" data-account-menu>
                     <button
                         class="account-menu__trigger"
@@ -148,6 +170,12 @@
                         </p>
 
                         <a href="{{ route('account.show') }}">Moje konto</a>
+                        <a href="{{ route('notifications.index') }}">
+                            Powiadomienia
+                            @if ($unreadNotificationsCount > 0)
+                                <span class="notification-count" aria-label="nieprzeczytane powiadomienia: {{ $unreadNotificationsCount }}">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
+                            @endif
+                        </a>
 
                         @if (auth()->user()->canManageContent())
                             <a href="{{ route('admin.dashboard') }}">Przejdź do panelu administracyjnego</a>

@@ -71,6 +71,11 @@ final class ApplicationQualityTest extends TestCase
             ->assertOk()
             ->assertHeader('Cache-Control', 'no-store, private');
 
+        $this->get(route('password.request'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+
         $admin = User::factory()->create([
             'role' => UserRole::Admin,
             'is_active' => true,
@@ -86,6 +91,28 @@ final class ApplicationQualityTest extends TestCase
             ->post(route('logout'))
             ->assertRedirect(route('home'))
             ->assertHeader('Cache-Control', 'no-store, private');
+    }
+
+    public function test_production_responses_enable_hsts_and_upgrade_insecure_requests(): void
+    {
+        $previousEnvironment = $this->app->environment();
+        $this->app->instance('env', 'production');
+
+        try {
+            $response = $this->get(route('home'))
+                ->assertOk()
+                ->assertHeader(
+                    'Strict-Transport-Security',
+                    'max-age=31536000; includeSubDomains',
+                );
+
+            self::assertStringContainsString(
+                'upgrade-insecure-requests',
+                (string) $response->headers->get('Content-Security-Policy'),
+            );
+        } finally {
+            $this->app->instance('env', $previousEnvironment);
+        }
     }
 
     public function test_local_csp_allows_only_the_active_vite_development_origin(): void

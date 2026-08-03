@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('01:15')
             ->timezone('Europe/Warsaw')
             ->withoutOverlapping();
+        $schedule->command('account-requests:apply-retention')
+            ->dailyAt('02:15')
+            ->timezone('Europe/Warsaw')
+            ->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(AddSecurityHeaders::class);

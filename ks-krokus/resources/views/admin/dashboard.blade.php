@@ -97,17 +97,12 @@
         @if ($notifications->isEmpty())
             <p class="empty-state">Nie masz nowych informacji dotyczących ogłoszeń.</p>
         @else
-            <ul class="dashboard-notifications">
+            <ul class="dashboard-notifications" aria-label="Ostatnie powiadomienia">
                 @foreach ($notifications as $notification)
-                    <li>
-                        <a href="{{ $notification->data['url'] ?? route('admin.my-listings.index') }}">
-                            <strong>{{ $notification->data['title'] ?? 'Powiadomienie' }}</strong>
-                            <span>{{ $notification->data['message'] ?? '' }}</span>
-                            <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
-                        </a>
-                    </li>
+                    <x-notification-item :notification="$notification" compact />
                 @endforeach
             </ul>
+            <p><a href="{{ route('notifications.index') }}" class="btn btn-secondary">Zobacz wszystkie powiadomienia</a></p>
         @endif
     </section>
 

@@ -187,6 +187,32 @@
     color: var(--text);
 }
 
+.admin-notifications-link {
+    position: relative;
+    display: inline-grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    place-items: center;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.admin-notifications-link:hover {
+    border-color: var(--gold-strong);
+    color: var(--gold-strong);
+}
+
+.admin-notifications-link .notification-count {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    border: 2px solid var(--surface-solid);
+}
+
 .admin-content {
     width: min(1440px, 100%);
     margin-inline: auto;

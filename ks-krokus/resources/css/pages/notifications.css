@@ -1,0 +1,126 @@
+.notification-center {
+    max-width: 1040px;
+}
+
+.notification-center__header {
+    align-items: center;
+}
+
+.notification-center__summary {
+    margin: 8px 0 0;
+    color: var(--text-muted);
+}
+
+.notification-list,
+.dashboard-notifications {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dashboard-notifications {
+    margin-top: 16px;
+}
+
+.notification-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.notification-item--unread {
+    border-left: 4px solid var(--gold-strong);
+    background: var(--gold-soft);
+}
+
+.notification-item__content {
+    display: grid;
+    min-width: 0;
+    gap: 7px;
+}
+
+.notification-item__heading {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.notification-item__heading strong {
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.notification-item__status {
+    padding: 3px 7px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--text-soft);
+    font-family: var(--font-mono);
+    font-size: .64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.notification-item--unread .notification-item__status {
+    border-color: var(--gold-strong);
+    color: var(--gold-strong);
+}
+
+.notification-item p {
+    margin: 0;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
+
+.notification-item time {
+    color: var(--text-soft);
+    font-size: .78rem;
+}
+
+.notification-item__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.notification-item__actions form {
+    display: contents;
+}
+
+.notification-item__actions .btn {
+    min-height: 42px;
+}
+
+@media (max-width: 720px) {
+    .notification-center__header,
+    .notification-item {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+    }
+
+    .notification-center__header {
+        flex-direction: column;
+    }
+
+    .notification-center__header form,
+    .notification-center__header .btn,
+    .notification-item__actions,
+    .notification-item__actions .btn {
+        width: 100%;
+    }
+
+    .notification-item__actions {
+        flex-direction: column;
+    }
+}

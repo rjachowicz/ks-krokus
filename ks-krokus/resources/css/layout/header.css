@@ -127,7 +127,8 @@
 
 .header-login,
 .header-account-request,
-.account-menu__trigger {
+.account-menu__trigger,
+.header-notifications {
     display: inline-flex;
     min-height: 44px;
     align-items: center;
@@ -151,11 +152,52 @@
 .header-login:hover,
 .header-account-request:hover,
 .account-menu__trigger:hover,
-.account-menu__trigger[aria-expanded="true"] {
+.account-menu__trigger[aria-expanded="true"],
+.header-notifications:hover {
     border-color: rgba(209, 169, 54, 0.65);
     background: var(--gold-soft);
     color: var(--gold-strong);
     transform: translateY(-1px);
+}
+
+.header-notifications {
+    position: relative;
+    width: 44px;
+    padding: 0;
+}
+
+.header-notifications svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.notification-count {
+    display: inline-grid;
+    min-width: 21px;
+    min-height: 21px;
+    place-items: center;
+    margin-left: auto;
+    padding-inline: 5px;
+    border-radius: 999px;
+    background: var(--gold-fill);
+    color: #111318;
+    font-family: var(--font-mono);
+    font-size: .64rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.header-notifications .notification-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    margin: 0;
+    border: 2px solid var(--surface-solid);
 }
 
 .header-account-request {

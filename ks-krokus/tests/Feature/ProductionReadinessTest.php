@@ -37,6 +37,12 @@ final class ProductionReadinessTest extends TestCase
         self::assertStringContainsString("MAIL_SCHEME=tls\n", $environment);
         self::assertStringContainsString("MAIL_PASSWORD=\n", $environment);
         self::assertStringContainsString("ADMIN_USER_PASSWORD=\n", $environment);
+        self::assertStringContainsString("ASSET_URL=\n", $environment);
+        self::assertStringContainsString("SESSION_SECURE_COOKIE=false\n", $environment);
+        self::assertStringContainsString("SESSION_SAME_SITE=lax\n", $environment);
+        self::assertStringContainsString("TRUSTED_PROXIES=\n", $environment);
+        self::assertStringContainsString("ACCOUNT_REQUEST_RETENTION_MONTHS=12\n", $environment);
+        self::assertStringContainsString("ACCOUNT_REQUEST_RETENTION_ACTION=anonymize\n", $environment);
     }
 
     public function test_listing_expiration_is_scheduled_in_warsaw_timezone(): void

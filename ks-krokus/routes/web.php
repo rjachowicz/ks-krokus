@@ -19,6 +19,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetInitialPasswordController;
 use App\Http\Controllers\MySaleListingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Public\AccountRequestController as PublicAccountRequestController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\ClubController;
@@ -51,13 +52,13 @@ Route::get('/ogloszenia', [SaleListingController::class, 'index'])
 Route::get('/ogloszenia/{saleListing}', [SaleListingController::class, 'show'])
     ->name('listings.show');
 Route::post('/ogloszenia/{saleListing}/zglos', [SaleListingController::class, 'report'])
-    ->middleware('throttle:3,60')
+    ->middleware('throttle:listing-reports')
     ->name('listings.report');
 
 Route::get('/klub', ClubController::class)->name('club');
 Route::get('/kontakt', ContactController::class)->name('contact');
 Route::post('/kontakt', [ContactController::class, 'send'])
-    ->middleware('throttle:5,1')
+    ->middleware('throttle:contact')
     ->name('contact.send');
 Route::view('/regulamin', 'pages.rules')->name('rules');
 Route::view('/rodo', 'pages.rodo')->name('rodo');
@@ -69,31 +70,44 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/wniosek-o-konto', [PublicAccountRequestController::class, 'create'])
         ->name('account-requests.create');
     Route::post('/wniosek-o-konto', [PublicAccountRequestController::class, 'store'])
-        ->middleware('throttle:3,60')
+        ->middleware('throttle:account-requests')
         ->name('account-requests.store');
 
     Route::get('/logowanie', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
     Route::post('/logowanie', [AuthenticatedSessionController::class, 'store'])
-        ->middleware('throttle:6,1')
+        ->middleware('throttle:login')
         ->name('login.store');
 
     Route::get('/nie-pamietam-hasla', [ForgotPasswordController::class, 'create'])
         ->name('password.request');
     Route::post('/nie-pamietam-hasla', [ForgotPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:password-reset')
         ->name('password.email');
 
     Route::get('/ustaw-haslo/{token}', [ResetInitialPasswordController::class, 'create'])
         ->name('password.reset');
     Route::post('/ustaw-haslo', [ResetInitialPasswordController::class, 'store'])
-        ->middleware('throttle:6,1')
+        ->middleware('throttle:password-update')
         ->name('password.update');
 });
 
 Route::post('/wylogowanie', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+Route::prefix('powiadomienia')
+    ->name('notifications.')
+    ->middleware(['auth', 'active'])
+    ->group(function (): void {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::patch('/{notification}/przeczytane', [NotificationController::class, 'markAsRead'])
+            ->middleware('throttle:notification-actions')
+            ->name('read');
+        Route::post('/przeczytaj-wszystkie', [NotificationController::class, 'markAllAsRead'])
+            ->middleware('throttle:notification-actions')
+            ->name('read-all');
+    });
 
 Route::prefix('moje-konto')
     ->name('account.')

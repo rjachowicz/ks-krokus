@@ -22,6 +22,7 @@ APP_NAME="KS Krokus"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://twoja-domena.example
+ASSET_URL=
 APP_KEY=base64:...
 APP_TIMEZONE=Europe/Warsaw
 APP_LOCALE=pl
@@ -33,6 +34,9 @@ DB_URL=${{Postgres.DATABASE_URL}}
 
 SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
+SESSION_HTTP_ONLY=true
+SESSION_SAME_SITE=lax
+TRUSTED_PROXIES=*
 CACHE_STORE=database
 QUEUE_CONNECTION=database
 DB_QUEUE_RETRY_AFTER=120
@@ -42,6 +46,7 @@ RAILPACK_SKIP_MIGRATIONS=true
 
 LOG_CHANNEL=stderr
 LOG_LEVEL=warning
+LOG_DAILY_DAYS=14
 
 MAIL_MAILER=smtp
 MAIL_HOST=...
@@ -52,6 +57,8 @@ MAIL_SCHEME=tls
 MAIL_FROM_ADDRESS=...
 MAIL_FROM_NAME="KS Krokus"
 CONTACT_RECIPIENT_EMAIL=zarzad@ks-krokus.pl
+ACCOUNT_REQUEST_RETENTION_MONTHS=12
+ACCOUNT_REQUEST_RETENTION_ACTION=anonymize
 
 ADMIN_USER_NAME=...
 ADMIN_USER_EMAIL=...
@@ -63,6 +70,17 @@ Formularz kontaktowy zawsze używa tego nadawcy, a adres osoby piszącej ustawia
 jako `Reply-To`. `APP_URL` steruje absolutnymi adresami w e-mailach, dlatego na
 produkcji musi wskazywać właściwą domenę HTTPS. Nie zapisuj kluczy, haseł SMTP,
 hasła administratora ani prawdziwego `APP_KEY` w repozytorium.
+
+`ASSET_URL` pozostaw puste, gdy zasoby są pod tą samą domeną, albo ustaw pełny
+adres zaufanego CDN i odpowiednio rozszerz CSP. `TRUSTED_PROXIES=*` stosuj na
+Railway tylko za kontrolowanym ingress platformy, który nadpisuje nagłówki
+forwarded; na VPS preferuj konkretne adresy lub zakresy CIDR reverse proxy.
+Bez poprawnego proxy aplikacja może błędnie rozpoznać HTTPS i IP używane przez
+rate limitery.
+
+Wartość 12 miesięcy nie jest ostateczną decyzją prawną. Zarząd klubu musi
+zatwierdzić okres i wybór `anonymize`/`delete` przed uruchomieniem schedulera na
+produkcji. Preferowana anonimizacja zachowuje minimalny audyt decyzji.
 
 Laravel 13 korzysta z Symfony Mailer, który dla STARTTLS na porcie 587 oczekuje
 wewnętrznego schematu `smtp`, nie literalnego `tls`. `config/mail.php` świadomie
@@ -146,13 +164,20 @@ najstarszego wpisu oraz liczbę rekordów w tabeli `jobs`, stan usługi workera 
 przyrost `failed_jobs`. Po naprawieniu przyczyny użyj `queue:retry all`; nie
 usuwaj nieprzeanalizowanych błędów tylko po to, aby wyzerować licznik.
 
-## Scheduler i wygasanie ogłoszeń
+## Scheduler, wygasanie ogłoszeń i retencja wniosków
 
 `listings:expire` jest jedynym automatycznym mechanizmem przypomnień i wygaszania.
 Komenda jest idempotentna: znacznik `expiration_reminder_sent_at` zapobiega
 drugiemu przypomnieniu, a workflow zmienia tylko zatwierdzone, przeterminowane
 ogłoszenia. Laravel planuje ją codziennie o 01:15 w `Europe/Warsaw` i stosuje
 `withoutOverlapping`.
+
+`account-requests:apply-retention` działa codziennie o 02:15 w tej samej strefie
+i również używa `withoutOverlapping`. Przetwarza wyłącznie odrzucone wnioski po
+okresie liczonym od decyzji, nie zapisuje danych osobowych do konsoli ani logu i
+zwraca statystyki liczby zanonimizowanych oraz usuniętych rekordów. Po zatwierdzeniu
+polityki uruchom komendę ręcznie dwa razy na kopii danych i potwierdź, że drugi
+przebieg ma zerowe efekty.
 
 Railway: utwórz osobną usługę cron z tym samym repozytorium, katalogiem aplikacji,
 zmiennymi i bazą. Command:
@@ -177,8 +202,42 @@ VPS — crontab:
 ```
 
 Po konfiguracji sprawdź `php artisan schedule:list`, a następnie uruchom ręcznie
-`php artisan listings:expire` i zweryfikuj log procesu oraz stan testowego
-ogłoszenia.
+`php artisan listings:expire` oraz `php artisan account-requests:apply-retention`
+i zweryfikuj statystyki oraz stan kontrolnych rekordów bez kopiowania danych
+osobowych do logów.
+
+## Nagłówki, sesja i CSP
+
+Po wdrożeniu sprawdź odpowiedź końcowego reverse proxy, nie tylko odpowiedź PHP:
+
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains`,
+- `X-Content-Type-Options: nosniff`,
+- `Referrer-Policy: strict-origin-when-cross-origin`,
+- `Permissions-Policy: camera=(), geolocation=(), microphone=()`,
+- wymuszane `Content-Security-Policy` z nonce,
+- ciasteczko sesji z `Secure`, `HttpOnly` i `SameSite=Lax`.
+
+CSP odpowiada obecnym Google Maps, Google Fonts, własnym skryptom Vite i obrazom
+ze storage/Unsplash. Przed dodaniem nowej integracji przetestuj rozszerzoną politykę
+na stagingu; jeśli skala zmiany jest duża, najpierw obserwuj wariant
+`Content-Security-Policy-Report-Only`, a dopiero potem przenieś dyrektywy do polityki
+wymuszanej. Reverse proxy Railway może ponownie dodać nagłówek `Server`, którego
+aplikacja usuwa — wymaga to osobnej kontroli platformy.
+
+## Logi i rotacja
+
+Produkcja Railway używa `LOG_CHANNEL=stderr` i co najmniej `LOG_LEVEL=warning`.
+Rotacją oraz długością retencji stdout/stderr zarządza platforma i może ona zależeć
+od planu; aplikacja nie potrafi wymusić czasu przechowywania tych logów. Dla dłuższej
+retencji skonfiguruj zewnętrzny log drain z ograniczonym dostępem i własną polityką
+usuwania. Nie używaj kanału `single` na efemerycznym dysku Railway.
+
+Na VPS użyj `LOG_CHANNEL=daily`, `LOG_LEVEL=warning` i `LOG_DAILY_DAYS=14`; Laravel
+tworzy plik dzienny i usuwa starsze pliki. Jeśli logi trafiają do journald/syslog,
+ustaw dodatkowo limit przestrzeni i retencję w konfiguracji systemowej. Katalog
+`storage/logs` powinien być dostępny tylko dla użytkownika aplikacji i operatorów.
+Procesor Monolog maskuje znane pola haseł, tokenów, dokumentów i wniosków, ale
+komunikaty logów nadal muszą zawierać wyłącznie techniczne identyfikatory.
 
 ## Trwały storage
 
