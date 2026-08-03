@@ -6,7 +6,7 @@ export function initMobileMenu() {
         return;
     }
 
-    const mobileNavigation = window.matchMedia('(max-width: 1080px)');
+    const mobileNavigation = window.matchMedia('(max-width: 1240px)');
 
     const syncAvailability = () => {
         const hidden = mobileNavigation.matches && !navigation.classList.contains('is-open');
@@ -142,6 +142,6 @@ export function initAccountMenu() {
         }
     });
 
-    window.matchMedia('(max-width: 1080px)').addEventListener('change', () => closeMenu());
+    window.matchMedia('(max-width: 1240px)').addEventListener('change', () => closeMenu());
     closeMenu();
 }

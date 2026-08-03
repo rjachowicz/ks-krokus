@@ -27,6 +27,12 @@
                     <span class="admin-metric__label">Użytkownicy</span>
                 </div>
             @endif
+            @if ($metrics['pending_account_requests'] !== null)
+                <a class="admin-metric" href="{{ route('admin.account-requests.index', ['status' => 'pending']) }}">
+                    <span class="admin-metric__value">{{ $metrics['pending_account_requests'] }}</span>
+                    <span class="admin-metric__label">Wnioski o konto</span>
+                </a>
+            @endif
             <div class="admin-metric">
                 <span class="admin-metric__value">{{ $metrics['posts'] }}</span>
                 <span class="admin-metric__label">Aktualności</span>

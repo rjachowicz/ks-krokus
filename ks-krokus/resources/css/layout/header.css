@@ -126,6 +126,7 @@
 }
 
 .header-login,
+.header-account-request,
 .account-menu__trigger {
     display: inline-flex;
     min-height: 44px;
@@ -148,12 +149,19 @@
 }
 
 .header-login:hover,
+.header-account-request:hover,
 .account-menu__trigger:hover,
 .account-menu__trigger[aria-expanded="true"] {
     border-color: rgba(209, 169, 54, 0.65);
     background: var(--gold-soft);
     color: var(--gold-strong);
     transform: translateY(-1px);
+}
+
+.header-account-request {
+    border-color: rgba(209, 169, 54, 0.55);
+    background: var(--gold-soft);
+    color: var(--gold-strong);
 }
 
 .account-icon {

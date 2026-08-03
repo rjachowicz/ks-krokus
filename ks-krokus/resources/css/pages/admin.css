@@ -66,6 +66,90 @@
     text-decoration: none;
 }
 
+.admin-nav__count {
+    display: inline-grid;
+    min-width: 24px;
+    min-height: 24px;
+    place-items: center;
+    margin-left: auto;
+    padding-inline: 6px;
+    border-radius: 999px;
+    background: var(--gold-fill);
+    color: #111318;
+    font-family: var(--font-mono);
+    font-size: .7rem;
+    font-weight: 800;
+}
+
+.account-request-filter {
+    flex-wrap: wrap;
+}
+
+.account-request-filter label {
+    flex: 1 1 180px;
+}
+
+.account-request-admin-status {
+    margin-bottom: 18px;
+}
+
+.account-request-admin-layout {
+    grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr);
+}
+
+.account-request-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 18px 0 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    background: var(--line);
+}
+
+.account-request-facts > div {
+    min-width: 0;
+    padding: 12px;
+    background: var(--surface-solid);
+}
+
+.account-request-facts dt {
+    color: var(--text-soft);
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.account-request-facts dd {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
+.account-request-decision,
+.account-request-decision details,
+.account-request-decision form {
+    display: grid;
+    gap: 14px;
+}
+
+.account-request-decision summary {
+    color: var(--danger);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (max-width: 980px) {
+    .account-request-admin-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .account-request-facts {
+        grid-template-columns: 1fr;
+    }
+}
+
 .admin-nav a:hover,
 .admin-nav a.active {
     background: var(--gold-soft);
@@ -155,6 +239,23 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-panel);
     background: var(--surface);
+}
+
+a.admin-metric {
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 160ms ease, transform 160ms ease;
+}
+
+a.admin-metric:hover {
+    border-color: var(--gold-strong);
+    transform: translateY(-1px);
+}
+
+a.admin-metric:focus-visible {
+    border-color: var(--gold-strong);
+    outline: 0;
+    box-shadow: 0 0 0 3px var(--gold-soft);
 }
 
 .admin-metric__value {

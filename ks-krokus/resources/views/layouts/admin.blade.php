@@ -80,6 +80,17 @@
                     </a>
 
                     <a
+                        href="{{ route('admin.account-requests.index') }}"
+                        class="{{ request()->routeIs('admin.account-requests.*') ? 'active' : '' }}"
+                        @if (request()->routeIs('admin.account-requests.*')) aria-current="page" @endif
+                    >
+                        Wnioski o konto
+                        @if ($pendingAccountRequestsCount > 0)
+                            <span class="admin-nav__count" aria-label="oczekujące wnioski: {{ $pendingAccountRequestsCount }}">{{ $pendingAccountRequestsCount }}</span>
+                        @endif
+                    </a>
+
+                    <a
                         href="{{ route('admin.positions.index') }}"
                         class="{{ request()->routeIs('admin.positions.*') ? 'active' : '' }}"
                         @if (request()->routeIs('admin.positions.*')) aria-current="page" @endif

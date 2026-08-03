@@ -18,7 +18,9 @@ final class HeaderAccountNavigationTest extends TestCase
         $response = $this->get(route('home'))
             ->assertOk()
             ->assertSee('class="header-login" href="'.route('login').'"', false)
+            ->assertSee('class="header-account-request" href="'.route('account-requests.create').'"', false)
             ->assertSee('class="main-nav__account-link" href="'.route('login').'"', false)
+            ->assertSeeText('Wniosek o konto')
             ->assertSeeText('Zaloguj się')
             ->assertDontSee('data-account-menu', false)
             ->assertDontSee('<span aria-hidden="true">A</span>', false);

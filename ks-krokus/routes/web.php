@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\UserRole;
+use App\Http\Controllers\Admin\AccountRequestController as AdminAccountRequestController;
 use App\Http\Controllers\Admin\ClubPositionController;
 use App\Http\Controllers\Admin\CompetitionDefinitionController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -13,7 +14,9 @@ use App\Http\Controllers\Admin\SaleListingReportController;
 use App\Http\Controllers\Admin\SportEventController as AdminSportEventController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\ResetInitialPasswordController;
 use App\Http\Controllers\MySaleListingController;
+use App\Http\Controllers\Public\AccountRequestController as PublicAccountRequestController;
 use App\Http\Controllers\Public\CalendarController;
 use App\Http\Controllers\Public\ClubController;
 use App\Http\Controllers\Public\ContactController;
@@ -60,11 +63,23 @@ Route::permanentRedirect('/informacje-klubowe', '/klub')
     ->name('club.legacy');
 
 Route::middleware('guest')->group(function (): void {
+    Route::get('/wniosek-o-konto', [PublicAccountRequestController::class, 'create'])
+        ->name('account-requests.create');
+    Route::post('/wniosek-o-konto', [PublicAccountRequestController::class, 'store'])
+        ->middleware('throttle:3,60')
+        ->name('account-requests.store');
+
     Route::get('/logowanie', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
     Route::post('/logowanie', [AuthenticatedSessionController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('login.store');
+
+    Route::get('/ustaw-haslo/{token}', [ResetInitialPasswordController::class, 'create'])
+        ->name('password.reset');
+    Route::post('/ustaw-haslo', [ResetInitialPasswordController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('password.update');
 });
 
 Route::post('/wylogowanie', [AuthenticatedSessionController::class, 'destroy'])
@@ -181,6 +196,17 @@ Route::prefix('panel')
                         'update' => 'users.update',
                         'destroy' => 'users.destroy',
                     ]);
+
+                Route::get('wnioski-o-konto', [AdminAccountRequestController::class, 'index'])
+                    ->name('account-requests.index');
+                Route::get('wnioski-o-konto/{accountRequest}', [AdminAccountRequestController::class, 'show'])
+                    ->name('account-requests.show');
+                Route::put('wnioski-o-konto/{accountRequest}/notatki', [AdminAccountRequestController::class, 'updateNotes'])
+                    ->name('account-requests.notes.update');
+                Route::post('wnioski-o-konto/{accountRequest}/zatwierdz', [AdminAccountRequestController::class, 'approve'])
+                    ->name('account-requests.approve');
+                Route::post('wnioski-o-konto/{accountRequest}/odrzuc', [AdminAccountRequestController::class, 'reject'])
+                    ->name('account-requests.reject');
 
                 Route::resource('funkcje-klubowe', ClubPositionController::class)
                     ->except('show')

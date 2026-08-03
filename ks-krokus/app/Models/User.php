@@ -86,6 +86,16 @@ class User extends Authenticatable
         return $this->hasMany(SaleListing::class);
     }
 
+    public function reviewedAccountRequests(): HasMany
+    {
+        return $this->hasMany(AccountRequest::class, 'reviewed_by');
+    }
+
+    public function createdFromAccountRequests(): HasMany
+    {
+        return $this->hasMany(AccountRequest::class, 'created_user_id');
+    }
+
     public function scopeTrainers(Builder $query): Builder
     {
         return $query

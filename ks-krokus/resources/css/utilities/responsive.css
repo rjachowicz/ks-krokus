@@ -12,7 +12,7 @@
     }
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1240px) {
     main {
         padding-top: 92px;
     }
@@ -27,6 +27,7 @@
     }
 
     .header-login,
+    .header-account-request,
     .account-menu {
         display: none;
     }

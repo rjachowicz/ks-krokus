@@ -71,6 +71,9 @@
 
                 <li class="main-nav__account">
                     @guest
+                        <a class="main-nav__account-link" href="{{ route('account-requests.create') }}">
+                            Wniosek o konto
+                        </a>
                         <a class="main-nav__account-link" href="{{ route('login') }}">
                             <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
                                 <circle cx="12" cy="8" r="4"></circle>
@@ -108,6 +111,7 @@
 
         <div class="header-actions">
             @guest
+                <a class="header-account-request" href="{{ route('account-requests.create') }}">Wniosek o konto</a>
                 <a class="header-login" href="{{ route('login') }}">Zaloguj się</a>
             @else
                 <div class="account-menu" data-account-menu>

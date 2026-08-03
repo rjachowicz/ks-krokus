@@ -1,0 +1,25 @@
+.account-request-section {
+    max-width: 1120px;
+}
+
+.account-request-form {
+    margin-inline: auto;
+}
+
+.account-request-disciplines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+}
+
+.account-request-consent {
+    align-items: flex-start;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    background: var(--surface-muted);
+}
+
+.account-request-consent a {
+    color: var(--gold-strong);
+}

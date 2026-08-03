@@ -39,6 +39,8 @@ KS Krokus to aplikacja klubu strzeleckiego z częścią publiczną i panelem adm
 - `/regulamin`
 - `/rodo`
 - `/logowanie`
+- `/wniosek-o-konto`
+- `/ustaw-haslo/{token}` — bezpieczny link wysyłany po zatwierdzeniu wniosku
 
 `/informacje-klubowe` przekierowuje do `/klub`.
 
@@ -54,7 +56,21 @@ Zasoby:
 - funkcje klubowe,
 - konkurencje,
 - moje ogłoszenia,
-- moderacja ogłoszeń i zgłoszeń.
+- moderacja ogłoszeń i zgłoszeń,
+- wnioski o konto istniejących członków (wyłącznie administrator).
+
+## Wnioski o konto
+
+Publiczny formularz nie rejestruje użytkownika automatycznie. Zapisuje osobny
+`AccountRequest`, powiadamia aktywnych administratorów i zawsze zwraca neutralne
+potwierdzenie, także przy duplikacie e-maila lub numeru licencji. Administrator
+weryfikuje dane, zapisuje notatki wewnętrzne i odrzuca wniosek z powodem albo
+zatwierdza go, tworząc aktywne konto z rolą `user`.
+
+Zatwierdzenie używa transakcji, blokady rekordu oraz brokera resetu haseł Laravel.
+Użytkownik nie otrzymuje hasła — dostaje jednorazowy link ważny 60 minut i ustawia
+własne hasło. Dane licencyjne i członkowskie pozostają w audytowalnym wniosku;
+do obecnego profilu użytkownika kopiowane są imię i nazwisko, e-mail oraz telefon.
 
 Dostęp kontrolują `auth`, `active` i role.
 

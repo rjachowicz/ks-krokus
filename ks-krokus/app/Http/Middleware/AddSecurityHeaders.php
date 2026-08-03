@@ -68,7 +68,7 @@ final class AddSecurityHeaders
             $response->headers->set('Pragma', 'no-cache');
         }
 
-        if ($request->is('panel', 'panel/*', 'logowanie')) {
+        if ($request->is('panel', 'panel/*', 'logowanie', 'wniosek-o-konto', 'ustaw-haslo', 'ustaw-haslo/*')) {
             $response->headers->set(
                 'X-Robots-Tag',
                 'noindex, nofollow, noarchive',
@@ -110,6 +110,9 @@ final class AddSecurityHeaders
         return $request->is(
             'kontakt',
             'logowanie',
+            'wniosek-o-konto',
+            'ustaw-haslo',
+            'ustaw-haslo/*',
             'wylogowanie',
             'panel',
             'panel/*',

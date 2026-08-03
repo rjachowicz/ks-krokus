@@ -43,3 +43,17 @@
     display: grid;
     gap: 20px;
 }
+
+.auth-card__account-request {
+    margin: 24px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--text-muted);
+    font-size: .9rem;
+    text-align: center;
+}
+
+.auth-card__account-request a {
+    color: var(--gold-strong);
+    font-weight: 700;
+}

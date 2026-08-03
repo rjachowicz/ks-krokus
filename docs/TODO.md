@@ -1,5 +1,26 @@
 # TODO.md
 
+## P0 — wnioski o konto członków
+
+- [x] Dodać publiczne `GET/POST /wniosek-o-konto` bez pola hasła i bez
+  automatycznej rejestracji.
+- [x] Dodać model, enum statusów, migrację, indeksy, relacje audytowe i fabrykę
+  `AccountRequest`.
+- [x] Dodać CSRF, throttling, honeypot, normalizację i neutralną deduplikację
+  e-maila oraz numeru licencji.
+- [x] Powiadamiać aktywnych administratorów bez przesyłania pełnych danych we
+  wiadomości.
+- [x] Dodać wyłącznie administracyjną listę, licznik oczekujących, filtry,
+  szczegóły, notatki wewnętrzne, odrzucenie i audyt decyzji.
+- [x] Dodać transakcyjne i idempotentne zatwierdzenie tworzące aktywne konto
+  `user` oraz bezpieczny token ustawienia hasła Laravel.
+- [x] Dodać polski ekran ustawienia hasła oraz neutralne powiadomienie o odrzuceniu
+  bez powodu i notatki wewnętrznej.
+- [x] Pokryć formularz, uprawnienia, widoki, duplikaty, rate limiter, zatwierdzenie,
+  reset hasła, idempotencję i rollback testami regresyjnymi.
+- [ ] Po wdrożeniu wykonać smoke test dostarczenia wiadomości przez rzeczywiste
+  SMTP i potwierdzić działanie linku na publicznym adresie HTTPS.
+
 ## P0 — ogłoszenia sprzedaży
 
 - [x] Dodać modele ofert, zdjęć, historii moderacji i zgłoszeń wraz z indeksami,

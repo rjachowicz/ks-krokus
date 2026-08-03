@@ -11,6 +11,7 @@ Kontrolery publiczne:
 - `ResultsController`
 - `ClubController`
 - `ContactController`
+- `AccountRequestController` — publiczne złożenie wniosku bez automatycznej rejestracji
 
 Kontrolery administracyjne:
 - `DashboardController`
@@ -20,6 +21,7 @@ Kontrolery administracyjne:
 - `UserController`
 - `ClubPositionController`
 - `CompetitionDefinitionController`
+- `AccountRequestController` — kolejka, szczegóły, notatki i decyzje administratora
 
 ## Autoryzacja
 
@@ -33,12 +35,34 @@ Nie wystarczy ukryć przycisk w Blade. Operacja musi być zabezpieczona po stron
 ## Enumy
 
 Projekt używa m.in.:
+- `AccountRequestStatus`
 - `UserRole`
 - `EventType`
 - `Discipline`
 - `CompetitionSystem`
 
 Korzystaj z istniejących metod enumów zamiast duplikować tablice.
+
+## Wnioski o konto
+
+`AccountRequest` przechowuje dane weryfikacyjne, status, audyt decyzji i relację
+do utworzonego konta. Publiczny POST jest chroniony przez CSRF, limit 3 prób na
+godzinę, honeypot, normalizację e-maila i numeru licencji oraz unikalne indeksy.
+Duplikaty nie ujawniają istnienia konta — odpowiedź publiczna jest zawsze taka sama.
+
+`AccountRequestWorkflow` jest jedynym miejscem zatwierdzania i odrzucania.
+Zatwierdzenie blokuje wniosek i w jednej transakcji ponownie sprawdza duplikaty,
+tworzy aktywnego użytkownika z rolą `user`, zapisuje audyt i generuje token brokera
+haseł Laravel. Wiadomość z tokenem jest kolejkowana po zatwierdzeniu transakcji.
+Ponowne zatwierdzenie zwraca już utworzone konto i nie tworzy duplikatu.
+
+Odrzucenie wymaga powodu, zachowuje rekord i wysyła neutralną wiadomość bez powodu
+oraz bez notatek wewnętrznych. Trasy `/panel/wnioski-o-konto*` są objęte
+middleware `auth`, `active` i rolą `admin`.
+
+Ustawienie hasła działa przez `/ustaw-haslo/{token}` i `POST /ustaw-haslo`.
+Kontroler korzysta z `Password::reset`, rotuje `remember_token` i emituje standardowe
+zdarzenie `PasswordReset`.
 
 ## Kalendarz
 

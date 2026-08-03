@@ -4,6 +4,66 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-03 — wnioski o konto i zatwierdzanie członków
+
+### Cel
+
+Dodać publiczny, nieautomatyczny proces składania wniosku o konto przez obecnego
+członka klubu oraz dokończyć administracyjne zatwierdzenie, utworzenie użytkownika
+i bezpieczne ustawienie hasła przez mechanizm Laravel.
+
+### Wykonane
+
+- [x] Dodano `AccountRequest`, fabrykę, migrację i `AccountRequestStatus` z polskimi
+  etykietami. Wniosek przechowuje komplet danych formularza, status, administratora
+  i czas decyzji, powód odrzucenia, notatki wewnętrzne oraz utworzone konto.
+- [x] Dodano publiczne `GET/POST /wniosek-o-konto`, link obok logowania w headerze
+  i pełny tekst zachęty na stronie logowania. Formularz nie zawiera hasła, zachowuje
+  `old()`, ma etykiety, błędy pól, ARIA, zgodę i responsywny układ.
+- [x] Formularz chronią CSRF, limit 3 prób na godzinę, honeypot, polska walidacja,
+  normalizacja e-maila i numeru licencji oraz unikalne indeksy. Duplikaty e-maila
+  i licencji nie tworzą wpisu, ale zwracają identyczne neutralne potwierdzenie,
+  dzięki czemu nie ujawniają istnienia konta.
+- [x] Aktywni administratorzy otrzymują bazodanowe powiadomienie bez danych
+  wrażliwych. Formularz i link ustawienia hasła mają `no-store` i `noindex`.
+- [x] Dodano dostępną wyłącznie administratorowi listę wniosków, licznik oczekujących
+  w nawigacji i dashboardzie, wyszukiwanie, filtry statusu/dyscypliny/daty,
+  szczegóły, notatki wewnętrzne i wymagający powodu formularz odrzucenia.
+- [x] `AccountRequestWorkflow` zatwierdza wniosek z blokadą i w jednej transakcji:
+  ponownie sprawdza duplikaty, tworzy aktywne konto roli `user`, kopiuje imię,
+  nazwisko, e-mail i telefon, zapisuje audyt oraz generuje token brokera haseł.
+  Ponowne zatwierdzenie jest idempotentne i nie wysyła drugiego tokenu.
+- [x] Konto otrzymuje losowy, nieznany użytkownikowi sekret zapisany przez cast
+  `hashed`. Polski e-mail zawiera wyłącznie bezpieczny link ważny 60 minut; ekran
+  `/ustaw-haslo/{token}` ustawia własne hasło przez `Password::reset`, rotuje
+  `remember_token` i emituje `PasswordReset`.
+- [x] Odrzucenie zachowuje wniosek, administratora i datę. Neutralna wiadomość
+  nie zawiera powodu ani notatki wewnętrznej.
+- [x] Dodano testy formularza, CSRF w widoku, polskich błędów, honeypotu,
+  duplikatów, throttlingu, uprawnień, filtrów, widoków, notatek, odrzucenia,
+  zatwierdzenia, roli i aktywności konta, tokenu, ustawienia hasła, idempotencji
+  oraz pełnego rollbacku przy błędzie generowania tokenu.
+
+### Testy i kontrole
+
+- [x] `composer test` — 103 testy, 959 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 58 modułów.
+- [x] `php artisan view:cache`, `php artisan route:list` i `git diff --check` —
+  poprawne.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Dodano migrację `2026_08_03_000100_create_account_requests_table.php` z
+  unikalnymi indeksami e-maila i numeru licencji oraz indeksami statusu i daty
+  utworzenia.
+- Nie dodano nowych zmiennych środowiskowych. Wysyłka korzysta z istniejącej
+  konfiguracji poczty i kolejki `deferred`.
+- Dane licencyjne i członkowskie pozostają w audytowalnym wniosku; obecny model
+  użytkownika przechowuje z tego procesu imię i nazwisko, e-mail oraz telefon.
+- Rzeczywiste dostarczenie wiadomości i link HTTPS wymagają produkcyjnego testu SMTP.
+- Nie wykonano commita ani pusha zgodnie z poleceniem.
+
 ## Bieżąca sesja — 2026-08-03 — konto i logowanie w głównym headerze
 
 ### Cel

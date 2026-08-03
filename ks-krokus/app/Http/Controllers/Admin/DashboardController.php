@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\PublicationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AccountRequest;
 use App\Models\EventResult;
 use App\Models\Post;
 use App\Models\SportEvent;
@@ -33,6 +34,9 @@ final class DashboardController extends Controller
 
             $metrics = [
                 'users' => $user->isAdmin() ? User::query()->count() : null,
+                'pending_account_requests' => $user->isAdmin()
+                    ? AccountRequest::query()->pending()->count()
+                    : null,
                 'posts' => (int) $postCounts->total,
                 'published_posts' => (int) $postCounts->published,
                 'events' => SportEvent::query()->count(),

@@ -5,7 +5,8 @@
     @include('partials.head')
 </head>
 <body>
-    <a class="skip-link" href="#auth-main-content">Przejdź do formularza logowania</a>
+    <a class="skip-link" href="#auth-main-content">Przejdź do formularza</a>
+    @include('partials.toasts')
     <main id="auth-main-content" class="auth-page" tabindex="-1">
         @yield('content')
     </main>
