@@ -4,6 +4,71 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-03 — moje konto i minimalny profil członkowski
+
+### Cel
+
+Dodać bezpieczną sekcję własnego konta, rozdzielone zmiany profilu, e-maila i hasła
+oraz minimalny, audytowalny `MemberProfile`, bez budowania pełnej kartoteki członków
+i rozliczeń składek oraz bez operacji zapisujących historię Git.
+
+### Wykonane
+
+- [x] Dodano `/moje-konto` chronione przez `auth` i `active`, bez parametru innego
+  użytkownika. Widok pokazuje dane podstawowe, kontakt, bezpieczeństwo, dane
+  członkowskie i status konta w pięciu osobnych sekcjach.
+- [x] Użytkownik może zmienić wyłącznie imię i nazwisko, telefon oraz istniejące
+  zgody `show_email_publicly` i `show_phone_publicly`. Osobny Form Request odrzuca
+  nieprawidłowe dane, a rola, aktywność, funkcje i pola weryfikacyjne nie są zapisywane.
+- [x] Zmiana e-maila wymaga aktualnego hasła, normalizuje adres, respektuje
+  unikalność i zwraca neutralny komunikat konfliktu. Nie zmieniono
+  `email_verified_at`, bo projekt nie implementuje `MustVerifyEmail` ani tras
+  weryfikacji adresu.
+- [x] Zmiana hasła wymaga aktualnego hasła, potwierdzenia i polityki minimum 12
+  znaków, małej i wielkiej litery oraz cyfry. Zapis używa `Hash::make`, a
+  `remember_token` jest rotowany bez logowania hasła.
+- [x] Dodano `MemberVerificationStatus`, model `MemberProfile`, relację 1:1,
+  factory, casty, unikalny `user_id` i numer licencji PZSS oraz audyt
+  `verified_at`/`verified_by`.
+- [x] `AccountRequestWorkflow` tworzy zweryfikowany profil w tej samej transakcji
+  co konto i token. Kopiuje licencję, patent, pozwolenie, numer członkowski, rok
+  wstąpienia i dyscypliny. Ponowne zatwierdzenie nie tworzy ani nie nadpisuje profilu.
+- [x] Migracja tabeli uzupełnia profile dla wcześniej zatwierdzonych wniosków z
+  `created_user_id`, używając danych i audytu pierwotnej decyzji.
+- [x] Administrator otrzymał osobny ekran edycji danych członkowskich, serwerowe
+  ustawianie audytu weryfikacji i odnośnik do źródłowego wniosku z notatkami.
+  `MemberProfilePolicy` oraz middleware roli odmawiają dostępu moderatorowi.
+- [x] Główny header i stopka prowadzą zwykłego użytkownika do „Mojego konta”, a
+  odnośnik do panelu administracyjnego pokazują tylko moderatorowi i administratorowi.
+  Domyślne przekierowanie po logowaniu zwykłego użytkownika również prowadzi do
+  `/moje-konto`; moderator i administrator nadal trafiają do panelu.
+
+### Testy i kontrole
+
+- [x] Testy nowego zakresu — 22 testy, 260 asercji.
+- [x] `composer test` — 132 testy, 1164 asercje.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 58 modułów.
+- [x] `php artisan view:cache`, `php artisan route:list` (101 tras) i kontrola
+  składni PHP — poprawne.
+- [x] `git diff --check` — bez błędów białych znaków.
+- [x] Headless Edge — `/moje-konto` w light/dark przy 320, 375, 768, 1024 i
+  1366 px: 10 wariantów, pięć sekcji i brak poziomego overflow.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Dodano `2026_08_03_000300_create_member_profiles_table.php`, która tworzy tabelę
+  i uzupełnia dane istniejących zatwierdzonych wniosków.
+- Migracja ma lokalnie status `Ran`; baza nie zawierała zatwierdzonych wniosków,
+  więc kontrola po migracji wykazała 0 profili, 0 zatwierdzonych wniosków i 0 braków.
+- Nie dodano nowych zmiennych środowiskowych.
+- Nie wdrożono pełnej weryfikacji e-maila ani wylogowania aktywnych sesji na innych
+  urządzeniach. Nie dodano pełnej kartoteki członków, notatek poza istniejącym
+  wnioskiem ani rozliczeń składek.
+- Fizyczny test NVDA/VoiceOver i smoke test po wdrożeniu pozostają czynnościami
+  środowiskowymi.
+- Nie wykonano commita, pusha ani innej operacji zapisującej historię Git.
+
 ## Bieżąca sesja — 2026-08-03 — gotowość produkcyjna poczty, haseł, kolejki i storage
 
 ### Cel

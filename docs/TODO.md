@@ -44,6 +44,26 @@
 - [ ] Po wdrożeniu wykonać smoke test dostarczenia wiadomości przez rzeczywiste
   SMTP i potwierdzić działanie linku na publicznym adresie HTTPS.
 
+## P0 — moje konto i minimalne dane członkowskie
+
+- [x] Dodać `/moje-konto` dla aktywnego zalogowanego użytkownika bez identyfikatora
+  innego konta i bez kierowania zwykłego użytkownika do panelu administratora.
+- [x] Rozdzielić edycję imienia, telefonu i zgód kontaktowych od zmiany e-maila i hasła.
+- [x] Wymagać aktualnego hasła przy zmianie e-maila i hasła, zachować wspólną politykę
+  hasła, neutralny konflikt e-maila oraz rotację trwałego logowania.
+- [x] Dodać minimalny `MemberProfile` 1:1, enum weryfikacji, casty, relacje, fabrykę,
+  unikalność i audyt administratora.
+- [x] Kopiować i oznaczać jako zweryfikowane dane z zatwierdzonego wniosku w tej samej
+  transakcji oraz uzupełnić istniejące zatwierdzone wnioski migracją.
+- [x] Dodać administracyjną edycję danych członkowskich z `MemberProfilePolicy` i
+  odmową dostępu moderatorowi; notatki pozostawić w źródłowym wniosku.
+- [x] Pokryć podgląd, dozwolone i zabronione aktualizacje, e-mail, hasło, workflow,
+  idempotencję, factory, role i administracyjną weryfikację testami regresyjnymi.
+- [ ] Przed wykorzystaniem `email_verified_at` zaprojektować kompletną weryfikację
+  nowego adresu (`MustVerifyEmail`, powiadomienie i trasy); obecnie aplikacja jej nie używa.
+- [ ] Rozważyć bezpieczne wylogowanie pozostałych aktywnych sesji po zmianie hasła.
+- [ ] Pełną kartotekę członków i rozliczenia składek zaprojektować jako osobny etap.
+
 ## P0 — ogłoszenia sprzedaży
 
 - [x] Dodać modele ofert, zdjęć, historii moderacji i zgłoszeń wraz z indeksami,

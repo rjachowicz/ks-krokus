@@ -13,6 +13,10 @@ Kontrolery publiczne:
 - `ContactController`
 - `AccountRequestController` — publiczne złożenie wniosku bez automatycznej rejestracji
 
+Kontrolery konta zalogowanego użytkownika:
+- `AccountController` — podgląd własnego konta oraz rozdzielone aktualizacje profilu,
+  adresu e-mail i hasła pod `/moje-konto`
+
 Kontrolery administracyjne:
 - `DashboardController`
 - `PostController`
@@ -22,6 +26,7 @@ Kontrolery administracyjne:
 - `ClubPositionController`
 - `CompetitionDefinitionController`
 - `AccountRequestController` — kolejka, szczegóły, notatki i decyzje administratora
+- `MemberProfileController` — administracyjna edycja zweryfikowanych danych członkowskich
 
 ## Autoryzacja
 
@@ -31,6 +36,14 @@ Panel korzysta z:
 - middleware roli.
 
 Nie wystarczy ukryć przycisk w Blade. Operacja musi być zabezpieczona po stronie serwera.
+
+`/moje-konto*` korzysta z `auth` i `active`, nie przyjmuje identyfikatora użytkownika
+i zawsze działa na koncie z sesji. Osobne Form Requesty ograniczają edycję profilu,
+e-maila i hasła. Zwykła aktualizacja profilu nie przyjmuje roli, aktywności, funkcji
+klubowych ani danych weryfikacyjnych. Administracyjne dane członkowskie chronią
+jednocześnie middleware roli administratora i `MemberProfilePolicy`; moderator nie
+ma dostępu do profili innych osób. Policy zezwala każdemu aktywnemu użytkownikowi
+na podgląd własnego profilu, ale jego edycja pozostaje wyłącznie administracyjna.
 
 ## Enumy
 
@@ -56,6 +69,14 @@ tworzy aktywnego użytkownika z rolą `user`, zapisuje audyt i generuje token br
 haseł Laravel. Wiadomość z tokenem jest kolejkowana po zatwierdzeniu transakcji.
 Ponowne zatwierdzenie zwraca już utworzone konto i nie tworzy duplikatu.
 
+Zatwierdzenie tworzy też dokładnie jeden `MemberProfile` w tej samej transakcji co
+konto. Kopiowane są numery licencji PZSS, patentu, pozwolenia i członkowski, ważność
+licencji, rok wstąpienia oraz dyscypliny. Profil otrzymuje status `verified`, czas
+i administratora weryfikacji. Unikalność `user_id` i numeru licencji oraz
+`updateOrCreate` chronią przed duplikatem; ponowne zatwierdzenie nie nadpisuje
+istniejącego profilu. Migracja tworząca tabelę uzupełnia profile dla zatwierdzonych
+wcześniej wniosków z `created_user_id`.
+
 Odrzucenie wymaga powodu, zachowuje rekord i wysyła neutralną wiadomość bez powodu
 oraz bez notatek wewnętrznych. Trasy `/panel/wnioski-o-konto*` są objęte
 middleware `auth`, `active` i rolą `admin`.
@@ -75,6 +96,24 @@ broker. Działa wyłącznie dla aktywnego użytkownika, nie tworzy konta i zapis
 `users.password_link_sent_by/password_link_sent_at` ostatniego administratora
 oraz czas. Kolejkowane zadania z tokenem są szyfrowane; token nigdy nie trafia do
 interfejsu ani jawnych wpisów logu.
+
+## Moje konto i dane członkowskie
+
+`MemberProfile` jest relacją 1:1 z `User`. Przechowuje minimalny zestaw danych
+członkowskich, JSON dyscyplin oraz audyt weryfikacji. Użytkownik widzi te pola tylko
+do odczytu. Administrator edytuje je na osobnym ekranie powiązanym z użytkownikiem;
+notatki wewnętrzne pozostają w źródłowym `AccountRequest`, do którego ekran profilu
+prowadzi odnośnikiem.
+
+Zmiana e-maila wymaga reguły `current_password:web`, normalizuje adres przed regułą
+unikalności i zwraca neutralny błąd konfliktu. Kolumna `email_verified_at` istnieje,
+ale aplikacja nie implementuje `MustVerifyEmail` ani tras weryfikacji, dlatego zmiana
+adresu nie zeruje tej wartości i nie uruchamia połowicznego procesu weryfikacji.
+
+Zmiana hasła używa tej samej polityki co ustawienie pierwszego hasła: minimum 12
+znaków, litery, mała i wielka litera oraz cyfra. Hasło jest zapisywane przez
+`Hash::make`, a rotacja `remember_token` unieważnia trwałe logowania. Aplikacja nie
+usuwa obecnie aktywnych sesji bazodanowych na innych urządzeniach.
 
 ## Kalendarz
 

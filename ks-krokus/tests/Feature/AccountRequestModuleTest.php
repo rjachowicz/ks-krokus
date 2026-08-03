@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\AccountRequestStatus;
 use App\Enums\Discipline;
+use App\Enums\MemberVerificationStatus;
 use App\Enums\UserRole;
 use App\Models\AccountRequest;
 use App\Models\User;
@@ -243,6 +244,17 @@ final class AccountRequestModuleTest extends TestCase
         self::assertNotNull($accountRequest->reviewed_at);
         self::assertSame($admin->id, $createdUser->password_link_sent_by);
         self::assertNotNull($createdUser->password_link_sent_at);
+        $memberProfile = $createdUser->memberProfile()->firstOrFail();
+        self::assertSame($accountRequest->pzss_license_number, $memberProfile->pzss_license_number);
+        self::assertSame($accountRequest->pzss_license_expires_at->toDateString(), $memberProfile->pzss_license_expires_at->toDateString());
+        self::assertSame($accountRequest->patent_number, $memberProfile->shooting_patent_number);
+        self::assertSame($accountRequest->firearm_permit_number, $memberProfile->firearm_permit_number);
+        self::assertSame($accountRequest->member_number, $memberProfile->club_member_number);
+        self::assertSame($accountRequest->joined_year, $memberProfile->joined_club_year);
+        self::assertSame($accountRequest->disciplines, $memberProfile->disciplines);
+        self::assertSame(MemberVerificationStatus::Verified, $memberProfile->verification_status);
+        self::assertSame($admin->id, $memberProfile->verified_by);
+        self::assertNotNull($memberProfile->verified_at);
         self::assertDatabaseHas('password_reset_tokens', ['email' => $createdUser->email]);
 
         $capturedToken = null;
@@ -294,6 +306,7 @@ final class AccountRequestModuleTest extends TestCase
 
         self::assertSame($createdUserId, $accountRequest->fresh()->created_user_id);
         self::assertDatabaseCount('users', 2);
+        self::assertDatabaseCount('member_profiles', 1);
         Notification::assertSentToTimes(
             User::query()->findOrFail($createdUserId),
             SetInitialPasswordNotification::class,
@@ -327,6 +340,9 @@ final class AccountRequestModuleTest extends TestCase
         self::assertSame(AccountRequestStatus::Pending, $accountRequest->fresh()->status);
         self::assertNull($accountRequest->fresh()->created_user_id);
         self::assertDatabaseMissing('users', ['email' => 'rollback@example.com']);
+        self::assertDatabaseMissing('member_profiles', [
+            'pzss_license_number' => $accountRequest->pzss_license_number,
+        ]);
     }
 
     public function test_rejection_requires_reason_and_never_sends_internal_notes(): void

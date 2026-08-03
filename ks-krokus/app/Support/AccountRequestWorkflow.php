@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Enums\AccountRequestStatus;
+use App\Enums\MemberVerificationStatus;
 use App\Enums\UserRole;
 use App\Models\AccountRequest;
+use App\Models\MemberProfile;
 use App\Models\User;
 use App\Notifications\AccountRequestRejectedNotification;
 use App\Notifications\SetInitialPasswordNotification;
@@ -51,7 +53,10 @@ final class AccountRequestWorkflow
                 ->whereKeyNot($locked->getKey())
                 ->where('pzss_license_number', $locked->pzss_license_number)
                 ->whereNotNull('created_user_id')
-                ->exists();
+                ->exists()
+                || MemberProfile::query()
+                    ->where('pzss_license_number', $locked->pzss_license_number)
+                    ->exists();
 
             if ($duplicateAccount || $duplicateLicense) {
                 throw ValidationException::withMessages([
@@ -72,11 +77,29 @@ final class AccountRequestWorkflow
                 'show_phone_publicly' => false,
             ]);
 
+            $reviewedAt = now();
+
+            MemberProfile::query()->updateOrCreate(
+                ['user_id' => $user->getKey()],
+                [
+                    'pzss_license_number' => $locked->pzss_license_number,
+                    'pzss_license_expires_at' => $locked->pzss_license_expires_at,
+                    'shooting_patent_number' => $locked->patent_number,
+                    'firearm_permit_number' => $locked->firearm_permit_number,
+                    'club_member_number' => $locked->member_number,
+                    'joined_club_year' => $locked->joined_year,
+                    'disciplines' => $locked->disciplines,
+                    'verification_status' => MemberVerificationStatus::Verified,
+                    'verified_at' => $reviewedAt,
+                    'verified_by' => $reviewer->getKey(),
+                ],
+            );
+
             $locked->update([
                 'created_user_id' => $user->getKey(),
                 'status' => AccountRequestStatus::Approved,
                 'reviewed_by' => $reviewer->getKey(),
-                'reviewed_at' => now(),
+                'reviewed_at' => $reviewedAt,
                 'rejection_reason' => null,
             ]);
 

@@ -28,7 +28,7 @@ final class HeaderAccountNavigationTest extends TestCase
         self::assertSame(2, substr_count($response->getContent(), 'Zaloguj się'));
     }
 
-    public function test_every_active_role_sees_its_account_and_can_open_the_shared_panel(): void
+    public function test_every_active_role_sees_own_account_and_only_staff_is_sent_to_admin_panel(): void
     {
         foreach (UserRole::cases() as $role) {
             $user = User::factory()->create([
@@ -44,17 +44,23 @@ final class HeaderAccountNavigationTest extends TestCase
                 ->assertSee('data-account-menu-toggle', false)
                 ->assertSee('aria-controls="account-menu-panel"', false)
                 ->assertSee('aria-expanded="false"', false)
-                ->assertSee('href="'.route('admin.dashboard').'"', false)
+                ->assertSee('href="'.route('account.show').'"', false)
                 ->assertSee('method="POST" action="'.route('logout').'"', false)
                 ->assertSee('name="_token"', false)
-                ->assertSeeText('Panel')
+                ->assertSeeText('Moje konto')
                 ->assertSeeText($role->label())
                 ->assertDontSee('<span aria-hidden="true">A</span>', false);
+
+            if ($role === UserRole::User) {
+                $response->assertDontSee('href="'.route('admin.dashboard').'"', false);
+            } else {
+                $response->assertSee('href="'.route('admin.dashboard').'"', false);
+            }
 
             self::assertSame(2, substr_count($response->getContent(), 'method="POST" action="'.route('logout').'"'));
 
             $this->actingAs($user)
-                ->get(route('admin.dashboard'))
+                ->get(route('account.show'))
                 ->assertOk()
                 ->assertSeeText($role->label());
         }

@@ -24,6 +24,8 @@
                     Pulpit
                 </a>
 
+                <a href="{{ route('account.show') }}">Moje konto</a>
+
                 <a
                     href="{{ route('admin.my-listings.index') }}"
                     class="{{ request()->routeIs('admin.my-listings.*') ? 'active' : '' }}"

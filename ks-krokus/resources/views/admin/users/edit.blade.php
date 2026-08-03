@@ -6,6 +6,7 @@
 @section('content')
     <x-admin-page-header :title="$editedUser->name" :description="$editedUser->email">
         <x-slot:actions>
+            <a href="{{ route('admin.member-profiles.edit', $editedUser) }}" class="btn btn-secondary">Dane członkowskie</a>
             <form method="POST" action="{{ route('admin.users.password.resend', $editedUser) }}"
                 data-confirm="Wysłać użytkownikowi „{{ $editedUser->name }}” nowy link ustawienia hasła? Poprzedni link przestanie działać.">
                 @csrf

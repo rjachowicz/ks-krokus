@@ -92,6 +92,23 @@ Sprawdź:
 - zakres liczb,
 - MIME i rozszerzenia.
 
+## Operacje na własnym koncie
+
+Zmianę profilu, e-maila i hasła obsługuj osobnymi Form Requestami. Dzięki temu pola
+roli, aktywności, uprawnień i danych weryfikacyjnych nie mogą trafić do masowego
+przypisania nawet po spreparowaniu żądania.
+
+Zmiana e-maila i hasła wymaga reguły `current_password:web` z jawnym polskim
+komunikatem. Adres e-mail normalizuj przed walidacją unikalności, a konflikt opisuj
+neutralnie, bez wskazania konta, do którego adres należy. Nowe hasło korzysta z
+`Password::min(12)->letters()->mixedCase()->numbers()` i `confirmed`, zgodnie z
+formularzem pierwszego hasła.
+
+Checkboxy zgód normalizuj przez `$this->boolean()` w `prepareForValidation()`, a
+Form Request powinien przyjmować tylko jawnie dozwolone pola. Danych członkowskich
+użytkownik nie przesyła w formularzu własnego profilu; ich administracyjna edycja
+ma oddzielny request, enum statusu i serwerowy audyt weryfikującego.
+
 ## Blade
 
 Dodawaj `aria-invalid`, `aria-describedby` i komunikat pod polem. Na górze może być podsumowanie, ale nie zamiast komunikatów przy polach.

@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Enums\UserRole;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AccountRequestController as AdminAccountRequestController;
 use App\Http\Controllers\Admin\ClubPositionController;
 use App\Http\Controllers\Admin\CompetitionDefinitionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventResultController;
+use App\Http\Controllers\Admin\MemberProfileController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\SaleListingController as AdminSaleListingController;
 use App\Http\Controllers\Admin\SaleListingReportController;
@@ -92,6 +94,16 @@ Route::middleware('guest')->group(function (): void {
 Route::post('/wylogowanie', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+Route::prefix('moje-konto')
+    ->name('account.')
+    ->middleware(['auth', 'active'])
+    ->group(function (): void {
+        Route::get('/', [AccountController::class, 'show'])->name('show');
+        Route::patch('/profil', [AccountController::class, 'updateProfile'])->name('profile.update');
+        Route::patch('/email', [AccountController::class, 'updateEmail'])->name('email.update');
+        Route::put('/haslo', [AccountController::class, 'updatePassword'])->name('password.update');
+    });
 
 Route::prefix('panel')
     ->name('admin.')
@@ -218,6 +230,10 @@ Route::prefix('panel')
                     ->name('account-requests.password.resend');
                 Route::post('uzytkownicy/{user}/wyslij-link-hasla', [UserController::class, 'resendPasswordSetupLink'])
                     ->name('users.password.resend');
+                Route::get('uzytkownicy/{user}/dane-czlonkowskie', [MemberProfileController::class, 'edit'])
+                    ->name('member-profiles.edit');
+                Route::put('uzytkownicy/{user}/dane-czlonkowskie', [MemberProfileController::class, 'update'])
+                    ->name('member-profiles.update');
 
                 Route::resource('funkcje-klubowe', ClubPositionController::class)
                     ->except('show')

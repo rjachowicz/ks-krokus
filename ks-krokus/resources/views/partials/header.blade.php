@@ -86,13 +86,17 @@
                             Konto: {{ auth()->user()->name }} · {{ auth()->user()->role->label() }}
                         </span>
 
-                        <a class="main-nav__account-link" href="{{ route('admin.dashboard') }}">
+                        <a class="main-nav__account-link" href="{{ route('account.show') }}">
                             <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
                                 <circle cx="12" cy="8" r="4"></circle>
                                 <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
                             </svg>
-                            Panel
+                            Moje konto
                         </a>
+
+                        @if (auth()->user()->canManageContent())
+                            <a class="main-nav__account-link" href="{{ route('admin.dashboard') }}">Panel administracyjny</a>
+                        @endif
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -126,7 +130,7 @@
                             <circle cx="12" cy="8" r="4"></circle>
                             <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
                         </svg>
-                        <span>Panel</span>
+                        <span>Moje konto</span>
                         <svg class="account-menu__chevron" viewBox="0 0 12 8" aria-hidden="true">
                             <path d="m1 1 5 5 5-5"></path>
                         </svg>
@@ -143,7 +147,11 @@
                             <span>{{ auth()->user()->role->label() }}</span>
                         </p>
 
-                        <a href="{{ route('admin.dashboard') }}">Przejdź do panelu</a>
+                        <a href="{{ route('account.show') }}">Moje konto</a>
+
+                        @if (auth()->user()->canManageContent())
+                            <a href="{{ route('admin.dashboard') }}">Przejdź do panelu administracyjnego</a>
+                        @endif
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

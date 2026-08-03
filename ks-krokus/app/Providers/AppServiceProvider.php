@@ -6,7 +6,9 @@ namespace App\Providers;
 
 use App\Enums\UserRole;
 use App\Models\AccountRequest;
+use App\Models\MemberProfile;
 use App\Models\SaleListing;
+use App\Policies\MemberProfilePolicy;
 use App\Policies\SaleListingPolicy;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(SaleListing::class, SaleListingPolicy::class);
+        Gate::policy(MemberProfile::class, MemberProfilePolicy::class);
 
         Model::preventLazyLoading(! $this->app->isProduction());
 

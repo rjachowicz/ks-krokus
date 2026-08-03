@@ -88,6 +88,9 @@
                                 <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary"
                                     aria-label="Edytuj użytkownika: {{ $user->name }}">Edytuj</a>
 
+                                <a href="{{ route('admin.member-profiles.edit', $user) }}" class="btn btn-secondary"
+                                    aria-label="Edytuj dane członkowskie użytkownika: {{ $user->name }}">Dane członkowskie</a>
+
                                 @if (! auth()->user()->is($user))
                                     <form
                                         method="POST"

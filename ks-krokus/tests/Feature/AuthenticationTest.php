@@ -45,4 +45,20 @@ final class AuthenticationTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_regular_user_is_sent_to_own_account_instead_of_admin_panel(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::User,
+            'is_active' => true,
+            'password' => 'StrongPassword123',
+        ]);
+
+        $this->post('/logowanie', [
+            'email' => $user->email,
+            'password' => 'StrongPassword123',
+        ])->assertRedirect(route('account.show'));
+
+        $this->assertAuthenticatedAs($user);
+    }
 }

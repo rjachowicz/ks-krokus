@@ -42,6 +42,7 @@ KS Krokus to aplikacja klubu strzeleckiego z częścią publiczną i panelem adm
 - `/nie-pamietam-hasla` — neutralne żądanie linku resetu dla aktywnego konta
 - `/wniosek-o-konto`
 - `/ustaw-haslo/{token}` — standardowy formularz brokera haseł dla resetu i pierwszego hasła
+- `/moje-konto` — własny profil, bezpieczeństwo i podgląd danych członkowskich po zalogowaniu
 
 `/informacje-klubowe` przekierowuje do `/klub`.
 
@@ -58,7 +59,8 @@ Zasoby:
 - konkurencje,
 - moje ogłoszenia,
 - moderacja ogłoszeń i zgłoszeń,
-- wnioski o konto istniejących członków (wyłącznie administrator).
+- wnioski o konto istniejących członków (wyłącznie administrator),
+- dane członkowskie powiązane 1:1 z użytkownikiem (wyłącznie administrator).
 
 ## Wnioski o konto
 
@@ -70,13 +72,29 @@ zatwierdza go, tworząc aktywne konto z rolą `user`.
 
 Zatwierdzenie używa transakcji, blokady rekordu oraz brokera resetu haseł Laravel.
 Użytkownik nie otrzymuje hasła — dostaje jednorazowy link ważny 60 minut i ustawia
-własne hasło. Dane licencyjne i członkowskie pozostają w audytowalnym wniosku;
-do obecnego profilu użytkownika kopiowane są imię i nazwisko, e-mail oraz telefon.
+własne hasło. Dane źródłowe pozostają w audytowalnym wniosku. Do użytkownika
+kopiowane są imię i nazwisko, e-mail oraz telefon, a numery dokumentów, ważność
+licencji, rok wstąpienia i dyscypliny trafiają do osobnego `MemberProfile`. Profil
+powstaje w tej samej transakcji, jest oznaczany jako zweryfikowany i zapisuje
+administratora oraz czas decyzji. Migracja tabeli uzupełnia profile także dla
+wcześniej zatwierdzonych wniosków.
 Administrator może wysłać nowy link dla zatwierdzonego wniosku lub aktywnego
 użytkownika. Operacja nie tworzy konta, unieważnia poprzedni token i zapisuje
 ostatniego administratora oraz czas wysyłki.
 
 Dostęp kontrolują `auth`, `active` i role.
+
+## Moje konto
+
+Każdy aktywny zalogowany użytkownik ma własną sekcję `/moje-konto`, niezależną od
+panelu administracyjnego. Może zmienić imię i nazwisko, telefon oraz istniejące
+zgody publicznej prezentacji kontaktu. E-mail i hasło mają osobne formularze
+wymagające aktualnego hasła. Rola, aktywność, funkcje klubowe, uprawnienia i dane
+członkowskie nie są przyjmowane przez te endpointy.
+
+Administrator edytuje `MemberProfile` z poziomu użytkownika. Moderator nie uzyskuje
+tego uprawnienia automatycznie. Notatki wewnętrzne nadal są prowadzone w źródłowym
+wniosku o konto. Zakres nie obejmuje pełnej kartoteki członków ani rozliczeń składek.
 
 ## Wdrożenie
 
