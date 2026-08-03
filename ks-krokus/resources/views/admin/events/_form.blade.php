@@ -45,14 +45,20 @@
 <div class="form-grid form-grid--3">
     <h2 class="admin-section-title form-grid--span-full">Podstawowe informacje</h2>
     <label class="form-grid--span-full">
-        Nazwa wydarzenia
+        <span class="form-label-text">
+            Nazwa wydarzenia <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="event-title" type="text" name="title" value="{{ old('title', $event->title ?? '') }}" autocomplete="off" required autofocus
             @error('title') aria-invalid="true" aria-describedby="event-title-error" @enderror>
         @error('title') <span id="event-title-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
-        Rodzaj
+        <span class="form-label-text">
+            Rodzaj <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="event-type" name="event_type" required @error('event_type') aria-invalid="true" aria-describedby="event-type-error" @enderror>
             @foreach ($eventTypes as $value => $label)
                 <option value="{{ $value }}" @selected($currentType === $value)>{{ $label }}</option>
@@ -62,7 +68,10 @@
     </label>
 
     <label>
-        Status publikacji
+        <span class="form-label-text">
+            Status publikacji <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="event-status" name="status" required @error('status') aria-invalid="true" aria-describedby="event-status-error" @enderror>
             @foreach ($statuses as $value => $label)
                 <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
@@ -85,7 +94,10 @@
     <h2 class="admin-section-title form-grid--span-full">Termin i zapisy</h2>
 
     <label>
-        Początek
+        <span class="form-label-text">
+            Początek <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input
             type="datetime-local"
             id="event-start-at"
@@ -131,7 +143,10 @@
     <h2 class="admin-section-title form-grid--span-full">Miejsce i klasyfikacja</h2>
 
     <label>
-        Nazwa miejsca
+        <span class="form-label-text">
+            Nazwa miejsca <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="event-location" type="text" name="location_name" value="{{ old('location_name', $event->location_name ?? '') }}" autocomplete="organization" required
             @error('location_name') aria-invalid="true" aria-describedby="event-location-error" @enderror>
         @error('location_name') <span id="event-location-error" class="form-error">{{ $message }}</span> @enderror
@@ -173,7 +188,8 @@
         @error('description') <span id="event-description-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <fieldset class="admin-choice-section form-grid--span-full">
+    <fieldset class="admin-choice-section form-grid--span-full"
+        @if ($competitionErrorIds !== '') aria-invalid="true" aria-describedby="{{ $competitionErrorIds }}" @endif>
         <legend class="admin-section-title">Konkurencje wydarzenia</legend>
         <p class="form-help">
             Dla treningów możesz wybrać ćwiczone konkurencje. Dla zawodów wybór definiuje pozycje dostępne

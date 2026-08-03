@@ -55,7 +55,11 @@
                             <summary>Odrzuć ogłoszenie</summary>
                             <form method="POST" action="{{ route('admin.sale-listings.reject', $listing) }}" class="form-layout moderation-inline-form">
                                 @csrf
-                                <label for="listing-rejection-reason">Powód odrzucenia
+                                <label for="listing-rejection-reason">
+                                    <span class="form-label-text">
+                                        Powód odrzucenia <span class="form-required" aria-hidden="true">*</span>
+                                        <span class="sr-only">(pole wymagane)</span>
+                                    </span>
                                     <textarea id="listing-rejection-reason" name="rejection_reason" minlength="10" maxlength="2000" required @error('rejection_reason') aria-invalid="true" aria-describedby="listing-rejection-error" @enderror>{{ old('rejection_reason') }}</textarea>
                                     <span class="form-help">Powód otrzyma autor ogłoszenia. Minimum 10 znaków.</span>
                                     @error('rejection_reason')<span id="listing-rejection-error" class="form-error">{{ $message }}</span>@enderror
@@ -83,7 +87,11 @@
                     <header class="moderation-card__header"><span class="moderation-card__eyebrow">Eskalacja</span><h2>Zgłoś administratorowi</h2></header>
                     <form method="POST" action="{{ route('admin.sale-listings.flag', $listing) }}" class="form-layout moderation-inline-form">
                         @csrf
-                        <label for="listing-flag-note">Uzasadnienie
+                        <label for="listing-flag-note">
+                            <span class="form-label-text">
+                                Uzasadnienie <span class="form-required" aria-hidden="true">*</span>
+                                <span class="sr-only">(pole wymagane)</span>
+                            </span>
                             <textarea id="listing-flag-note" name="note" minlength="10" maxlength="2000" required @error('note') aria-invalid="true" aria-describedby="listing-flag-note-error" @enderror>{{ old('note') }}</textarea>
                             @error('note')<span id="listing-flag-note-error" class="form-error">{{ $message }}</span>@enderror
                         </label>

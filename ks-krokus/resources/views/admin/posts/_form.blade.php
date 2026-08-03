@@ -25,7 +25,10 @@
 <div class="form-grid">
     <h2 class="admin-section-title form-grid--span-full">Treść aktualności</h2>
     <label class="form-grid--span-full">
-        Tytuł
+        <span class="form-label-text">
+            Tytuł <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="post-title" type="text" name="title" value="{{ old('title', $post->title ?? '') }}"
                autocomplete="off" required autofocus
                @error('title') aria-invalid="true" aria-describedby="post-title-error" @enderror>
@@ -43,7 +46,10 @@
     </label>
 
     <div class="form-field form-grid--span-full">
-        <label id="post-content-label" for="post-content">Treść</label>
+        <label id="post-content-label" for="post-content" class="form-label-text">
+            Treść <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </label>
         <input type="hidden" name="content_format" value="html">
         <textarea
             id="post-content"
@@ -64,7 +70,10 @@
     <h2 class="admin-section-title form-grid--span-full">Publikacja</h2>
 
     <label>
-        Status
+        <span class="form-label-text">
+            Status <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="post-status" name="status" required @error('status') aria-invalid="true"
                 aria-describedby="post-status-error" @enderror>
             @foreach ($statuses as $value => $label)
@@ -96,9 +105,10 @@
                            @error('remove_cover') aria-invalid="true"
                            aria-describedby="post-remove-cover-error" @enderror>
                     Usuń obecne zdjęcie główne
-                    @error('remove_cover') <span id="post-remove-cover-error"
-                                                 class="form-error">{{ $message }}</span> @enderror
                 </label>
+                @error('remove_cover')
+                    <span id="post-remove-cover-error" class="form-error" role="alert">{{ $message }}</span>
+                @enderror
             </div>
         </div>
     @endif

@@ -203,7 +203,10 @@
 
             <div class="contact-form__grid form-grid">
                 <label for="contact-name">
-                    Imię i nazwisko
+                    <span class="form-label-text">
+                        Imię i nazwisko <span class="form-required" aria-hidden="true">*</span>
+                        <span class="sr-only">(pole wymagane)</span>
+                    </span>
                     <input id="contact-name" type="text" name="name" value="{{ old('name') }}" autocomplete="name"
                         minlength="2" maxlength="120" required
                         @error('name') aria-invalid="true" aria-describedby="contact-name-error" @enderror>
@@ -211,7 +214,10 @@
                 </label>
 
                 <label for="contact-email">
-                    Adres e-mail
+                    <span class="form-label-text">
+                        Adres e-mail <span class="form-required" aria-hidden="true">*</span>
+                        <span class="sr-only">(pole wymagane)</span>
+                    </span>
                     <input id="contact-email" type="email" name="email" value="{{ old('email') }}" autocomplete="email"
                         maxlength="255" required
                         @error('email') aria-invalid="true" aria-describedby="contact-email-error" @enderror>
@@ -219,7 +225,9 @@
                 </label>
 
                 <label for="contact-phone">
-                    Telefon *
+                    <span class="form-label-text">
+                        Telefon <span class="form-optional">(opcjonalnie)</span>
+                    </span>
                     <input id="contact-phone" type="tel" name="phone" value="{{ old('phone') }}" autocomplete="tel" inputmode="tel"
                         maxlength="32"
                         @error('phone') aria-invalid="true" aria-describedby="contact-phone-error" @enderror>
@@ -227,7 +235,10 @@
                 </label>
 
                 <label for="contact-subject">
-                    Temat
+                    <span class="form-label-text">
+                        Temat <span class="form-required" aria-hidden="true">*</span>
+                        <span class="sr-only">(pole wymagane)</span>
+                    </span>
                     <input id="contact-subject" type="text" name="subject" value="{{ old('subject') }}"
                         minlength="3" maxlength="150" autocomplete="off" required
                         @error('subject') aria-invalid="true" aria-describedby="contact-subject-error" @enderror>
@@ -235,7 +246,10 @@
                 </label>
 
                 <label class="contact-form__message form-grid--span-full" for="contact-message">
-                    Wiadomość
+                    <span class="form-label-text">
+                        Wiadomość <span class="form-required" aria-hidden="true">*</span>
+                        <span class="sr-only">(pole wymagane)</span>
+                    </span>
                     <textarea id="contact-message" name="message" rows="8" minlength="10" maxlength="5000" required
                         aria-describedby="contact-message-help @error('message') contact-message-error @enderror"
                         @error('message') aria-invalid="true" @enderror>{{ old('message') }}</textarea>
@@ -248,10 +262,6 @@
                 <label for="contact-website">Strona internetowa</label>
                 <input id="contact-website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
             </div>
-
-            <p class="contact-form__privacy">
-                * - opcjonalne
-            </p>
 
             <p class="contact-form__privacy">
                 Wysyłając formularz, przekazujesz dane w celu obsługi wiadomości.

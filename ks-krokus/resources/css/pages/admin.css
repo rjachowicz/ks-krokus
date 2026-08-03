@@ -335,6 +335,10 @@
     margin-bottom: 4px;
 }
 
+.admin-choice-section[aria-invalid="true"] > legend {
+    color: var(--danger);
+}
+
 .admin-choice-section > .form-help {
     margin: 0;
 }

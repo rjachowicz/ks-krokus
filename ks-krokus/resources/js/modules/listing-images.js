@@ -77,6 +77,7 @@ export function initListingImages() {
         const input = upload.querySelector('input[type="file"]');
         const preview = upload.querySelector('[data-listing-image-preview]');
         const error = upload.querySelector('[data-listing-image-error]');
+        const primaryError = upload.querySelector('#listing-primary-new-image-error');
         const form = upload.closest('form');
         const deletionInputs = [...(form?.querySelectorAll('[data-existing-listing-image-delete]') || [])];
         const maxFiles = Number.parseInt(upload.dataset.maxFiles || '10', 10);
@@ -128,6 +129,22 @@ export function initListingImages() {
             preview.replaceChildren();
             syncInput();
             validate();
+
+            if (items.length === 0) {
+                return;
+            }
+
+            const primaryGroup = document.createElement('fieldset');
+            primaryGroup.className = 'form-choice-group listing-upload-primary-group';
+            if (primaryError) {
+                primaryGroup.setAttribute('aria-invalid', 'true');
+                primaryGroup.setAttribute('aria-describedby', primaryError.id);
+            }
+            const primaryLegend = document.createElement('legend');
+            primaryLegend.textContent = 'Wybierz zdjęcie główne spośród nowych zdjęć';
+            const cards = document.createElement('div');
+            cards.className = 'listing-upload-preview__grid';
+            primaryGroup.append(primaryLegend, cards);
 
             items.forEach((item, index) => {
                 const card = document.createElement('article');
@@ -187,9 +204,14 @@ export function initListingImages() {
                 primary.name = 'primary_new_index';
                 primary.value = String(index);
                 primary.checked = item.primary;
+                if (primaryError) {
+                    primary.setAttribute('aria-invalid', 'true');
+                    primary.setAttribute('aria-describedby', primaryError.id);
+                }
                 primary.addEventListener('change', () => {
                     items.forEach((candidate) => { candidate.primary = candidate === item; });
                     render();
+                    preview.querySelector(`input[name="primary_new_index"][value="${index}"]`)?.focus();
                 });
                 primaryLabel.append(primary, document.createTextNode(' Ustaw jako zdjęcie główne'));
 
@@ -240,8 +262,10 @@ export function initListingImages() {
                     draggedIndex = null;
                     render();
                 });
-                preview.append(card);
+                cards.append(card);
             });
+
+            preview.append(primaryGroup);
         };
 
         const addFiles = (files, replace = false) => {

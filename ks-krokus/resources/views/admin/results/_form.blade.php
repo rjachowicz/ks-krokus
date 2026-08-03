@@ -14,7 +14,10 @@
 <div class="form-grid">
     <h2 class="admin-section-title form-grid--span-full">Wydarzenie i zawodnik</h2>
     <label class="form-grid--span-full">
-        Wydarzenie i konkurencja
+        <span class="form-label-text">
+            Wydarzenie i konkurencja <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="result-event-competition" name="event_competition_id" required autofocus
             @disabled($eventCompetitions->isEmpty())
             @if ($eventCompetitions->isEmpty() || $errors->has('event_competition_id'))
@@ -90,7 +93,10 @@
     </label>
 
     <label>
-        Wynik
+        <span class="form-label-text">
+            Wynik <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="result-score" type="text" name="score" value="{{ old('score', $result->score ?? '') }}" required placeholder="np. 245.14, 89%, DNF" autocomplete="off"
             @error('score') aria-invalid="true" aria-describedby="result-score-error" @enderror>
         @error('score') <span id="result-score-error" class="form-error">{{ $message }}</span> @enderror
@@ -118,7 +124,10 @@
     </label>
 
     <label>
-        Status
+        <span class="form-label-text">
+            Status <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="result-status" name="status" required @error('status') aria-invalid="true" aria-describedby="result-status-error" @enderror>
             @foreach ($statuses as $value => $label)
                 <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>

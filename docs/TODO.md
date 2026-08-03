@@ -74,6 +74,10 @@
 - [x] Ujednoznacznić potwierdzenia usuwania, nazwy operacji i puste stany zasobów.
 - [x] Uwzględnić zapisane zdjęcia w limicie galerii i zsynchronizować wymianę oraz
   usuwanie okładki.
+- [x] Ujednolicić natywny wygląd radio buttonów i checkboxów wraz ze stanami hover,
+  focus, disabled i error oraz semantycznymi grupami `fieldset`/`legend`.
+- [x] Umieścić oznaczenie wymagania w jednym elemencie labela we wszystkich
+  formularzach i ujednolicić typografię oraz stany selectów i pól daty/czasu.
 - [ ] Na istniejących środowiskach uruchomić jednorazowo
   `ClubDirectorySeeder`, jeśli profile katalogowe utworzono jako nieaktywne.
 

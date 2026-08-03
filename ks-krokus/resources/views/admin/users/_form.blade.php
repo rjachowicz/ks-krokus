@@ -6,21 +6,30 @@
 <div class="form-grid">
     <h2 class="admin-section-title form-grid--span-full">Dane konta</h2>
     <label>
-        Imię i nazwisko
+        <span class="form-label-text">
+            Imię i nazwisko <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="user-name" type="text" name="name" value="{{ old('name', $editedUser->name ?? '') }}" autocomplete="name" required autofocus
             @error('name') aria-invalid="true" aria-describedby="user-name-error" @enderror>
         @error('name') <span id="user-name-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
-        Adres e-mail
+        <span class="form-label-text">
+            Adres e-mail <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="user-email" type="email" name="email" value="{{ old('email', $editedUser->email ?? '') }}" autocomplete="email" required
             @error('email') aria-invalid="true" aria-describedby="user-email-error" @enderror>
         @error('email') <span id="user-email-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
-        Rola systemowa
+        <span class="form-label-text">
+            Rola systemowa <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="user-role" name="role" required @error('role') aria-invalid="true" aria-describedby="user-role-error" @enderror>
             @foreach ($roles as $value => $label)
                 <option value="{{ $value }}" @selected($currentRole === $value)>{{ $label }}</option>
@@ -37,7 +46,13 @@
     </label>
 
     <label>
-        Hasło {{ $isEdit ? '(pozostaw puste bez zmiany)' : '' }}
+        <span class="form-label-text">
+            Hasło {{ $isEdit ? '(pozostaw puste bez zmiany)' : '' }}
+            @unless ($isEdit)
+                <span class="form-required" aria-hidden="true">*</span>
+                <span class="sr-only">(pole wymagane)</span>
+            @endunless
+        </span>
         <input id="user-password" type="password" name="password" {{ $isEdit ? '' : 'required' }} autocomplete="new-password"
             aria-describedby="user-password-help @error('password') user-password-error @enderror"
             @error('password') aria-invalid="true" @enderror>
@@ -46,7 +61,13 @@
     </label>
 
     <label>
-        Powtórz hasło
+        <span class="form-label-text">
+            Powtórz hasło
+            @unless ($isEdit)
+                <span class="form-required" aria-hidden="true">*</span>
+                <span class="sr-only">(pole wymagane)</span>
+            @endunless
+        </span>
         <input id="user-password-confirmation" type="password" name="password_confirmation" {{ $isEdit ? '' : 'required' }} autocomplete="new-password"
             @error('password_confirmation') aria-invalid="true" aria-describedby="user-password-confirmation-error" @enderror>
         @error('password_confirmation') <span id="user-password-confirmation-error" class="form-error">{{ $message }}</span> @enderror

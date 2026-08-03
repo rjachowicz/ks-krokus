@@ -129,4 +129,56 @@ final class InterfaceAuditTest extends TestCase
             }
         }
     }
+
+    public function test_required_labels_and_native_choice_controls_share_one_accessible_pattern(): void
+    {
+        $formViews = [
+            resource_path('views/auth/login.blade.php'),
+            resource_path('views/pages/contact.blade.php'),
+            resource_path('views/listings/_form.blade.php'),
+            resource_path('views/listings/show.blade.php'),
+            resource_path('views/admin/competitions/_form.blade.php'),
+            resource_path('views/admin/events/_form.blade.php'),
+            resource_path('views/admin/positions/_form.blade.php'),
+            resource_path('views/admin/posts/_form.blade.php'),
+            resource_path('views/admin/results/_form.blade.php'),
+            resource_path('views/admin/sale-listings/edit.blade.php'),
+            resource_path('views/admin/users/_form.blade.php'),
+        ];
+
+        foreach ($formViews as $view) {
+            $contents = (string) file_get_contents($view);
+            preg_match_all(
+                '/<label\b[^>]*>.*?\srequired(?:\s|>).*?<\/label>/s',
+                $contents,
+                $requiredLabels,
+            );
+
+            foreach ($requiredLabels[0] as $requiredLabel) {
+                self::assertStringContainsString('form-required', $requiredLabel, $view);
+                self::assertStringContainsString('(pole wymagane)', $requiredLabel, $view);
+            }
+        }
+
+        $postForm = (string) file_get_contents(resource_path('views/admin/posts/_form.blade.php'));
+        self::assertMatchesRegularExpression(
+            '/<label[^>]*id="post-content-label"[^>]*class="form-label-text"[^>]*>.*?form-required.*?<\/label>/s',
+            $postForm,
+        );
+
+        $contactForm = (string) file_get_contents(resource_path('views/pages/contact.blade.php'));
+        self::assertStringContainsString('Telefon <span class="form-optional">(opcjonalnie)</span>', $contactForm);
+        self::assertStringNotContainsString('* - opcjonalne', $contactForm);
+
+        $listingForm = (string) file_get_contents(resource_path('views/listings/_form.blade.php'));
+        self::assertStringContainsString('class="listing-existing-images form-choice-group"', $listingForm);
+        self::assertStringContainsString('name="primary_image_id"', $listingForm);
+        self::assertStringContainsString('id="listing-primary-image-error"', $listingForm);
+
+        $formStyles = (string) file_get_contents(resource_path('css/components/forms.css'));
+        self::assertStringContainsString(':not([type="radio"])', $formStyles);
+        self::assertStringContainsString('input[type="radio"]', $formStyles);
+        self::assertStringContainsString('appearance: none', $formStyles);
+        self::assertStringContainsString('input[type="radio"]:checked', $formStyles);
+    }
 }

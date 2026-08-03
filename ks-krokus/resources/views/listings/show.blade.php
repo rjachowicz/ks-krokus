@@ -126,7 +126,10 @@
                 <form method="POST" action="{{ route('listings.report', $listing) }}" class="contact-form">
                     @csrf
                     <label for="listing-report-reason">
-                        Powód zgłoszenia
+                        <span class="form-label-text">
+                            Powód zgłoszenia <span class="form-required" aria-hidden="true">*</span>
+                            <span class="sr-only">(pole wymagane)</span>
+                        </span>
                         <select id="listing-report-reason" name="reason" required @error('reason') aria-invalid="true" aria-describedby="listing-report-reason-error" @enderror>
                             <option value="">Wybierz powód</option>
                             @foreach ($reportReasons as $value => $label)

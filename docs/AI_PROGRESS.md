@@ -4,6 +4,57 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-03 — pełne ujednolicenie formularzy
+
+### Cel
+
+Ujednolicić strukturę i wygląd wszystkich formularzy publicznych, użytkownika,
+moderatora i administratora, ze szczególnym uwzględnieniem radio buttonów,
+checkboxów, selectów, pól daty oraz komunikatów walidacyjnych, bez zmiany logiki
+biznesowej i routingu.
+
+### Wykonane
+
+- [x] Przejrzano wszystkie widoki zawierające formularze, wspólny system CSS,
+  skrypty galerii ogłoszeń i komplet Form Requestów; wskazany widok
+  `pages/club.blade.php` nie zawiera kontrolek formularza.
+- [x] Wyłączono radio buttony z reguły pełnowymiarowych inputów i dodano natywnym
+  checkboxom oraz radio spójne `appearance: none`, rozmiar 20 px, złoty stan
+  zaznaczenia, hover, `focus-visible`, disabled i czerwony stan błędu.
+- [x] Wyrównano checkboxy do pierwszej linii wielowierszowej etykiety, zachowano
+  cały klikalny label i pozostawiono switch wyłącznie dla semantycznej opcji
+  „Cena do negocjacji”.
+- [x] Ujednolicono wysokość, padding, promień, tło, obramowanie i typografię pól
+  tekstowych, selectów, textarea, uploadów i natywnych pól daty/czasu w obu motywach.
+- [x] Każde pole z atrybutem `required` ma gwiazdkę oraz tekst dla czytnika ekranu
+  w jednym elemencie labela; usunięto odwrotne oznaczenie gwiazdką opcjonalnego
+  telefonu w formularzu kontaktowym.
+- [x] Wybór zdjęcia głównego — zarówno zapisanego, jak i nowego — korzysta z
+  `fieldset`/`legend`, jednego błędu grupy i poprawnych powiązań ARIA. Uzupełniono
+  również stany błędu ceny negocjowanej, usuwania zdjęć i zgód kontaktowych.
+- [x] Zachowano `old()`, polskie komunikaty, route model binding, routing, workflow
+  ogłoszeń i wszystkie reguły biznesowe.
+- [x] Dodano test regresyjny kontrolujący etykiety pól wymaganych, semantykę grup
+  wyboru oraz wspólny natywny styl checkboxów i radio.
+
+### Testy i kontrole
+
+- [x] `composer test` — 90 testów, 787 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — build Vite zakończony poprawnie (w PowerShell uruchomiony
+  przez `npm.cmd` z powodu lokalnej polityki wykonywania skryptów).
+- [x] `php artisan view:cache` — widoki skompilowane poprawnie.
+- [x] Statyczny audyt etykiet — brak kontrolek bez etykiety i brak pól `required`
+  bez zintegrowanego oznaczenia wymagania.
+- [x] `git diff --check` — bez błędów białych znaków.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Nie dodano migracji ani nowych zmiennych środowiskowych.
+- Nie wykonano commita ani pusha zgodnie z poleceniem.
+- Końcowy test fizycznym czytnikiem ekranu nadal wymaga środowiska z NVDA lub
+  VoiceOver; zachowanie serwerowe i struktura ARIA są pokryte testami.
+
 ## Bieżąca sesja — 2026-08-03 — audyt geometrii i wspólny system układu
 
 ### Cel

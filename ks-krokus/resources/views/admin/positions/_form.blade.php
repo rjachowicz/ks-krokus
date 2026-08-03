@@ -20,13 +20,17 @@
     $userSelectionErrorIds = implode(' ', array_filter([
         $errors->has('user_ids') ? 'position-users-error' : null,
         $errors->has('user_ids.*') ? 'position-user-items-error' : null,
+        $errors->has('user_sort_orders.*') ? 'position-user-orders-error' : null,
     ]));
 @endphp
 
 <div class="form-grid">
     <h2 class="admin-section-title form-grid--span-full">Dane funkcji</h2>
     <label>
-        Nazwa funkcji
+        <span class="form-label-text">
+            Nazwa funkcji <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="position-name" type="text" name="name" value="{{ old('name', $position->name ?? '') }}" autocomplete="off" required autofocus
             @error('name') aria-invalid="true" aria-describedby="position-name-error" @enderror>
         @error('name') <span id="position-name-error" class="form-error">{{ $message }}</span> @enderror
@@ -42,7 +46,10 @@
     </label>
 
     <label>
-        Kolejność
+        <span class="form-label-text">
+            Kolejność <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="position-order" type="number" name="sort_order" min="0" value="{{ old('sort_order', $position->sort_order ?? 0) }}" required
             @error('sort_order') aria-invalid="true" aria-describedby="position-order-error" @enderror>
         @error('sort_order') <span id="position-order-error" class="form-error">{{ $message }}</span> @enderror
@@ -66,7 +73,8 @@
         @error('is_active') <span id="position-active-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
-    <fieldset class="admin-choice-section form-grid--span-full">
+    <fieldset class="admin-choice-section form-grid--span-full"
+        @if ($userSelectionErrorIds !== '') aria-invalid="true" aria-describedby="{{ $userSelectionErrorIds }}" @endif>
         <legend class="admin-section-title">Przypisani użytkownicy</legend>
         <p class="form-help">
             Zaznacz osoby i ustaw ich kolejność. Niższa liczba oznacza wcześniejsze miejsce.

@@ -712,6 +712,8 @@
     border-radius: var(--radius-control);
     background: var(--surface-solid);
     color: var(--text);
+    font-size: .9rem;
+    font-weight: 500;
 }
 
 .file-upload > input[type="file"]::file-selector-button {
@@ -727,11 +729,19 @@
     cursor: pointer;
 }
 
-.listing-upload-preview,
+.listing-upload-preview__grid,
 .listing-existing-images__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
+}
+
+.listing-upload-primary-group {
+    gap: 12px;
+}
+
+.listing-upload-primary-group > legend {
+    color: var(--text);
 }
 
 .listing-upload-item,
@@ -824,6 +834,11 @@
     padding-inline: 7px;
     font-family: var(--font-heading);
     font-weight: 700;
+}
+
+.listing-existing-images[aria-invalid="true"] {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-soft);
 }
 
 .listing-image-editor__fields {
@@ -1384,7 +1399,7 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .listing-upload-preview,
+    .listing-upload-preview__grid,
     .listing-existing-images__grid {
         grid-template-columns: 1fr;
     }

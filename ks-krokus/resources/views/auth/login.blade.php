@@ -19,7 +19,10 @@
             <x-form-errors />
 
             <label for="login-email">
-                Adres e-mail
+                <span class="form-label-text">
+                    Adres e-mail <span class="form-required" aria-hidden="true">*</span>
+                    <span class="sr-only">(pole wymagane)</span>
+                </span>
                 <input
                     id="login-email"
                     type="email"
@@ -37,7 +40,10 @@
             </label>
 
             <label for="login-password">
-                Hasło
+                <span class="form-label-text">
+                    Hasło <span class="form-required" aria-hidden="true">*</span>
+                    <span class="sr-only">(pole wymagane)</span>
+                </span>
                 <input
                     id="login-password"
                     type="password"

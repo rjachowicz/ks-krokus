@@ -32,7 +32,7 @@ textarea {
     .listing-filters,
     .listing-sort
 ) :where(
-    input:not([type="checkbox"]):not([type="hidden"]):not([type="file"]),
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
     select,
     textarea
 ) {
@@ -43,6 +43,9 @@ textarea {
     border-radius: var(--radius-control);
     background: var(--surface-solid);
     color: var(--text);
+    font-size: 0.94rem;
+    font-weight: 500;
+    line-height: 1.4;
     transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
@@ -104,7 +107,20 @@ textarea[readonly] {
 input[type="date"],
 input[type="datetime-local"],
 input[type="time"] {
-    color-scheme: light dark;
+    min-width: 0;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.72;
+}
+
+input[type="date"]:disabled::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]:disabled::-webkit-calendar-picker-indicator,
+input[type="time"]:disabled::-webkit-calendar-picker-indicator {
+    cursor: not-allowed;
 }
 
 select {
@@ -123,9 +139,51 @@ select {
 .form-check {
     display: flex;
     min-height: 44px;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
+    padding-block: 8px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.45;
     cursor: pointer;
+}
+
+.form-label-text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3em;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.form-required {
+    color: var(--danger);
+    font-weight: 800;
+}
+
+.form-choice-group {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.form-choice-group > legend {
+    margin: 0 0 2px;
+    padding: 0;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.form-choice-group[aria-invalid="true"] > legend {
+    color: var(--danger);
 }
 
 .form-layout {
@@ -292,12 +350,13 @@ select {
     box-shadow: 0 0 0 3px var(--gold-soft);
 }
 
-:where(.form-check, .admin-check-option) input[type="checkbox"] {
+:where(.form-check, .admin-check-option) input:is([type="checkbox"], [type="radio"]) {
     display: grid;
     width: 20px;
     height: 20px;
     min-height: 20px;
     flex: 0 0 20px;
+    margin: 0.12em 0 0;
     padding: 0;
     appearance: none;
     place-content: center;
@@ -305,6 +364,22 @@ select {
     border-radius: 5px;
     background: var(--surface-solid);
     cursor: pointer;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+:where(.form-check, .admin-check-option) input:is([type="checkbox"], [type="radio"]):hover:not(:disabled) {
+    border-color: var(--gold-strong);
+}
+
+:where(.form-check, .admin-check-option) input:is([type="checkbox"], [type="radio"]):focus-visible {
+    border-color: var(--gold-strong);
+    outline: 0;
+    box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+:where(.form-check, .admin-check-option) input:is([type="checkbox"], [type="radio"])[aria-invalid="true"] {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-soft);
 }
 
 :where(.form-check, .admin-check-option) input[type="checkbox"]::before {
@@ -326,8 +401,55 @@ select {
     transform: rotate(-45deg) scale(1);
 }
 
-:where(.form-check, .admin-check-option) input[type="checkbox"]:disabled {
+:where(.form-check, .admin-check-option) input[type="radio"] {
+    border-radius: 50%;
+}
+
+:where(.form-check, .admin-check-option) input[type="radio"]::before {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #111318;
+    content: "";
+    transform: scale(0);
+    transition: transform 120ms ease;
+}
+
+:where(.form-check, .admin-check-option) input[type="radio"]:checked {
+    border-color: var(--gold-strong);
+    background: var(--gold-fill);
+}
+
+:where(.form-check, .admin-check-option) input[type="radio"]:checked::before {
+    transform: scale(1);
+}
+
+:where(.form-check, .admin-check-option) input:is([type="checkbox"], [type="radio"]):disabled {
     cursor: not-allowed;
+    opacity: 0.52;
+}
+
+:where(.form-check, .admin-check-option):has(input:is([type="checkbox"], [type="radio"]):disabled) {
+    cursor: not-allowed;
+    opacity: 0.68;
+}
+
+.form-switch input[type="checkbox"]:hover:not(:disabled) {
+    border-color: var(--gold-strong);
+}
+
+.form-switch input[type="checkbox"][aria-invalid="true"] {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.form-switch input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+}
+
+.form-switch:has(input[type="checkbox"]:disabled) {
+    cursor: not-allowed;
+    opacity: 0.68;
 }
 
 .form-error {
@@ -402,6 +524,9 @@ select {
     min-height: auto;
     margin: 8px auto 0;
     padding: 8px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .file-upload__dropzone input[type="file"]::file-selector-button {

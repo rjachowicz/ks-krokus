@@ -4,6 +4,11 @@
     $existingImages = $listing?->images ?? collect();
     $selectedDeletes = array_map('intval', (array) old('delete_images', []));
     $fieldValue = static fn (string $name, mixed $fallback = ''): mixed => old($name, data_get($listing, $name, $fallback));
+    $existingImageErrorIds = implode(' ', array_filter([
+        $errors->has('primary_image_id') ? 'listing-primary-image-error' : null,
+        $errors->has('existing_images') ? 'listing-existing-images-error' : null,
+        $errors->has('delete_images.*') ? 'listing-delete-images-error' : null,
+    ]));
 @endphp
 
 <section class="form-section" aria-labelledby="listing-basic-heading">
@@ -14,7 +19,10 @@
     </header>
     <div class="form-grid">
         <label class="form-grid--full">
-            Tytuł ogłoszenia *
+            <span class="form-label-text">
+                Tytuł ogłoszenia <span class="form-required" aria-hidden="true">*</span>
+                <span class="sr-only">(pole wymagane)</span>
+            </span>
             <input id="listing-title" name="title" type="text" maxlength="255" required value="{{ $fieldValue('title') }}"
                 placeholder="np. Pistolet sportowy z kaburą" autocomplete="off"
                 @error('title') aria-invalid="true" aria-describedby="listing-title-error" @enderror>
@@ -23,7 +31,10 @@
         </label>
 
         <label>
-            Kategoria
+            <span class="form-label-text">
+                Kategoria <span class="form-required" aria-hidden="true">*</span>
+                <span class="sr-only">(pole wymagane)</span>
+            </span>
             <select id="listing-category" name="category" required @error('category') aria-invalid="true" aria-describedby="listing-category-error" @enderror>
                 <option value="">Wybierz kategorię</option>
                 @foreach ($categories as $value => $label)
@@ -101,9 +112,14 @@
             @error('price') <span id="listing-price-error" class="form-error">{{ $message }}</span> @enderror
         </label>
         <label class="form-switch">
-            <input type="checkbox" name="price_negotiable" value="1" @checked(old('price_negotiable', $listing?->price_negotiable ?? false))>
+            <input id="listing-price-negotiable" type="checkbox" name="price_negotiable" value="1"
+                @checked(old('price_negotiable', $listing?->price_negotiable ?? false))
+                @error('price_negotiable') aria-invalid="true" aria-describedby="listing-price-negotiable-error" @enderror>
             <span>Cena do negocjacji</span>
         </label>
+        @error('price_negotiable')
+            <span id="listing-price-negotiable-error" class="form-error" role="alert">{{ $message }}</span>
+        @enderror
     </div>
 </section>
 
@@ -114,7 +130,10 @@
         <p>Przedstaw stan, historię i wyposażenie zestawu w czytelnej formie.</p>
     </header>
     <label>
-        Pełny opis <span aria-hidden="true">*</span>
+        <span class="form-label-text">
+            Pełny opis <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <textarea id="listing-description" name="description" rows="10" minlength="30" maxlength="20000" required
             placeholder="Opisz historię, stan techniczny, przebieg, wyposażenie zestawu i zauważone ślady użytkowania. Nie wpisuj kodu HTML."
             @error('description') aria-invalid="true" aria-describedby="listing-description-error" @enderror>{{ $fieldValue('description') }}</textarea>
@@ -142,15 +161,22 @@
             @if ($errors->has('images') || $errors->has('images.*')) aria-invalid="true" @endif>
         <span id="listing-images-help" class="form-help">Pierwsze zdjęcie zostanie główne, jeśli nie wskażesz innego.</span>
         <div class="listing-upload-preview" data-listing-image-preview aria-live="polite"></div>
+        @error('primary_new_index')
+            <span id="listing-primary-new-image-error" class="form-error" role="alert">{{ $message }}</span>
+        @enderror
         @if ($errors->has('images') || $errors->has('images.*'))
-            <span id="listing-images-error" class="form-error">{{ $errors->first('images') ?: $errors->first('images.*') }}</span>
+            <span id="listing-images-error" class="form-error" role="alert">{{ $errors->first('images') ?: $errors->first('images.*') }}</span>
         @endif
-        <span class="form-error" data-listing-image-error hidden></span>
+        <span class="form-error" role="alert" data-listing-image-error hidden></span>
     </div>
 
     @if ($existingImages->isNotEmpty())
-        <fieldset class="listing-existing-images">
-            <legend>Zapisane zdjęcia</legend>
+        <fieldset class="listing-existing-images form-choice-group"
+            @if ($existingImageErrorIds !== '') aria-invalid="true" aria-describedby="{{ $existingImageErrorIds }}" @endif>
+            <legend>Wybór zdjęcia głównego i edycja zapisanych zdjęć</legend>
+            @error('primary_image_id')
+                <span id="listing-primary-image-error" class="form-error" role="alert">{{ $message }}</span>
+            @enderror
             <div class="listing-existing-images__grid">
                 @foreach ($existingImages as $image)
                     <article class="listing-image-editor">
@@ -160,7 +186,9 @@
                         </div>
                         <div class="listing-image-editor__fields">
                             <label class="form-check listing-image-editor__primary">
-                                <input type="radio" name="primary_image_id" value="{{ $image->id }}" @checked((int) old('primary_image_id', $existingImages->firstWhere('is_primary', true)?->id) === $image->id)>
+                                <input type="radio" name="primary_image_id" value="{{ $image->id }}"
+                                    @checked((int) old('primary_image_id', $existingImages->firstWhere('is_primary', true)?->id) === $image->id)
+                                    @error('primary_image_id') aria-invalid="true" aria-describedby="listing-primary-image-error" @enderror>
                                 Ustaw jako zdjęcie główne
                             </label>
                             <label>
@@ -182,15 +210,17 @@
                                 @error("existing_images.{$image->id}.sort_order") <span id="listing-image-{{ $image->id }}-order-error" class="form-error">{{ $message }}</span> @enderror
                             </label>
                             <label class="form-check listing-image-editor__delete">
-                                <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" data-existing-listing-image-delete @checked(in_array($image->id, $selectedDeletes, true))>
+                                <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" data-existing-listing-image-delete
+                                    @checked(in_array($image->id, $selectedDeletes, true))
+                                    @if ($errors->has('delete_images.*')) aria-invalid="true" aria-describedby="listing-delete-images-error" @endif>
                                 Usuń zdjęcie po zapisaniu
                             </label>
                         </div>
                     </article>
                 @endforeach
             </div>
-            @error('existing_images') <span class="form-error">{{ $message }}</span> @enderror
-            @error('delete_images.*') <span class="form-error">{{ $message }}</span> @enderror
+            @error('existing_images') <span id="listing-existing-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+            @error('delete_images.*') <span id="listing-delete-images-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         </fieldset>
     @endif
 </section>
@@ -232,12 +262,12 @@
             <input type="checkbox" name="show_phone" value="1" @checked(old('show_phone', $listing?->show_phone ?? false)) @error('show_phone') aria-invalid="true" aria-describedby="listing-show-phone-error" @enderror>
             Zgadzam się na publiczne pokazanie telefonu w tym ogłoszeniu
         </label>
-        @error('show_phone') <span id="listing-show-phone-error" class="form-error">{{ $message }}</span> @enderror
+        @error('show_phone') <span id="listing-show-phone-error" class="form-error" role="alert">{{ $message }}</span> @enderror
         <label class="form-check">
             <input type="checkbox" name="show_email" value="1" @checked(old('show_email', $listing?->show_email ?? false)) @error('show_email') aria-invalid="true" aria-describedby="listing-show-email-error" @enderror>
             Zgadzam się na publiczne pokazanie adresu e-mail w tym ogłoszeniu
         </label>
-        @error('show_email') <span id="listing-show-email-error" class="form-error">{{ $message }}</span> @enderror
+        @error('show_email') <span id="listing-show-email-error" class="form-error" role="alert">{{ $message }}</span> @enderror
     </div>
 </section>
 

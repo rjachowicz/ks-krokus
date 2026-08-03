@@ -1,21 +1,30 @@
 <div class="form-grid">
     <h2 class="admin-section-title form-grid--span-full">Dane konkurencji</h2>
     <label>
-        Kod
+        <span class="form-label-text">
+            Kod <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="competition-code" type="text" name="code" value="{{ old('code', $definition->code ?? '') }}" autocomplete="off" required autofocus
             @error('code') aria-invalid="true" aria-describedby="competition-code-error" @enderror>
         @error('code') <span id="competition-code-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
-        Nazwa
+        <span class="form-label-text">
+            Nazwa <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="competition-name" type="text" name="name" value="{{ old('name', $definition->name ?? '') }}" autocomplete="off" required
             @error('name') aria-invalid="true" aria-describedby="competition-name-error" @enderror>
         @error('name') <span id="competition-name-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
-        System
+        <span class="form-label-text">
+            System <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="competition-system" name="competition_system" required
             @error('competition_system') aria-invalid="true" aria-describedby="competition-system-error" @enderror>
             @foreach ($systems as $value => $label)
@@ -31,7 +40,10 @@
     </label>
 
     <label>
-        Dyscyplina
+        <span class="form-label-text">
+            Dyscyplina <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <select id="competition-discipline" name="discipline" required
             @error('discipline') aria-invalid="true" aria-describedby="competition-discipline-error" @enderror>
             @foreach ($disciplines as $value => $label)
@@ -47,7 +59,10 @@
     </label>
 
     <label>
-        Kolejność
+        <span class="form-label-text">
+            Kolejność <span class="form-required" aria-hidden="true">*</span>
+            <span class="sr-only">(pole wymagane)</span>
+        </span>
         <input id="competition-order" type="number" name="sort_order" min="0" value="{{ old('sort_order', $definition->sort_order ?? 0) }}" required
             @error('sort_order') aria-invalid="true" aria-describedby="competition-order-error" @enderror>
         @error('sort_order') <span id="competition-order-error" class="form-error">{{ $message }}</span> @enderror
