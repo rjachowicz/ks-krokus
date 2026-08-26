@@ -1,5 +1,12 @@
 .account-content {
+    width: 100%;
     max-width: 1120px;
+}
+
+.account-content > .form-layout {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
 }
 
 .account-profile-form {
