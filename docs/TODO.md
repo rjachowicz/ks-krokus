@@ -1,5 +1,48 @@
 # TODO.md
 
+## P0 — etap 7/9: ogłoszenia, moderacja i układ widoków
+
+- [x] Zachować `intent` aktywnego submittera podczas ustawiania stanu wysyłania,
+  aby `pending` docierało także w formularzu multipart z wieloma zdjęciami.
+- [x] Potwierdzić transakcyjne przejścia `draft|rejected -> pending`, ustawienie
+  `submitted_at`, wpis historii, redirect i polski komunikat sukcesu.
+- [x] Zweryfikować macierz właścicielskich operacji dla `draft`, `pending`,
+  `rejected`, `approved`, `sold`, `expired` i `archived` oraz automatyczną ponowną
+  moderację zatwierdzonego ogłoszenia po edycji.
+- [x] Usunąć menu „Więcej działań”, duplikaty i osobną akcję wysyłania z listy;
+  pokazywać bezpośrednio wyłącznie Edytuj, Sprzedane, Podgląd, Kopiuj i Usuń.
+- [x] Otwierać podgląd publiczny w tej samej karcie oraz zachować hierarchię
+  primary, secondary i destructive w responsywnym układzie akcji.
+- [x] Przenieść kartę zgłoszenia do głównego stosu szczegółów i ujednolicić jej
+  szerokość, geometrię oraz odstępy z pozostałymi kartami.
+- [x] Usunąć przycinanie sticky aside i zabezpieczyć długie telefony, adresy e-mail
+  oraz tekst „Bezpiecznej transakcji” przez elastyczne szerokości i łamanie treści.
+- [x] Pokryć regresjami intencje formularza, historię, statusy, blokady endpointów,
+  akcje listy, geometrię szczegółów i działanie zgłoszenia naruszenia.
+- [ ] Powtórzyć wizualny audyt szczegółów i listy przy 320–1920 px w light/dark,
+  gdy sesja udostępni instancję Browser.
+
+## P0 — etap 6/9: publiczne i administracyjne wyniki zawodów
+
+- [x] Dodać serwerowe wyszukiwanie GET `q` po zawodniku z PostgreSQL `ILIKE`,
+  licznikiem, czyszczeniem, zachowaniem grupowania i ukrywaniem pustych konkurencji.
+- [x] Dodać nullable kategorię wiekową do `MemberProfile`, centralny enum, migrację,
+  casty, factory, walidację, formularz administratora, konto i testy.
+- [x] Zastąpić dowolną klasyfikację kontrolowanym enumem dywizji IPSC i zachować
+  bezpieczny fallback dla starszych stringów.
+- [x] Dodać panelowe filtry wydarzenia, rzeczywistego `event_competitions`, tekstu
+  zawodnika i statusu bez dropdownu wszystkich użytkowników oraz bez N+1.
+- [x] Dodać chroniony, limitowany autocomplete aktywnych użytkowników z minimalną
+  odpowiedzią, dostępnym comboboxem i bez prywatnych danych w HTML lub JSON.
+- [x] Zapisywać snapshot imienia, centralnej nazwy klubu i kategorii, zachowując
+  ręczne dane zawodnika zewnętrznego i niezmienność historii po edycji profilu.
+- [x] Ograniczyć nowe wyniki do opublikowanych zawodów oraz zablokować Policy i
+  transakcją update, przenoszenie i delete archiwum; dodać widok tylko do odczytu.
+- [x] Pokryć moduł testami publicznymi, administracyjnymi, prywatności, snapshotów,
+  klasyfikacji, historii, statusów, archiwum, filtrów i zapytań.
+- [ ] Po wdrożeniu wykonać fizyczny test autocomplete z NVDA/VoiceOver, klawiaturą
+  i rzeczywistym zbiorem użytkowników oraz sprawdzić layout od 320 px.
+
 ## P0 — etap 5/9: e-mailowe przypomnienia o wydarzeniach
 
 - [x] Dodać domyślnie wyłączoną zgodę użytkownika, czas potwierdzenia, casty,

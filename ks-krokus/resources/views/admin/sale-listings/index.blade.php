@@ -90,11 +90,12 @@
             <thead><tr><th scope="col">Ogłoszenie</th><th scope="col">Autor</th><th scope="col">Status</th><th scope="col">Daty</th><th scope="col">Operacje</th></tr></thead>
             <tbody>
                 @forelse ($listings as $listing)
+                    @php($thumbnailUrl = $listing->primaryImage?->thumbnailUrl())
                     <tr>
                         <td data-label="Ogłoszenie">
                             <div class="listing-table-summary">
                                 <div class="listing-table-summary__image">
-                                    @if ($listing->primaryImage)<img src="{{ $listing->primaryImage->thumbnailUrl() }}" alt="" loading="lazy">@else<x-image-placeholder />@endif
+                                    @if ($thumbnailUrl)<img src="{{ $thumbnailUrl }}" alt="" loading="lazy">@else<x-image-placeholder />@endif
                                 </div>
                                 <div><strong>{{ $listing->title }}</strong><span>{{ $listing->category->label() }} · {{ $listing->formattedPrice() }}</span>@if ($listing->pending_reports_count)<span class="status-badge status-badge--danger">Zgłoszenia: {{ $listing->pending_reports_count }}</span>@endif</div>
                             </div>

@@ -6,12 +6,12 @@ namespace App\Models;
 
 use App\Enums\PublicationStatus;
 use App\Support\PostContentSanitizer;
+use App\Support\MediaAsset;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
@@ -27,6 +27,8 @@ class Post extends Model
         'content',
         'content_format',
         'cover_image_path',
+        'cover_variant_path',
+        'cover_crop',
         'cover_image_alt',
         'status',
         'published_at',
@@ -39,6 +41,7 @@ class Post extends Model
         return [
             'status' => PublicationStatus::class,
             'published_at' => 'datetime',
+            'cover_crop' => 'array',
         ];
     }
 
@@ -78,7 +81,12 @@ class Post extends Model
             return null;
         }
 
-        return Storage::disk(config('content.media_disk'))->url($this->cover_image_path);
+        return MediaAsset::url($this->cover_image_path);
+    }
+
+    public function coverVariantUrl(): ?string
+    {
+        return MediaAsset::firstUrl($this->cover_variant_path, $this->cover_image_path);
     }
 
     public function safeContentHtml(): string

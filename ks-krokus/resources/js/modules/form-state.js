@@ -44,12 +44,24 @@ export function initFormStates() {
                 ? event.submitter
                 : form.querySelector('button[type="submit"]');
             const buttons = [...form.querySelectorAll('button[type="submit"]')];
+            let submitterField = null;
+
+            if (submitter?.name) {
+                submitterField = document.createElement('input');
+                submitterField.type = 'hidden';
+                submitterField.name = submitter.name;
+                submitterField.value = submitter.value;
+                submitterField.dataset.submitterValue = '';
+                form.append(submitterField);
+            }
+
             const state = {
                 buttons: buttons.map((button) => ({
                     button,
                     disabled: button.disabled,
                 })),
                 submitter,
+                submitterField,
                 submitterLabel: submitter?.textContent || '',
             };
             const loadingLabel = resolveLoadingLabel(submitter, form);
@@ -92,6 +104,8 @@ export function initFormStates() {
                 state.submitter.textContent = state.submitterLabel;
                 state.submitter.classList.remove('is-loading');
             }
+
+            state.submitterField?.remove();
 
             const status = form.querySelector('[data-submit-status]');
 

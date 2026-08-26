@@ -9,9 +9,13 @@
         :description="$result->eventCompetition->event->title.' — '.$result->eventCompetition->competition->name"
     />
 
-    <form method="POST" action="{{ route('admin.results.update', $result) }}" class="form-layout panel-card">
-        @csrf
-        @method('PUT')
-        @include('admin.results._form')
-    </form>
+    @if ($result->belongsToArchivedEvent())
+        @include('admin.results._readonly')
+    @else
+        <form method="POST" action="{{ route('admin.results.update', $result) }}" class="form-layout panel-card">
+            @csrf
+            @method('PUT')
+            @include('admin.results._form')
+        </form>
+    @endif
 @endsection

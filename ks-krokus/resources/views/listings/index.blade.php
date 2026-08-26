@@ -171,11 +171,12 @@
                             $listing->caliber,
                             $listing->condition?->label(),
                         ])->filter()->take(2);
+                        $thumbnailUrl = $listing->primaryImage?->thumbnailUrl();
                     @endphp
                     <article class="listing-card panel-card">
                         <a href="{{ route('listings.show', $listing) }}" class="listing-card__image" aria-label="Zobacz ogłoszenie: {{ $listing->title }}">
-                            @if ($listing->primaryImage)
-                                <img src="{{ $listing->primaryImage->thumbnailUrl() }}" alt="{{ $listing->primaryImage->alt_text ?: $listing->title }}" loading="lazy">
+                            @if ($thumbnailUrl)
+                                <img src="{{ $thumbnailUrl }}" alt="{{ $listing->primaryImage->alt_text ?: $listing->title }}" loading="lazy">
                             @else
                                 <x-image-placeholder />
                             @endif

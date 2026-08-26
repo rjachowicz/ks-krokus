@@ -5,6 +5,25 @@
     );
 
     $currentUserId = old('user_id', $result->user_id ?? '');
+    $selectedUserLabel = filled($currentUserId)
+        ? ((isset($currentUser) && (string) $currentUser?->id === (string) $currentUserId)
+            ? $currentUser->name.($currentUser->trashed() ? ' — konto usunięte' : '')
+            : old('participant_name', $result->participant_name ?? ''))
+        : '';
+    $storedCategory = $result->category ?? null;
+    $currentCategory = old(
+        'category',
+        \App\Enums\MemberAgeCategory::fromStoredValue($storedCategory)?->value ?? $storedCategory ?? '',
+    );
+    $historicalCategory = filled($storedCategory)
+        && \App\Enums\MemberAgeCategory::fromStoredValue($storedCategory) === null;
+    $storedClassification = $result->classification ?? null;
+    $currentClassification = old(
+        'classification',
+        \App\Enums\IpscDivision::fromStoredValue($storedClassification)?->value ?? $storedClassification ?? '',
+    );
+    $historicalClassification = filled($storedClassification)
+        && \App\Enums\IpscDivision::fromStoredValue($storedClassification) === null;
     $currentStatus = old(
         'status',
         isset($result) ? $result->status->value : \App\Enums\ResultStatus::Official->value,
@@ -44,24 +63,38 @@
         @endif
     </label>
 
-    <label>
-        Powiązany użytkownik
-        <select id="result-user" name="user_id" data-result-user aria-controls="result-participant-name"
-            aria-describedby="result-user-help @error('user_id') result-user-error @enderror"
-            @error('user_id') aria-invalid="true" @enderror>
-            <option value="">Zawodnik zewnętrzny / bez konta</option>
-            @foreach ($users as $user)
-                <option value="{{ $user->id }}" @selected((string) $currentUserId === (string) $user->id)>
-                    {{ $user->name }} — {{ $user->email }}{{ $user->trashed() ? ' — konto usunięte' : '' }}
-                </option>
-            @endforeach
-        </select>
-        <span id="result-user-help" class="form-help">Przy wybranym użytkowniku system automatycznie zapisze jego aktualne imię i nazwisko.</span>
+    <div class="result-user-combobox" data-result-user-combobox data-endpoint="{{ route('admin.results.participants') }}">
+        <label for="result-user-search">Powiązany użytkownik</label>
+        <div class="result-user-combobox__control">
+            <input
+                id="result-user-search"
+                type="search"
+                value="{{ $selectedUserLabel }}"
+                autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="result-user-options"
+                aria-describedby="result-user-help result-user-status @error('user_id') result-user-error @enderror"
+                data-result-user-search
+                @error('user_id') aria-invalid="true" @enderror
+            >
+            <button type="button" class="btn btn-secondary result-user-combobox__clear" data-result-user-clear @if (! filled($currentUserId)) hidden @endif>
+                Usuń powiązanie
+            </button>
+        </div>
+        <input type="hidden" id="result-user" name="user_id" value="{{ $currentUserId }}" data-result-user-id>
+        <ul id="result-user-options" class="result-user-options" role="listbox" data-result-user-options hidden></ul>
+        <span id="result-user-help" class="form-help">Wpisz co najmniej 2 znaki. Po wyborze zapisany zostanie snapshot imienia, klubu i kategorii.</span>
+        @if (isset($currentUser) && $currentUser?->trashed())
+            <span class="form-help">Powiązane konto usunięte — zachowano historyczny snapshot zawodnika.</span>
+        @endif
+        <span id="result-user-status" class="form-help" role="status" aria-live="polite" data-result-user-status></span>
         @error('user_id') <span id="result-user-error" class="form-error">{{ $message }}</span> @enderror
-    </label>
+    </div>
 
     <label>
-        Imię i nazwisko zawodnika zewnętrznego
+        Imię i nazwisko zawodnika
         <input
             type="text"
             id="result-participant-name"
@@ -72,7 +105,7 @@
             aria-describedby="result-participant-help @error('participant_name') result-participant-error @enderror"
             @error('participant_name') aria-invalid="true" @enderror
         >
-        <span id="result-participant-help" class="form-help">Wymagane tylko wtedy, gdy nie wybierzesz użytkownika.</span>
+        <span id="result-participant-help" class="form-help">Dla zawodnika zewnętrznego wpisz dane ręcznie. Przy powiązanym koncie snapshot ustala serwer.</span>
         @error('participant_name') <span id="result-participant-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -80,15 +113,23 @@
 
     <label>
         Klub
-        <input id="result-club" type="text" name="club_name" value="{{ old('club_name', $result->club_name ?? '') }}" autocomplete="organization"
+        <input id="result-club" type="text" name="club_name" value="{{ old('club_name', $result->club_name ?? '') }}" autocomplete="organization" data-result-club
             @error('club_name') aria-invalid="true" aria-describedby="result-club-error" @enderror>
         @error('club_name') <span id="result-club-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
     <label>
-        Kategoria
-        <input id="result-category" type="text" name="category" value="{{ old('category', $result->category ?? '') }}" placeholder="np. Senior, Lady, Junior" autocomplete="off"
+        Kategoria wiekowa
+        <select id="result-category" name="category" data-result-category
             @error('category') aria-invalid="true" aria-describedby="result-category-error" @enderror>
+            <option value="">Nie określono</option>
+            @foreach ($ageCategories as $value => $label)
+                <option value="{{ $value }}" @selected($currentCategory === $value)>{{ $label }}</option>
+            @endforeach
+            @if ($historicalCategory)
+                <option value="{{ $storedCategory }}" @selected($currentCategory === $storedCategory)>Wartość historyczna: {{ $storedCategory }}</option>
+            @endif
+        </select>
         @error('category') <span id="result-category-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 
@@ -110,16 +151,17 @@
     </label>
 
     <label>
-        Klasyfikacja
-        <input
-            type="text"
-            id="result-classification"
-            name="classification"
-            value="{{ old('classification', $result->classification ?? '') }}"
-            placeholder="np. Open, Production, Standard"
-            autocomplete="off"
-            @error('classification') aria-invalid="true" aria-describedby="result-classification-error" @enderror
-        >
+        Dywizja IPSC
+        <select id="result-classification" name="classification"
+            @error('classification') aria-invalid="true" aria-describedby="result-classification-error" @enderror>
+            <option value="">Nie dotyczy / nie określono</option>
+            @foreach ($ipscDivisions as $value => $label)
+                <option value="{{ $value }}" @selected($currentClassification === $value)>{{ $label }}</option>
+            @endforeach
+            @if ($historicalClassification)
+                <option value="{{ $storedClassification }}" @selected($currentClassification === $storedClassification)>Wartość historyczna: {{ $storedClassification }}</option>
+            @endif
+        </select>
         @error('classification') <span id="result-classification-error" class="form-error">{{ $message }}</span> @enderror
     </label>
 

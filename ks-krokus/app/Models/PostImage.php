@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\MediaAsset;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class PostImage extends Model
 {
@@ -14,6 +14,8 @@ class PostImage extends Model
      */
     protected $fillable = [
         'path',
+        'thumbnail_path',
+        'crop',
         'alt_text',
         'caption',
         'sort_order',
@@ -23,11 +25,23 @@ class PostImage extends Model
     {
         return [
             'sort_order' => 'integer',
+            'crop' => 'array',
         ];
     }
 
-    public function url(): string
+    public function url(): ?string
     {
-        return Storage::disk(config('content.media_disk'))->url($this->path);
+        return MediaAsset::url($this->path);
+    }
+
+    public function thumbnailUrl(): ?string
+    {
+        return MediaAsset::firstUrl($this->thumbnail_path, $this->path);
+    }
+
+    /** @return list<string> */
+    public function filePaths(): array
+    {
+        return array_values(array_filter([$this->path, $this->thumbnail_path]));
     }
 }

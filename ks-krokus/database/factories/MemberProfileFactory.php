@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\Discipline;
+use App\Enums\MemberAgeCategory;
 use App\Enums\MemberVerificationStatus;
 use App\Models\MemberProfile;
 use App\Models\User;
@@ -26,6 +27,7 @@ final class MemberProfileFactory extends Factory
             'firearm_permit_number' => null,
             'club_member_number' => fake()->unique()->bothify('CZ-####'),
             'joined_club_year' => now()->year - 2,
+            'age_category' => fake()->randomElement(MemberAgeCategory::cases()),
             'disciplines' => [Discipline::Pistol->value],
             'verification_status' => MemberVerificationStatus::Unverified,
             'verified_at' => null,

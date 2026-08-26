@@ -62,6 +62,8 @@ Projekt używa m.in.:
 - `EventType`
 - `Discipline`
 - `CompetitionSystem`
+- `MemberAgeCategory`
+- `IpscDivision`
 
 Korzystaj z istniejących metod enumów zamiast duplikować tablice.
 
@@ -248,6 +250,45 @@ standardowa nawigacja HTTP.
 
 Filtry enumów powinny być walidowane przez `Rule::enum(...)` lub `Rule::in(...)`, nie jako dowolny string.
 
+## Wyniki zawodów
+
+`ResultsController@show` waliduje GET `q` i filtruje relację
+`eventCompetitions.results` po snapshotcie `participant_name` oraz opcjonalnie po
+nazwie powiązanego konta. Obie gałęzie używają PostgreSQL `ILIKE`. To samo
+ograniczenie jest stosowane do eager loadingu konkurencji, dlatego grupowanie
+pozostaje relacyjne, konkurencje bez dopasowania nie są ładowane, a licznik wynika
+z już pobranych kolekcji bez dodatkowych zapytań.
+
+Administracyjna lista używa `EventResultFilterRequest`, eager-loaduje wydarzenie
+i definicję konkurencji oraz filtruje po `sport_event_id`, konkretnym rekordzie
+`event_competitions`, `participant_name`/`users.name` i `ResultStatus`. Paginacja
+zachowuje query string. Dropdown wszystkich użytkowników nie jest renderowany.
+
+`GET /panel/wyniki/zawodnicy` (`admin.results.participants`) działa wyłącznie dla
+aktywnego moderatora lub administratora i ma limiter `result-participants` 30/min
+na konto. `EventResultParticipantSearchRequest` wymaga 2–100 znaków. Zapytanie
+wybiera tylko aktywne, nieusunięte konta, eager-loaduje minimalny fragment
+`MemberProfile`, ogranicza odpowiedź do 10 pozycji i nie zwraca e-maila, telefonu,
+adresu ani dokumentów członkowskich.
+
+`EventResultController` jest źródłem snapshotu powiązanego konta. Przy pierwszym
+wyborze zapisuje bieżące `users.name`, `club.short_name` i
+`member_profiles.age_category`; przy późniejszej edycji tego samego powiązania
+zachowuje istniejący snapshot. Dla zawodnika zewnętrznego pola pozostają ręczne.
+
+Nowe docelowe `EventCompetition` musi należeć do nieusuniętych zawodów typu
+`competition` ze statusem `published`. Walidacja Form Requestu jest powtarzana
+po `lockForUpdate`, aby zmiana statusu między żądaniem i zapisem nie ominęła
+reguły. `EventResultPolicy` blokuje update i delete wyniku archiwalnego, a kontroler
+ponawia kontrolę statusu pod blokadą transakcyjną. Edycja archiwalna renderuje
+osobny widok tylko do odczytu; status `published` ponownie zezwala na mutacje.
+
+`MemberAgeCategory` jest castem nullable wyłącznie w `MemberProfile`. Wynik
+przechowuje surowy string snapshotu, a `categoryLabel()` rozpoznaje wartości enumu
+i zachowuje fallback historyczny. Analogicznie `IpscDivision` kontroluje nowe
+wybory, zaś `classificationLabel()` i Form Request bezpiecznie obsługują starsze,
+nieznane stringi bez castu, który mógłby rzucić wyjątek przy odczycie.
+
 ## Audyt formularza
 
 Zawsze sprawdź:
@@ -309,6 +350,23 @@ Statusy są wartościami `SaleListingStatus`. Wszystkie przejścia wykonuje
 `SaleListingPolicy` chroni zarówno operacje właściciela, jak i moderację. Tylko
 administrator zatwierdza i odrzuca; moderator może edytować, ukrywać i oznaczać
 rekord do uwagi administratora.
+
+Formularz właściciela rozróżnia `intent=draft` i `intent=pending` wartością
+klikniętego submittera. Wspólny skrypt stanu wysyłania zachowuje nazwę oraz wartość
+submittera w ukrytym polu, zanim wyłączy przyciski, dlatego blokada podwójnego
+submitu nie może usunąć intencji z payloadu multipart. `SaleListingPersistence`
+zawsze tworzy rekord jako `draft`, zapisuje pliki i historię utworzenia w jednej
+transakcji, a następnie dla `pending` wywołuje istniejący `SaleListingWorkflow`.
+Workflow ustawia `submitted_at`, czyści dane odrzucenia i zapisuje przejście
+`draft|rejected -> pending`.
+
+Właściciel edytuje tylko `draft`, `rejected` i `approved`, usuwa każdy własny
+status poza `pending`, wysyła `draft` lub `rejected` i oznacza jako sprzedane tylko
+`approved`. Edycja zatwierdzonej oferty najpierw wycofuje publikację, a potem
+automatycznie kieruje rekord ponownie do moderacji niezależnie od intencji
+formularza. `pending`, `sold`, `expired` i `archived` nie są edytowalne przez
+właściciela. Kopia dostępnego własnego rekordu zawsze powstaje jako nowy `draft`;
+nie dziedziczy dat ani wyniku moderacji.
 
 Scope `SaleListing::publiclyVisible()` wymaga równocześnie statusu `approved`,
 daty publikacji nie późniejszej niż teraz, braku ukrycia, braku soft delete oraz

@@ -6,8 +6,10 @@ namespace App\Providers;
 
 use App\Enums\UserRole;
 use App\Models\AccountRequest;
+use App\Models\EventResult;
 use App\Models\MemberProfile;
 use App\Models\SaleListing;
+use App\Policies\EventResultPolicy;
 use App\Policies\MemberProfilePolicy;
 use App\Policies\SaleListingPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -35,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(SaleListing::class, SaleListingPolicy::class);
         Gate::policy(MemberProfile::class, MemberProfilePolicy::class);
+        Gate::policy(EventResult::class, EventResultPolicy::class);
 
         Model::preventLazyLoading(! $this->app->isProduction());
 
@@ -85,6 +88,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('notification-actions', static fn (Request $request): Limit => Limit::perMinute(30)
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
         RateLimiter::for('event-reminders', static fn (Request $request): Limit => Limit::perMinute(10)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
+        RateLimiter::for('result-participants', static fn (Request $request): Limit => Limit::perMinute(30)
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 }

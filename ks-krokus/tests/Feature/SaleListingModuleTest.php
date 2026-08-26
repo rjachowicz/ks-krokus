@@ -18,6 +18,7 @@ use App\Notifications\SaleListingRejectedNotification;
 use App\Notifications\SaleListingSubmittedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -45,10 +46,12 @@ final class SaleListingModuleTest extends TestCase
                 'images' => [UploadedFile::fake()->image('pistolet.jpg', 900, 700)],
             ])
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('admin.my-listings.index'));
+            ->assertRedirect(route('admin.my-listings.index'))
+            ->assertSessionHas('success', 'Szkic ogłoszenia został zapisany.');
 
         $listing = SaleListing::query()->firstOrFail();
         self::assertSame(SaleListingStatus::Draft, $listing->status);
+        self::assertNull($listing->submitted_at);
         self::assertSame($user->id, $listing->user_id);
         self::assertTrue($listing->images()->firstOrFail()->is_primary);
         Storage::disk('public')->assertExists($listing->images()->firstOrFail()->path);
@@ -56,6 +59,36 @@ final class SaleListingModuleTest extends TestCase
             ->get(route('admin.my-listings.edit', $listing))
             ->assertOk()
             ->assertSee('listing-images', false);
+    }
+
+    public function test_pending_intent_creates_and_submits_listing_with_history(): void
+    {
+        Storage::fake('public');
+        Notification::fake();
+        $admin = $this->admin();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.my-listings.store'), [
+                ...$this->validData(),
+                'intent' => 'pending',
+                'images' => [UploadedFile::fake()->image('do-moderacji.jpg', 900, 700)],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('admin.my-listings.index'))
+            ->assertSessionHas('success', 'Ogłoszenie zostało wysłane do moderacji.');
+
+        $listing = SaleListing::query()->firstOrFail();
+        self::assertSame(SaleListingStatus::Pending, $listing->status);
+        self::assertNotNull($listing->submitted_at);
+        $this->assertDatabaseHas('sale_listing_moderations', [
+            'sale_listing_id' => $listing->id,
+            'actor_id' => $user->id,
+            'action' => 'submitted',
+            'from_status' => SaleListingStatus::Draft->value,
+            'to_status' => SaleListingStatus::Pending->value,
+        ]);
+        Notification::assertSentTo($admin, SaleListingSubmittedNotification::class);
     }
 
     public function test_jpg_png_and_webp_listing_images_are_accepted_and_stored(): void
@@ -260,12 +293,92 @@ final class SaleListingModuleTest extends TestCase
                 'title' => 'Istotnie zmieniona oferta',
                 'intent' => 'pending',
             ])
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('admin.my-listings.index'))
+            ->assertSessionHas('success', 'Zmiany zapisano, a ogłoszenie trafiło do moderacji.');
 
         $listing->refresh();
         self::assertSame(SaleListingStatus::Pending, $listing->status);
+        self::assertNotNull($listing->submitted_at);
         self::assertNull($listing->published_at);
         self::assertNull($listing->approved_by);
+        $this->assertDatabaseHas('sale_listing_moderations', [
+            'sale_listing_id' => $listing->id,
+            'action' => 'submitted',
+            'from_status' => SaleListingStatus::Draft->value,
+            'to_status' => SaleListingStatus::Pending->value,
+        ]);
+    }
+
+    public function test_rejected_listing_can_be_edited_and_resubmitted(): void
+    {
+        Notification::fake();
+        $this->admin();
+        $user = User::factory()->create();
+        $listing = SaleListing::factory()->for($user, 'author')->create([
+            'status' => SaleListingStatus::Rejected,
+            'rejection_reason' => 'Uzupełnij opis stanu przedmiotu.',
+            'rejected_at' => now()->subHour(),
+        ]);
+        SaleListingImage::factory()->for($listing, 'listing')->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.my-listings.update', $listing), [
+                ...$this->validData(),
+                'title' => 'Poprawione ogłoszenie po odrzuceniu',
+                'intent' => 'pending',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('admin.my-listings.index'));
+
+        $listing->refresh();
+        self::assertSame(SaleListingStatus::Pending, $listing->status);
+        self::assertNotNull($listing->submitted_at);
+        self::assertNull($listing->rejection_reason);
+        self::assertNull($listing->rejected_at);
+        $this->assertDatabaseHas('sale_listing_moderations', [
+            'sale_listing_id' => $listing->id,
+            'action' => 'submitted',
+            'from_status' => SaleListingStatus::Rejected->value,
+            'to_status' => SaleListingStatus::Pending->value,
+        ]);
+    }
+
+    public function test_owner_permissions_follow_the_listing_status_workflow(): void
+    {
+        $owner = User::factory()->create();
+        $allowedUpdates = [SaleListingStatus::Draft, SaleListingStatus::Rejected, SaleListingStatus::Approved];
+        $allowedSubmissions = [SaleListingStatus::Draft, SaleListingStatus::Rejected];
+
+        foreach (SaleListingStatus::cases() as $status) {
+            $listing = SaleListing::factory()->for($owner, 'author')->create(['status' => $status]);
+            $gate = Gate::forUser($owner);
+
+            self::assertSame(in_array($status, $allowedUpdates, true), $gate->allows('update', $listing), $status->value);
+            self::assertSame(in_array($status, $allowedSubmissions, true), $gate->allows('submit', $listing), $status->value);
+            self::assertSame($status !== SaleListingStatus::Pending, $gate->allows('delete', $listing), $status->value);
+            self::assertSame($status === SaleListingStatus::Approved, $gate->allows('markAsSold', $listing), $status->value);
+            self::assertTrue($gate->allows('view', $listing), $status->value);
+        }
+    }
+
+    public function test_forbidden_owner_actions_are_blocked_by_endpoints(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $pending = SaleListing::factory()->for($owner, 'author')->pending()->create();
+        $draft = SaleListing::factory()->for($owner, 'author')->create();
+        $foreign = SaleListing::factory()->for($other, 'author')->create();
+
+        $this->actingAs($owner)->get(route('admin.my-listings.edit', $pending))->assertForbidden();
+        $this->actingAs($owner)->delete(route('admin.my-listings.destroy', $pending))->assertForbidden();
+        $this->actingAs($owner)->post(route('admin.my-listings.submit', $pending))->assertForbidden();
+        $this->actingAs($owner)->post(route('admin.my-listings.sold', $draft))->assertForbidden();
+        $this->actingAs($owner)->post(route('admin.my-listings.duplicate', $foreign))->assertForbidden();
+
+        self::assertSame(SaleListingStatus::Pending, $pending->fresh()->status);
+        self::assertFalse($pending->fresh()->trashed());
+        self::assertSame(SaleListingStatus::Draft, $draft->fresh()->status);
     }
 
     public function test_expiration_command_is_idempotent_and_does_not_delete_listing(): void
@@ -373,6 +486,30 @@ final class SaleListingModuleTest extends TestCase
             ->assertSee('oferta@example.com');
     }
 
+    public function test_listing_detail_keeps_long_public_contact_values_visible(): void
+    {
+        $phone = '+48'.str_repeat('1', 29);
+        $email = str_repeat('a', 64).'@'.str_repeat('b', 63).'.'.str_repeat('c', 63).'.example';
+        $listing = SaleListing::factory()->approved()->create([
+            'contact_phone' => $phone,
+            'contact_email' => $email,
+            'show_phone' => true,
+            'show_email' => true,
+        ]);
+
+        $this->get(route('listings.show', $listing))
+            ->assertOk()
+            ->assertSee($phone)
+            ->assertSee($email)
+            ->assertSeeText('Bezpieczna transakcja');
+
+        $styles = (string) file_get_contents(resource_path('css/pages/listings.css'));
+        self::assertMatchesRegularExpression('/\.listing-contact-card\s*\{[^}]*min-width:\s*0;[^}]*max-width:\s*100%;/s', $styles);
+        self::assertDoesNotMatchRegularExpression('/\.listing-contact-card\s*\{[^}]*overflow:\s*hidden;/s', $styles);
+        self::assertMatchesRegularExpression('/\.listing-contact-actions__value\s*\{[^}]*overflow-wrap:\s*anywhere;/s', $styles);
+        self::assertMatchesRegularExpression('/\.listing-disclaimer p\s*\{[^}]*overflow-wrap:\s*anywhere;/s', $styles);
+    }
+
     public function test_listing_is_soft_deleted_and_admin_can_restore_it(): void
     {
         $admin = $this->admin();
@@ -420,13 +557,16 @@ final class SaleListingModuleTest extends TestCase
 
     public function test_refactored_listing_views_keep_neutral_forms_and_accessible_gallery_controls(): void
     {
+        Storage::fake((string) config('media.disk'));
         $user = User::factory()->create();
         $listing = SaleListing::factory()->for($user, 'author')->approved()->create();
-        SaleListingImage::factory()->for($listing, 'listing')->create();
-        SaleListingImage::factory()->for($listing, 'listing')->create([
+        $firstImage = SaleListingImage::factory()->for($listing, 'listing')->create();
+        $secondImage = SaleListingImage::factory()->for($listing, 'listing')->create([
             'is_primary' => false,
             'sort_order' => 1,
         ]);
+        Storage::disk((string) config('media.disk'))->put($firstImage->path, 'pierwsze zdjęcie');
+        Storage::disk((string) config('media.disk'))->put($secondImage->path, 'drugie zdjęcie');
 
         $formResponse = $this->actingAs($user)
             ->get(route('admin.my-listings.edit', $listing))
@@ -448,7 +588,53 @@ final class SaleListingModuleTest extends TestCase
             ->assertSee('data-listing-gallery', false)
             ->assertSee('data-listing-gallery-thumbnail', false)
             ->assertSee('data-listing-lightbox', false)
+            ->assertSee('class="listing-detail__panel listing-report-section panel-card"', false)
+            ->assertSeeText('Bezpieczna transakcja')
             ->assertSee('aria-current="true"', false);
+
+        $detail = (string) $this->get(route('listings.show', $listing))->getContent();
+        self::assertLessThan(
+            strpos($detail, '<aside class="listing-contact-card'),
+            strpos($detail, 'class="listing-detail__panel listing-report-section panel-card"'),
+        );
+    }
+
+    public function test_my_listings_show_only_direct_actions_allowed_for_each_status(): void
+    {
+        $user = User::factory()->create();
+        $draft = SaleListing::factory()->for($user, 'author')->create(['title' => 'Szkic akcji']);
+        $pending = SaleListing::factory()->for($user, 'author')->pending()->create(['title' => 'Oczekujące akcje']);
+        $approved = SaleListing::factory()->for($user, 'author')->approved()->create(['title' => 'Zatwierdzone akcje']);
+
+        $draftResponse = $this->actingAs($user)->get(route('admin.my-listings.index', ['status' => 'draft']))
+            ->assertOk()
+            ->assertSee('href="'.route('admin.my-listings.edit', $draft).'"', false)
+            ->assertSee('action="'.route('admin.my-listings.duplicate', $draft).'"', false)
+            ->assertSee('action="'.route('admin.my-listings.destroy', $draft).'"', false)
+            ->assertDontSee('Więcej działań')
+            ->assertDontSee('Wyślij do moderacji');
+        self::assertStringNotContainsString('target="_blank"', $draftResponse->getContent());
+
+        $this->actingAs($user)->get(route('admin.my-listings.index', ['status' => 'pending']))
+            ->assertOk()
+            ->assertSee('action="'.route('admin.my-listings.duplicate', $pending).'"', false)
+            ->assertDontSee('href="'.route('admin.my-listings.edit', $pending).'"', false)
+            ->assertDontSee('action="'.route('admin.my-listings.destroy', $pending).'"', false)
+            ->assertDontSee('Oznacz jako sprzedane')
+            ->assertDontSee('>Podgląd<', false);
+
+        $this->actingAs($user)->get(route('admin.my-listings.index', ['status' => 'approved']))
+            ->assertOk()
+            ->assertSee('href="'.route('admin.my-listings.edit', $approved).'"', false)
+            ->assertSee('action="'.route('admin.my-listings.sold', $approved).'"', false)
+            ->assertSee('href="'.route('listings.show', $approved).'"', false)
+            ->assertSee('action="'.route('admin.my-listings.duplicate', $approved).'"', false)
+            ->assertSee('action="'.route('admin.my-listings.destroy', $approved).'"', false)
+            ->assertSee('>Edytuj<', false)
+            ->assertSee('>Oznacz jako sprzedane<', false)
+            ->assertSee('>Podgląd<', false)
+            ->assertSee('>Kopiuj<', false)
+            ->assertSee('>Usuń<', false);
     }
 
     public function test_public_report_is_validated_and_deduplicated(): void
@@ -463,8 +649,20 @@ final class SaleListingModuleTest extends TestCase
             'details' => 'Przedmiot został już sprzedany.',
         ];
         $this->post(route('listings.report', $listing), $payload)->assertSessionHasNoErrors();
-        $this->post(route('listings.report', $listing), $payload)->assertSessionHasNoErrors();
+        $this->post(route('listings.report', $listing), $payload)
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success', 'Dziękujemy. Zgłoszenie zostało przekazane administratorowi.');
         self::assertDatabaseCount('sale_listing_reports', 1);
+    }
+
+    public function test_form_loading_state_preserves_the_clicked_submitter_value(): void
+    {
+        $script = (string) file_get_contents(resource_path('js/modules/form-state.js'));
+
+        self::assertStringContainsString('event.submitter', $script);
+        self::assertStringContainsString('submitterField.name = submitter.name', $script);
+        self::assertStringContainsString('submitterField.value = submitter.value', $script);
+        self::assertStringContainsString('state.submitterField?.remove()', $script);
     }
 
     public function test_moderator_can_hide_and_flag_but_cannot_approve(): void

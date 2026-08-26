@@ -116,6 +116,25 @@ są ograniczone viewportem, również na telefonie.
 
 Toast może informować o zapisie, aktualizacji, usunięciu, publikacji i błędzie ogólnym. Nie zastępuje błędów pod polami.
 
+## Ogłoszenia sprzedaży
+
+Publiczne filtry ogłoszeń używają wspólnego `filter-form`; przycisk „Szukaj”
+zajmuje tor kontrolki obok inputa i selecta bez lokalnego `margin-top`. Karta
+zgłoszenia nieaktualnej oferty należy do głównego stosu szczegółów i ma tę samą
+szerokość, padding, promień oraz odstępy co karta opisu i parametrów.
+
+Sticky karta kontaktowa nie może przycinać treści przez `overflow: hidden`.
+Kolumny, przyciski kontaktowe, e-mail, telefon i blok „Bezpieczna transakcja” mają
+`min-width: 0`, szerokość ograniczoną do karty oraz `overflow-wrap: anywhere`.
+Poniżej 920 px aside przestaje być sticky i przechodzi pod główną kolumnę.
+
+„Moje ogłoszenia” pokazują dostępne operacje bezpośrednio, bez menu `<details>`.
+Edycja jest akcją primary, podgląd, sprzedaż i kopiowanie są secondary, a usunięcie
+jest destructive. Akcje niedozwolone przez status nie są renderowane, wysyłanie do
+moderacji odbywa się w formularzu tworzenia/edycji, a publiczny podgląd otwiera się
+w tej samej karcie. Na telefonie każda widoczna akcja zajmuje kontrolowany pionowy
+wiersz pełnej szerokości.
+
 ## Powiadomienia konta
 
 - desktopowy header pokazuje jedną ikonę z licznikiem nieprzeczytanych;

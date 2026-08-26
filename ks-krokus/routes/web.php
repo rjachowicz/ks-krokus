@@ -220,6 +220,10 @@ Route::prefix('panel')
                     'destroy' => 'events.destroy',
                 ]);
 
+            Route::get('wyniki/zawodnicy', [EventResultController::class, 'participants'])
+                ->middleware('throttle:result-participants')
+                ->name('results.participants');
+
             Route::resource('wyniki', EventResultController::class)
                 ->except('show')
                 ->parameters(['wyniki' => 'eventResult'])

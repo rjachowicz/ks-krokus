@@ -25,6 +25,43 @@
     </x-page-hero>
 
     <section class="page-container page-section" aria-label="Tabela wyników">
+        <form method="GET" action="{{ route('results.show', $sportEvent) }}" class="content-toolbar filter-form panel-card" aria-label="Wyszukiwanie zawodnika">
+            <x-form-errors />
+
+            <div class="filter-form__row">
+                <label for="result-participant-query">
+                    Imię i nazwisko zawodnika
+                    <input
+                        id="result-participant-query"
+                        type="search"
+                        name="q"
+                        value="{{ request('q') }}"
+                        maxlength="100"
+                        autocomplete="off"
+                        @error('q') aria-invalid="true" aria-describedby="result-participant-query-error" @enderror
+                    >
+                    @error('q')
+                        <span id="result-participant-query-error" class="form-error" role="alert">{{ $message }}</span>
+                    @enderror
+                </label>
+
+                <div class="filter-form__actions">
+                    <div class="filter-form__action-group">
+                        <button type="submit" class="btn btn-primary">Szukaj</button>
+                        @if (request()->filled('q'))
+                            <a href="{{ route('results.show', $sportEvent) }}" class="btn btn-secondary">Wyczyść</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        @if ($search !== null)
+            <p class="results-match-count" role="status">
+                Liczba dopasowanych wyników: <strong>{{ $matchedResultsCount }}</strong>
+            </p>
+        @endif
+
         @forelse ($resultCompetitions as $eventCompetition)
             <article class="result-section">
                 <h2>
@@ -60,9 +97,9 @@
                                     <td>{{ $result->place ?? '—' }}</td>
                                     <td>{{ $result->displayName() }}</td>
                                     <td>{{ $result->club_name ?: '—' }}</td>
-                                    <td>{{ $result->category ?: '—' }}</td>
+                                    <td>{{ $result->categoryLabel() ?: '—' }}</td>
                                     <td><strong>{{ $result->score }}</strong></td>
-                                    <td>{{ $result->classification ?: '—' }}</td>
+                                    <td>{{ $result->classificationLabel() ?: '—' }}</td>
                                     <td>{{ $result->status->label() }}</td>
                                 </tr>
                             @endforeach
@@ -71,7 +108,11 @@
                 </div>
             </article>
         @empty
-            <p class="empty-state">Brak wyników dla tego wydarzenia.</p>
+            <p class="empty-state">
+                {{ $search !== null
+                    ? 'Nie znaleziono wyników dla podanego zawodnika.'
+                    : 'Brak wyników dla tego wydarzenia.' }}
+            </p>
         @endforelse
     </section>
 @endsection

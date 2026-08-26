@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\MediaAsset;
 use Database\Factories\SaleListingImageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class SaleListingImage extends Model
 {
@@ -19,6 +19,7 @@ class SaleListingImage extends Model
     protected $fillable = [
         'path',
         'thumbnail_path',
+        'crop',
         'alt_text',
         'caption',
         'sort_order',
@@ -30,6 +31,7 @@ class SaleListingImage extends Model
         return [
             'sort_order' => 'integer',
             'is_primary' => 'boolean',
+            'crop' => 'array',
         ];
     }
 
@@ -38,14 +40,14 @@ class SaleListingImage extends Model
         return $this->belongsTo(SaleListing::class, 'sale_listing_id');
     }
 
-    public function url(): string
+    public function url(): ?string
     {
-        return Storage::disk(config('listings.media_disk'))->url($this->path);
+        return MediaAsset::url($this->path);
     }
 
-    public function thumbnailUrl(): string
+    public function thumbnailUrl(): ?string
     {
-        return Storage::disk(config('listings.media_disk'))->url($this->thumbnail_path ?? $this->path);
+        return MediaAsset::firstUrl($this->thumbnail_path, $this->path);
     }
 
     /** @return list<string> */

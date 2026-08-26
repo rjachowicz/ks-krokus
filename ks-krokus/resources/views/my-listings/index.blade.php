@@ -39,14 +39,11 @@
     @else
         <div class="owner-listing-list ui-stack">
             @foreach ($listings as $listing)
-                @php
-                    $isEditPrimary = in_array($listing->status, [\App\Enums\SaleListingStatus::Draft, \App\Enums\SaleListingStatus::Rejected], true);
-                    $isDuplicatePrimary = in_array($listing->status, [\App\Enums\SaleListingStatus::Sold, \App\Enums\SaleListingStatus::Expired, \App\Enums\SaleListingStatus::Archived], true);
-                @endphp
+                @php($thumbnailUrl = $listing->primaryImage?->thumbnailUrl())
                 <article class="owner-listing-card panel-card">
                     <div class="owner-listing-card__image">
-                        @if ($listing->primaryImage)
-                            <img src="{{ $listing->primaryImage->thumbnailUrl() }}" alt="{{ $listing->primaryImage->alt_text ?: $listing->title }}" loading="lazy">
+                        @if ($thumbnailUrl)
+                            <img src="{{ $thumbnailUrl }}" alt="{{ $listing->primaryImage->alt_text ?: $listing->title }}" loading="lazy">
                         @else
                             <x-image-placeholder />
                         @endif
@@ -86,28 +83,27 @@
                         </div>
 
                         <div class="owner-listing-card__actions">
-                            <div class="owner-listing-card__primary-action">
-                                @if ($isEditPrimary)
-                                    @can('update', $listing)<a href="{{ route('admin.my-listings.edit', $listing) }}" class="btn btn-primary">Edytuj ogłoszenie</a>@endcan
-                                @elseif ($listing->isPubliclyVisible())
-                                    <a href="{{ route('listings.show', $listing) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" aria-label="Zobacz publiczne ogłoszenie {{ $listing->title }} — otwiera w nowej karcie">Zobacz ogłoszenie</a>
-                                @elseif ($isDuplicatePrimary)
-                                    <form method="POST" action="{{ route('admin.my-listings.duplicate', $listing) }}">@csrf<button class="btn btn-primary" type="submit">Kopiuj jako nowy szkic</button></form>
-                                @endif
-                            </div>
+                            @can('update', $listing)
+                                <a href="{{ route('admin.my-listings.edit', $listing) }}" class="btn btn-primary">Edytuj</a>
+                            @endcan
 
-                            <details class="listing-actions-menu">
-                                <summary>Więcej działań</summary>
-                                <div class="listing-actions-menu__items">
-                                    @if (! $isEditPrimary)
-                                        @can('update', $listing)<a href="{{ route('admin.my-listings.edit', $listing) }}" class="btn btn-secondary">Edytuj</a>@endcan
-                                    @endif
-                                    @can('submit', $listing)<form method="POST" action="{{ route('admin.my-listings.submit', $listing) }}">@csrf<button class="btn btn-secondary" type="submit">Wyślij do moderacji</button></form>@endcan
-                                    @can('markAsSold', $listing)<form method="POST" action="{{ route('admin.my-listings.sold', $listing) }}" data-confirm="Oznaczyć ogłoszenie „{{ $listing->title }}” jako sprzedane?">@csrf<button class="btn btn-secondary" type="submit">Oznacz jako sprzedane</button></form>@endcan
-                                    @if ($listing->isPubliclyVisible())<a href="{{ route('listings.show', $listing) }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" aria-label="Podgląd ogłoszenia {{ $listing->title }} — otwiera w nowej karcie">Podgląd publiczny</a>@endif
-                                    @if (! $isDuplicatePrimary)<form method="POST" action="{{ route('admin.my-listings.duplicate', $listing) }}">@csrf<button class="btn btn-secondary" type="submit">Kopiuj jako nowe</button></form>@endif
-                                </div>
-                            </details>
+                            @can('markAsSold', $listing)
+                                <form method="POST" action="{{ route('admin.my-listings.sold', $listing) }}" data-confirm="Oznaczyć ogłoszenie „{{ $listing->title }}” jako sprzedane?">
+                                    @csrf
+                                    <button class="btn btn-secondary" type="submit">Oznacz jako sprzedane</button>
+                                </form>
+                            @endcan
+
+                            @if ($listing->isPubliclyVisible())
+                                <a href="{{ route('listings.show', $listing) }}" class="btn btn-secondary" aria-label="Podgląd ogłoszenia {{ $listing->title }}">Podgląd</a>
+                            @endif
+
+                            @can('view', $listing)
+                                <form method="POST" action="{{ route('admin.my-listings.duplicate', $listing) }}">
+                                    @csrf
+                                    <button class="btn btn-secondary" type="submit">Kopiuj</button>
+                                </form>
+                            @endcan
 
                             @can('delete', $listing)
                                 <form method="POST" action="{{ route('admin.my-listings.destroy', $listing) }}" class="owner-listing-card__danger" data-confirm="Przenieść ogłoszenie „{{ $listing->title }}” do kosza?">

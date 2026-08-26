@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Enums\Discipline;
+use App\Enums\MemberAgeCategory;
 use App\Enums\MemberVerificationStatus;
 use App\Models\MemberProfile;
 use App\Models\User;
@@ -71,6 +72,7 @@ final class UpdateMemberProfileRequest extends AdminFormRequest
             'firearm_permit_number' => ['nullable', 'string', 'max:100'],
             'club_member_number' => ['nullable', 'string', 'max:100'],
             'joined_club_year' => ['nullable', 'integer', 'min:1900', 'max:'.now()->year],
+            'age_category' => ['nullable', Rule::enum(MemberAgeCategory::class)],
             'disciplines' => ['nullable', 'array', 'max:3'],
             'disciplines.*' => ['required', 'string', 'distinct', Rule::enum(Discipline::class)],
             'verification_status' => ['required', Rule::enum(MemberVerificationStatus::class)],
@@ -96,6 +98,7 @@ final class UpdateMemberProfileRequest extends AdminFormRequest
             'firearm_permit_number' => 'numer pozwolenia na broń',
             'club_member_number' => 'numer członkowski',
             'joined_club_year' => 'rok wstąpienia do klubu',
+            'age_category' => 'kategoria wiekowa',
             'disciplines' => 'dyscypliny',
             'disciplines.*' => 'dyscyplina',
             'verification_status' => 'status weryfikacji',

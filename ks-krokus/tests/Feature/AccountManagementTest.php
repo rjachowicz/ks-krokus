@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\Discipline;
+use App\Enums\MemberAgeCategory;
 use App\Enums\MemberVerificationStatus;
 use App\Enums\UserRole;
 use App\Models\MemberProfile;
@@ -36,6 +37,7 @@ final class AccountManagementTest extends TestCase
         MemberProfile::factory()->create([
             'user_id' => $user,
             'club_member_number' => 'CZ-100',
+            'age_category' => MemberAgeCategory::Junior,
             'disciplines' => [Discipline::Pistol->value],
         ]);
         $profile = $user->memberProfile()->firstOrFail();
@@ -54,6 +56,7 @@ final class AccountManagementTest extends TestCase
             ->assertSeeText('Jan Kowalski')
             ->assertSee('value="+48 500 100 200"', false)
             ->assertSeeText('CZ-100')
+            ->assertSeeText('Junior')
             ->assertSeeText('Pistolet')
             ->assertDontSeeText('Cudzy Użytkownik');
 
@@ -201,6 +204,7 @@ final class AccountManagementTest extends TestCase
                 'firearm_permit_number' => 'POZ-ADMIN-1',
                 'club_member_number' => 'CZ-ADMIN-1',
                 'joined_club_year' => 2020,
+                'age_category' => MemberAgeCategory::Senior->value,
                 'disciplines' => [Discipline::Pistol->value, Discipline::Rifle->value],
                 'verification_status' => MemberVerificationStatus::Verified->value,
             ])
@@ -210,6 +214,7 @@ final class AccountManagementTest extends TestCase
         $profile = $user->memberProfile()->firstOrFail();
         self::assertSame('PZSS-ADMIN-1', $profile->pzss_license_number);
         self::assertSame(['pistol', 'rifle'], $profile->disciplines);
+        self::assertSame(MemberAgeCategory::Senior, $profile->age_category);
         self::assertSame(MemberVerificationStatus::Verified, $profile->verification_status);
         self::assertSame($admin->getKey(), $profile->verified_by);
         self::assertNotNull($profile->verified_at);
@@ -245,6 +250,7 @@ final class AccountManagementTest extends TestCase
         self::assertInstanceOf(User::class, $user);
         self::assertSame($profile->getKey(), $user->memberProfile()->firstOrFail()->getKey());
         self::assertIsArray($profile->disciplines);
+        self::assertInstanceOf(MemberAgeCategory::class, $profile->age_category);
         self::assertSame(MemberVerificationStatus::Unverified, $profile->verification_status);
         self::assertNotNull($profile->pzss_license_expires_at);
     }

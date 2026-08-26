@@ -6,6 +6,10 @@ function formatBytes(bytes) {
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+function fileKey(file) {
+    return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
 export function initFileUploads() {
     document.querySelectorAll('[data-file-upload]').forEach((upload) => {
         const input = upload.querySelector('input[type="file"]');
@@ -20,6 +24,11 @@ export function initFileUploads() {
             ? form?.querySelector('[data-cover-remove]')
             : null;
         const objectUrls = new Set();
+        const cropValues = new Map();
+        const cropEnabled = input?.hasAttribute('data-crop-enabled') === true;
+        const cropName = input?.dataset.cropName || '';
+        const cropAspect = input?.dataset.cropAspect || '1.3333333333';
+        const existingCropScope = form?.querySelector('[data-existing-cover-crop]');
         let serverInvalid = input?.getAttribute('aria-invalid') === 'true';
 
         if (!input || !preview) {
@@ -76,6 +85,13 @@ export function initFileUploads() {
         };
 
         const render = () => {
+            preview.querySelectorAll('[data-crop-scope][data-crop-key]').forEach((scope) => {
+                const values = {};
+                ['x', 'y', 'width', 'height'].forEach((key) => {
+                    values[key] = scope.querySelector(`[data-crop-field="${key}"]`)?.value || '';
+                });
+                cropValues.set(scope.dataset.cropKey, values);
+            });
             objectUrls.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
             objectUrls.clear();
             preview.replaceChildren();
@@ -84,6 +100,12 @@ export function initFileUploads() {
             [...input.files].forEach((file, index) => {
                 const item = document.createElement('div');
                 item.className = 'file-preview';
+                const key = fileKey(file);
+
+                if (cropEnabled) {
+                    item.dataset.cropScope = '';
+                    item.dataset.cropKey = key;
+                }
 
                 if (file.type.startsWith('image/')) {
                     const image = document.createElement('img');
@@ -124,7 +146,37 @@ export function initFileUploads() {
                     render();
                 });
 
-                item.append(details, remove);
+                const actions = document.createElement('div');
+                actions.className = 'file-preview__actions';
+
+                if (cropEnabled && cropName !== '') {
+                    const crop = cropValues.get(key) || {};
+                    ['x', 'y', 'width', 'height'].forEach((field) => {
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.dataset.cropField = field;
+                        hidden.name = input.multiple
+                            ? `${cropName}[${index}][${field}]`
+                            : `${cropName}[${field}]`;
+                        hidden.value = crop[field] || '';
+                        hidden.disabled = hidden.value === '';
+                        item.append(hidden);
+                    });
+
+                    const cropButton = document.createElement('button');
+                    cropButton.type = 'button';
+                    cropButton.className = 'btn btn-secondary';
+                    cropButton.textContent = 'Ustaw kadr';
+                    cropButton.dataset.cropControl = '';
+                    cropButton.dataset.cropSource = `#${input.id}`;
+                    cropButton.dataset.cropFileIndex = String(index);
+                    cropButton.dataset.cropAspect = cropAspect;
+                    actions.append(cropButton);
+                }
+
+                actions.append(remove);
+
+                item.append(details, actions);
                 preview.append(item);
             });
 
@@ -135,6 +187,12 @@ export function initFileUploads() {
                     coverRemove.checked = false;
                 }
             }
+
+
+            existingCropScope?.querySelectorAll('[data-crop-field]').forEach((field) => {
+                const hasValue = field.value !== '';
+                field.disabled = input.files.length > 0 || !hasValue;
+            });
         };
 
         input.addEventListener('change', () => {

@@ -5,16 +5,52 @@ declare(strict_types=1);
 namespace App\Http\Requests\Admin;
 
 use App\Enums\EventType;
+use App\Enums\IpscDivision;
+use App\Enums\MemberAgeCategory;
+use App\Enums\PublicationStatus;
 use App\Enums\ResultStatus;
 use App\Models\EventResult;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class EventResultRequest extends AdminFormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $normalized = [];
+
+        foreach (['participant_name', 'club_name', 'category', 'score', 'classification', 'notes'] as $field) {
+            $value = $this->input($field);
+
+            if (is_string($value)) {
+                $normalized[$field] = trim($value) ?: null;
+            }
+        }
+
+        if (isset($normalized['category'])) {
+            $normalized['category'] = MemberAgeCategory::fromStoredValue(
+                $normalized['category'],
+            )?->value ?? $normalized['category'];
+        }
+
+        if (isset($normalized['classification'])) {
+            $normalized['classification'] = IpscDivision::fromStoredValue(
+                $normalized['classification'],
+            )?->value ?? $normalized['classification'];
+        }
+
+        $this->merge($normalized);
+    }
+
     public function authorize(): bool
     {
-        return $this->user()?->canManageContent() === true;
+        /** @var EventResult|null $result */
+        $result = $this->route('eventResult');
+
+        return $result instanceof EventResult
+            ? Gate::allows('update', $result)
+            : $this->user()?->canManageContent() === true;
     }
 
     public function rules(): array
@@ -41,6 +77,10 @@ class EventResultRequest extends AdminFormRequest
                         ->where(
                             'sport_events.event_type',
                             EventType::Competition->value,
+                        )
+                        ->where(
+                            'sport_events.status',
+                            PublicationStatus::Published->value,
                         );
                 });
 
@@ -64,7 +104,9 @@ class EventResultRequest extends AdminFormRequest
                 'integer',
                 Rule::exists('users', 'id')->where(function (Builder $query) use ($currentUserId): void {
                     $query->where(function (Builder $availableUser) use ($currentUserId): void {
-                        $availableUser->whereNull('deleted_at');
+                        $availableUser
+                            ->whereNull('deleted_at')
+                            ->where('is_active', true);
 
                         if ($currentUserId !== null) {
                             $availableUser->orWhere('id', $currentUserId);
@@ -79,13 +121,52 @@ class EventResultRequest extends AdminFormRequest
                 'max:255',
             ],
             'club_name' => ['nullable', 'string', 'max:255'],
-            'category' => ['nullable', 'string', 'max:255'],
+            'category' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::in($this->allowedAgeCategories($result)),
+            ],
             'score' => ['required', 'string', 'max:64'],
             'place' => ['nullable', 'integer', 'min:1', 'max:99999'],
-            'classification' => ['nullable', 'string', 'max:255'],
+            'classification' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::in($this->allowedIpscDivisions($result)),
+            ],
             'status' => ['required', Rule::enum(ResultStatus::class)],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
+    }
+
+    /** @return list<string> */
+    private function allowedAgeCategories(?EventResult $result): array
+    {
+        $values = array_column(MemberAgeCategory::cases(), 'value');
+        $historical = $result?->category;
+
+        if (
+            filled($historical)
+            && MemberAgeCategory::fromStoredValue($historical) === null
+        ) {
+            $values[] = $historical;
+        }
+
+        return $values;
+    }
+
+    /** @return list<string> */
+    private function allowedIpscDivisions(?EventResult $result): array
+    {
+        $values = array_column(IpscDivision::cases(), 'value');
+        $historical = $result?->classification;
+
+        if (filled($historical) && IpscDivision::fromStoredValue($historical) === null) {
+            $values[] = $historical;
+        }
+
+        return $values;
     }
 
     public function messages(): array

@@ -5,36 +5,32 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\EventType;
+use App\Enums\IpscDivision;
+use App\Enums\MemberAgeCategory;
+use App\Enums\PublicationStatus;
 use App\Enums\ResultStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\EventResultFilterRequest;
+use App\Http\Requests\Admin\EventResultParticipantSearchRequest;
 use App\Http\Requests\Admin\EventResultRequest;
 use App\Models\EventCompetition;
 use App\Models\EventResult;
 use App\Models\SportEvent;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 final class EventResultController extends Controller
 {
-    public function index(Request $request): View
+    public function index(EventResultFilterRequest $request): View
     {
-        $filters = $request->validate(
-            [
-                'q' => ['nullable', 'string', 'max:100'],
-                'event_id' => ['nullable', 'integer', 'exists:sport_events,id'],
-                'user_id' => ['nullable', 'integer', 'exists:users,id'],
-            ],
-            [],
-            [
-                'q' => 'wyszukiwana fraza',
-                'event_id' => 'wydarzenie',
-                'user_id' => 'użytkownik',
-            ],
-        );
+        $filters = $request->validated();
 
         $query = EventResult::query()
             ->with([
@@ -55,26 +51,74 @@ final class EventResultController extends Controller
             );
         }
 
-        if (filled($filters['user_id'] ?? null)) {
-            $query->where('user_id', (int) $filters['user_id']);
+        if (filled($filters['event_competition_id'] ?? null)) {
+            $query->where(
+                'event_competition_id',
+                (int) $filters['event_competition_id'],
+            );
+        }
+
+        if (filled($filters['status'] ?? null)) {
+            $query->where('status', (string) $filters['status']);
         }
 
         if (filled($filters['q'] ?? null)) {
             $search = trim((string) $filters['q']);
 
-            $query->where('participant_name', 'ilike', "%{$search}%");
+            $query->where(function ($builder) use ($search): void {
+                $builder
+                    ->where('participant_name', 'ilike', "%{$search}%")
+                    ->orWhereHas(
+                        'user',
+                        fn ($userQuery) => $userQuery->where(
+                            'name',
+                            'ilike',
+                            "%{$search}%",
+                        ),
+                    );
+            });
         }
 
         $results = $query->paginate(30)->withQueryString();
 
         return view('admin.results.index', [
             'results' => $results,
-            'events' => SportEvent::query()
+            'events' => SportEvent::withTrashed()
                 ->where('event_type', EventType::Competition->value)
+                ->whereHas('results')
                 ->latest('start_at')
                 ->get(),
-            'users' => User::query()->orderBy('name')->get(),
+            'eventCompetitions' => EventCompetition::query()
+                ->whereHas('results')
+                ->with(['event', 'competition'])
+                ->get()
+                ->sortByDesc(fn (EventCompetition $item) => $item->event->start_at),
+            'statuses' => ResultStatus::options(),
         ]);
+    }
+
+    public function participants(
+        EventResultParticipantSearchRequest $request,
+    ): JsonResponse {
+        $search = trim((string) $request->validated('q'));
+
+        $users = User::query()
+            ->select(['id', 'name'])
+            ->with(['memberProfile:id,user_id,age_category'])
+            ->where('is_active', true)
+            ->where('name', 'ilike', "%{$search}%")
+            ->orderBy('name')
+            ->limit(10)
+            ->get()
+            ->map(static fn (User $user): array => [
+                'id' => $user->getKey(),
+                'name' => $user->name,
+                'club_name' => (string) config('club.short_name'),
+                'category' => $user->memberProfile?->age_category?->value,
+                'category_label' => $user->memberProfile?->age_category?->label(),
+            ]);
+
+        return response()->json(['data' => $users]);
     }
 
     public function create(Request $request): View
@@ -152,7 +196,28 @@ final class EventResultController extends Controller
     public function destroy(
         EventResult $eventResult,
     ): RedirectResponse {
-        $eventResult->delete();
+        Gate::authorize('delete', $eventResult);
+
+        DB::transaction(function () use ($eventResult): void {
+            $eventId = $eventResult->eventCompetition()
+                ->value('sport_event_id');
+            $event = SportEvent::withTrashed()
+                ->whereKey($eventId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($event->status === PublicationStatus::Archived) {
+                throw new AuthorizationException(
+                    'Wyniki archiwalnych zawodów są tylko do odczytu.',
+                );
+            }
+
+            EventResult::query()
+                ->whereKey($eventResult->getKey())
+                ->lockForUpdate()
+                ->firstOrFail()
+                ->delete();
+        });
 
         return redirect()
             ->route('admin.results.index')
@@ -176,6 +241,10 @@ final class EventResultController extends Controller
                         ->where(
                             'event_type',
                             EventType::Competition->value,
+                        )
+                        ->where(
+                            'status',
+                            PublicationStatus::Published->value,
                         ),
                 );
 
@@ -194,16 +263,11 @@ final class EventResultController extends Controller
 
         return [
             'eventCompetitions' => $eventCompetitions,
-            'users' => User::withTrashed()
-                ->where(function ($query) use ($currentUserId): void {
-                    $query->whereNull('deleted_at');
-
-                    if ($currentUserId !== null) {
-                        $query->orWhere('id', $currentUserId);
-                    }
-                })
-                ->orderBy('name')
-                ->get(),
+            'currentUser' => $currentUserId === null
+                ? null
+                : User::withTrashed()->find($currentUserId),
+            'ageCategories' => MemberAgeCategory::options(),
+            'ipscDivisions' => IpscDivision::options(),
             'statuses' => ResultStatus::options(),
         ];
     }
@@ -264,33 +328,63 @@ final class EventResultController extends Controller
         $keepsCurrentCompetition = $existingResult?->event_competition_id
             === $eventCompetition->getKey();
 
+        $sourceEvent = $existingResult === null
+            ? null
+            : $candidates->get($existingResult->event_competition_id)?->sport_event_id;
+        $lockedSourceEvent = $sourceEvent === null ? null : $events->get($sourceEvent);
+
         if (
-            $eventCompetition->event->event_type !== EventType::Competition
-            || ($eventCompetition->event->trashed() && ! $keepsCurrentCompetition)
+            $lockedSourceEvent instanceof SportEvent
+            && $lockedSourceEvent->status === PublicationStatus::Archived
         ) {
             throw ValidationException::withMessages([
-                'event_competition_id' => 'Wybierz konkurencję należącą do istniejących zawodów.',
+                'event_competition_id' => 'Wyniki archiwalnych zawodów są tylko do odczytu.',
+            ]);
+        }
+
+        if (
+            $eventCompetition->event->event_type !== EventType::Competition
+            || $eventCompetition->event->status === PublicationStatus::Archived
+            || (
+                (
+                    $eventCompetition->event->trashed()
+                    || $eventCompetition->event->status !== PublicationStatus::Published
+                )
+                && ! $keepsCurrentCompetition
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'event_competition_id' => 'Wybierz konkurencję należącą do opublikowanych zawodów.',
             ]);
         }
 
         if (! empty($data['user_id'])) {
             $user = User::withTrashed()
+                ->with('memberProfile')
                 ->whereKey($data['user_id'])
                 ->lockForUpdate()
                 ->first();
             $sameLinkedUser = $user !== null
                 && $existingResult?->user_id === $user->getKey();
 
-            if ($user === null || ($user->trashed() && ! $sameLinkedUser)) {
+            if (
+                $user === null
+                || (($user->trashed() || ! $user->is_active) && ! $sameLinkedUser)
+            ) {
                 throw ValidationException::withMessages([
-                    'user_id' => 'Wybrany użytkownik nie istnieje lub został usunięty.',
+                    'user_id' => 'Wybrany użytkownik nie istnieje albo nie ma aktywnego konta.',
                 ]);
             }
 
-            $data['participant_name'] = $sameLinkedUser
-                && filled($existingResult?->participant_name)
-                    ? $existingResult->participant_name
-                    : $user->name;
+            if ($sameLinkedUser) {
+                $data['participant_name'] = $existingResult->participant_name;
+                $data['club_name'] = $existingResult->club_name;
+                $data['category'] = $existingResult->category;
+            } else {
+                $data['participant_name'] = $user->name;
+                $data['club_name'] = (string) config('club.short_name');
+                $data['category'] = $user->memberProfile?->age_category?->value;
+            }
         } else {
             $data['user_id'] = null;
         }

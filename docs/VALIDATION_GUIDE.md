@@ -148,6 +148,29 @@ je przed transakcją i ponownie po `lockForUpdate`: `is_public = true`, status
 anulowania nie przyjmuje identyfikatora subskrypcji i usuwa wyłącznie rekord
 wynikający z użytkownika sesji oraz wydarzenia w trasie.
 
+## Wyniki zawodów
+
+- Publiczne `q` ma typ string i maksymalnie 100 znaków; wyszukiwanie odbywa się
+  serwerowo przez PostgreSQL `ILIKE`, nie przez filtrowanie DOM.
+- Filtry panelu waliduje `EventResultFilterRequest`: identyfikatory wydarzenia i
+  `event_competitions` muszą istnieć, a status używa `Rule::enum(ResultStatus::class)`.
+- Autocomplete wymaga 2–100 znaków, uprawnienia zarządzania treścią i aktywnego
+  konta. Endpoint jest limitowany i nie może zwracać prywatnych pól użytkownika.
+- `event_competition_id` nowego wyniku musi wskazywać nieusunięte zawody typu
+  `competition` ze statusem `published`. Warunek trzeba powtórzyć po blokadzie
+  rekordu; wyjątek dla bieżącej relacji służy tylko edycji istniejącej historii.
+- Archiwalny wynik odrzuca update oraz delete po stronie Policy i ponownie pod
+  blokadą transakcyjną. Ukrycie przycisku w Blade nie jest zabezpieczeniem.
+- Dla wybranego użytkownika backend nadpisuje przesłane imię, klub i kategorię
+  bieżącymi wartościami snapshotu. Ponowna edycja tego samego powiązania zachowuje
+  zapisany snapshot zamiast pobierać zmieniony profil.
+- `age_category` profilu używa `Rule::enum(MemberAgeCategory::class)` i pozostaje
+  nullable. Nowa kategoria wyniku korzysta z tego samego słownika.
+- `classification` przyjmuje kontrolowane wartości `IpscDivision`. Form Request
+  może zachować dokładnie nieznaną wartość istniejącego wyniku, ale nie pozwala
+  utworzyć nowego dowolnego stringa. Model nie castuje historycznej kolumny do
+  enumu, dzięki czemu starszy rekord nie powoduje błędu odczytu.
+
 ## Blade
 
 Dodawaj `aria-invalid`, `aria-describedby` i komunikat pod polem. Na górze może być podsumowanie, ale nie zamiast komunikatów przy polach.

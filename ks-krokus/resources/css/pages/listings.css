@@ -37,7 +37,6 @@
 
 .listing-filters__more summary,
 .listing-admin-filter__more summary,
-.listing-actions-menu summary,
 .moderation-rejection summary,
 .listing-report summary {
     width: fit-content;
@@ -50,7 +49,6 @@
 
 .listing-filters__more summary::after,
 .listing-admin-filter__more summary::after,
-.listing-actions-menu summary::after,
 .moderation-rejection summary::after,
 .listing-report summary::after {
     margin-left: 8px;
@@ -60,7 +58,6 @@
 
 .listing-filters__more[open] summary::after,
 .listing-admin-filter__more[open] summary::after,
-.listing-actions-menu[open] summary::after,
 .moderation-rejection[open] summary::after,
 .listing-report[open] summary::after {
     content: "−";
@@ -330,6 +327,11 @@
     grid-template-columns: minmax(0, 1fr) minmax(310px, 370px);
 }
 
+.listing-detail__layout > * {
+    min-width: 0;
+    max-width: 100%;
+}
+
 .listing-detail__main {
     min-width: 0;
 }
@@ -460,15 +462,21 @@
 .listing-contact-card {
     position: sticky;
     top: 108px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    align-self: start;
     padding: 0;
-    overflow: hidden;
 }
 
 .listing-detail__price {
     display: grid;
+    min-width: 0;
+    max-width: 100%;
     gap: 2px;
     padding: 22px 24px;
     border-bottom: 1px solid var(--line);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
     background: var(--surface-muted);
 }
 
@@ -500,28 +508,39 @@
 }
 
 .listing-contact-card__content {
+    min-width: 0;
+    max-width: 100%;
     padding: 22px 24px 4px;
 }
 
 .listing-contact-card__name {
+    max-width: 100%;
     margin-bottom: 16px;
     color: var(--text);
     font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .listing-contact-actions {
     display: grid;
+    min-width: 0;
+    max-width: 100%;
     gap: 9px;
 }
 
 .listing-contact-actions .btn {
     width: 100%;
     min-width: 0;
+    max-width: 100%;
     flex-direction: column;
     gap: 0;
+    padding-inline: 14px;
+    overflow-wrap: anywhere;
 }
 
 .listing-contact-actions__value {
+    display: block;
+    min-width: 0;
     max-width: 100%;
     font-size: .72rem;
     font-weight: 500;
@@ -529,14 +548,19 @@
 }
 
 .listing-contact-card__empty {
+    min-width: 0;
+    max-width: 100%;
     padding: 12px;
     border: 1px dashed var(--line-strong);
     border-radius: 9px;
     color: var(--text-muted);
     font-size: .85rem;
+    overflow-wrap: anywhere;
 }
 
 .listing-disclaimer {
+    min-width: 0;
+    max-width: calc(100% - 48px);
     margin: 20px 24px 24px;
     padding: 14px;
     border-left: 3px solid var(--gold-strong);
@@ -545,15 +569,18 @@
 }
 
 .listing-disclaimer p {
+    min-width: 0;
+    max-width: 100%;
     margin: 5px 0 0;
     color: var(--text-muted);
     font-size: .8rem;
     line-height: 1.55;
+    overflow-wrap: anywhere;
 }
 
 .listing-report-section {
-    max-width: 860px;
-    margin-top: var(--content-gap);
+    min-width: 0;
+    max-width: 100%;
 }
 
 .listing-report > p {
@@ -564,7 +591,8 @@
 
 .listing-report form {
     display: grid;
-    max-width: 680px;
+    min-width: 0;
+    max-width: 100%;
     gap: 14px;
 }
 
@@ -950,33 +978,11 @@
     padding-top: 2px;
 }
 
-.owner-listing-card__primary-action,
-.owner-listing-card__primary-action form,
-.listing-actions-menu__items form {
+.owner-listing-card__actions form {
     display: flex;
 }
 
-.listing-actions-menu {
-    position: relative;
-}
-
-.listing-actions-menu summary {
-    display: inline-flex;
-    padding: 8px 12px;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-control);
-    background: var(--surface);
-    font-size: .82rem;
-}
-
-.listing-actions-menu__items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding-top: 9px;
-}
-
-.listing-actions-menu__items .btn,
+.owner-listing-card__actions form .btn,
 .owner-listing-card__danger .btn {
     min-height: 40px;
     padding: 8px 12px;
@@ -1446,21 +1452,12 @@
         padding: 16px 14px;
     }
 
-    .owner-listing-card__primary-action,
-    .owner-listing-card__primary-action form,
-    .owner-listing-card__primary-action .btn,
-    .listing-actions-menu,
-    .listing-actions-menu summary,
-    .listing-actions-menu__items,
-    .listing-actions-menu__items form,
-    .listing-actions-menu__items .btn,
+    .owner-listing-card__actions > .btn,
+    .owner-listing-card__actions > form,
+    .owner-listing-card__actions > form .btn,
     .owner-listing-card__danger,
     .owner-listing-card__danger .btn {
         width: 100%;
-    }
-
-    .listing-actions-menu__items {
-        display: grid;
     }
 
     .owner-listing-card__danger {

@@ -40,6 +40,11 @@ class PostRequest extends AdminFormRequest
                 'dimensions:max_width=12000,max_height=12000',
             ],
             'cover_image_alt' => ['nullable', 'string', 'max:255'],
+            'cover_crop' => ['nullable', 'array:x,y,width,height'],
+            'cover_crop.x' => ['required_with:cover_crop', 'numeric', 'between:0,1'],
+            'cover_crop.y' => ['required_with:cover_crop', 'numeric', 'between:0,1'],
+            'cover_crop.width' => ['required_with:cover_crop', 'numeric', 'gt:0', 'max:1'],
+            'cover_crop.height' => ['required_with:cover_crop', 'numeric', 'gt:0', 'max:1'],
             'remove_cover' => ['nullable', 'boolean'],
             'gallery_images' => ['nullable', 'array', "max:{$maxGalleryImages}"],
             'gallery_images.*' => [
@@ -48,11 +53,22 @@ class PostRequest extends AdminFormRequest
                 "max:{$maxImageSize}",
                 'dimensions:max_width=12000,max_height=12000',
             ],
+            'gallery_crops' => ['nullable', 'array', "max:{$maxGalleryImages}"],
+            'gallery_crops.*' => ['array:x,y,width,height'],
+            'gallery_crops.*.x' => ['required', 'numeric', 'between:0,1'],
+            'gallery_crops.*.y' => ['required', 'numeric', 'between:0,1'],
+            'gallery_crops.*.width' => ['required', 'numeric', 'gt:0', 'max:1'],
+            'gallery_crops.*.height' => ['required', 'numeric', 'gt:0', 'max:1'],
             'existing_images' => ['nullable', 'array'],
             'existing_images.*' => ['array'],
             'existing_images.*.alt_text' => ['nullable', 'string', 'max:255'],
             'existing_images.*.caption' => ['nullable', 'string', 'max:1000'],
             'existing_images.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
+            'existing_images.*.crop' => ['nullable', 'array:x,y,width,height'],
+            'existing_images.*.crop.x' => ['required_with:existing_images.*.crop', 'numeric', 'between:0,1'],
+            'existing_images.*.crop.y' => ['required_with:existing_images.*.crop', 'numeric', 'between:0,1'],
+            'existing_images.*.crop.width' => ['required_with:existing_images.*.crop', 'numeric', 'gt:0', 'max:1'],
+            'existing_images.*.crop.height' => ['required_with:existing_images.*.crop', 'numeric', 'gt:0', 'max:1'],
             'delete_images' => ['nullable', 'array'],
             'delete_images.*' => [
                 'integer',
@@ -99,6 +115,19 @@ class PostRequest extends AdminFormRequest
                     'gallery_images',
                     "Galeria może zawierać maksymalnie {$maxGalleryImages} zdjęć.",
                 );
+            }
+
+            $this->validateCropBounds($validator, ['cover' => $this->input('cover_crop')], 'cover_crop');
+            $this->validateCropBounds($validator, (array) $this->input('gallery_crops', []), 'gallery_crops');
+
+            foreach ((array) $this->input('existing_images', []) as $imageId => $values) {
+                if (is_array($values) && isset($values['crop'])) {
+                    $this->validateCropBounds(
+                        $validator,
+                        [$imageId => $values['crop']],
+                        'existing_images',
+                    );
+                }
             }
 
             $existingImageData = $this->input('existing_images', []);
@@ -158,6 +187,8 @@ class PostRequest extends AdminFormRequest
             'gallery_images.*.mimes' => 'Zdjęcia galerii muszą być w formacie JPG, PNG lub WebP.',
             'gallery_images.*.max' => 'Każde zdjęcie galerii może mieć maksymalnie 6 MB.',
             'gallery_images.*.dimensions' => 'Każde zdjęcie galerii może mieć maksymalnie 12 000 × 12 000 pikseli.',
+            'cover_crop.*.numeric' => 'Współrzędne kadru okładki muszą być liczbami.',
+            'gallery_crops.*.*.numeric' => 'Współrzędne kadru miniatury muszą być liczbami.',
             'delete_images.*.exists' => 'Co najmniej jedno usuwane zdjęcie nie należy do tej aktualności.',
         ];
     }
@@ -186,5 +217,35 @@ class PostRequest extends AdminFormRequest
         }
 
         return array_values(array_unique($ids));
+    }
+
+    /** @param array<array-key, mixed> $crops */
+    private function validateCropBounds(Validator $validator, array $crops, string $prefix): void
+    {
+        foreach ($crops as $key => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+
+            $x = filter_var($value['x'] ?? null, FILTER_VALIDATE_FLOAT);
+            $y = filter_var($value['y'] ?? null, FILTER_VALIDATE_FLOAT);
+            $width = filter_var($value['width'] ?? null, FILTER_VALIDATE_FLOAT);
+            $height = filter_var($value['height'] ?? null, FILTER_VALIDATE_FLOAT);
+
+            if (
+                $x !== false
+                && $y !== false
+                && $width !== false
+                && $height !== false
+                && (($x + $width) > 1.000001 || ($y + $height) > 1.000001)
+            ) {
+                $field = match ($prefix) {
+                    'cover_crop' => 'cover_crop',
+                    'existing_images' => "existing_images.{$key}.crop",
+                    default => "{$prefix}.{$key}",
+                };
+                $validator->errors()->add($field, 'Kadr nie może wykraczać poza zdjęcie.');
+            }
+        }
     }
 }

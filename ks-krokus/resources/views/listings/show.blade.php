@@ -4,7 +4,17 @@
 @section('body_class', 'listing-detail-page')
 
 @php
-    $primaryImage = $listing->images->first();
+    $galleryImages = $listing->images
+        ->map(fn ($image) => [
+            'image' => $image,
+            'url' => $image->url(),
+            'thumbnail_url' => $image->thumbnailUrl(),
+        ])
+        ->filter(fn ($item) => $item['url'] !== null)
+        ->values();
+    $primaryMedia = $galleryImages->first();
+    $primaryImage = $primaryMedia['image'] ?? null;
+    $primaryImageUrl = $primaryMedia['url'] ?? null;
     $hasPublicContact = ($listing->show_phone && $listing->contact_phone)
         || ($listing->show_email && $listing->contact_email);
 @endphp
@@ -29,9 +39,9 @@
 
                     <figure class="listing-gallery__stage">
                         @if ($primaryImage)
-                            <a href="{{ $primaryImage->url() }}" data-listing-gallery-open aria-label="Powiększ zdjęcie: {{ $primaryImage->alt_text ?: $listing->title }}">
+                            <a href="{{ $primaryImageUrl }}" data-listing-gallery-open aria-label="Powiększ zdjęcie: {{ $primaryImage->alt_text ?: $listing->title }}">
                                 <img
-                                    src="{{ $primaryImage->url() }}"
+                                    src="{{ $primaryImageUrl }}"
                                     alt="{{ $primaryImage->alt_text ?: $listing->title }}"
                                     data-listing-gallery-main
                                 >
@@ -42,20 +52,25 @@
                         @endif
                     </figure>
 
-                    @if ($listing->images->count() > 1)
+                    @if ($galleryImages->count() > 1)
                         <div class="listing-gallery__thumbnails" aria-label="Wybierz zdjęcie">
-                            @foreach ($listing->images as $image)
+                            @foreach ($galleryImages as $media)
+                                @php($image = $media['image'])
                                 <a
-                                    href="{{ $image->url() }}"
+                                    href="{{ $media['url'] }}"
                                     class="listing-gallery__thumbnail"
                                     data-listing-gallery-thumbnail
-                                    data-src="{{ $image->url() }}"
+                                    data-src="{{ $media['url'] }}"
                                     data-alt="{{ $image->alt_text ?: $listing->title }}"
                                     data-caption="{{ $image->caption }}"
-                                    aria-label="Pokaż zdjęcie {{ $loop->iteration }} z {{ $listing->images->count() }}"
+                                    aria-label="Pokaż zdjęcie {{ $loop->iteration }} z {{ $galleryImages->count() }}"
                                     @if ($loop->first) aria-current="true" @endif
                                 >
-                                    <img src="{{ $image->thumbnailUrl() }}" alt="" loading="lazy">
+                                    @if ($media['thumbnail_url'])
+                                        <img src="{{ $media['thumbnail_url'] }}" alt="" loading="lazy">
+                                    @else
+                                        <x-image-placeholder />
+                                    @endif
                                 </a>
                             @endforeach
                         </div>
@@ -80,6 +95,36 @@
                         @if ($listing->location)<div><dt>Lokalizacja</dt><dd>{{ $listing->location }}</dd></div>@endif
                         @if ($listing->expires_at)<div><dt>Wygasa</dt><dd><time datetime="{{ $listing->expires_at->toDateString() }}">{{ $listing->expires_at->format('d.m.Y') }}</time></dd></div>@endif
                     </dl>
+                </section>
+
+                <section class="listing-detail__panel listing-report-section panel-card" aria-labelledby="listing-report-heading">
+                    <details class="listing-report" @if ($errors->hasAny(['reason', 'details', 'website'])) open @endif>
+                        <summary id="listing-report-heading">Zgłoś nieaktualne lub niewłaściwe ogłoszenie</summary>
+                        <p>Zgłoszenie trafi do administratora i nie jest widoczne dla sprzedającego.</p>
+                        <form method="POST" action="{{ route('listings.report', $listing) }}" class="contact-form">
+                            @csrf
+                            <label for="listing-report-reason">
+                                <span class="form-label-text">
+                                    Powód zgłoszenia <span class="form-required" aria-hidden="true">*</span>
+                                    <span class="sr-only">(pole wymagane)</span>
+                                </span>
+                                <select id="listing-report-reason" name="reason" required @error('reason') aria-invalid="true" aria-describedby="listing-report-reason-error" @enderror>
+                                    <option value="">Wybierz powód</option>
+                                    @foreach ($reportReasons as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('reason') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('reason') <span id="listing-report-reason-error" class="form-error">{{ $message }}</span> @enderror
+                            </label>
+                            <label for="listing-report-details">
+                                Dodatkowe informacje
+                                <textarea id="listing-report-details" name="details" rows="4" maxlength="2000" @error('details') aria-invalid="true" aria-describedby="listing-report-details-error" @enderror>{{ old('details') }}</textarea>
+                                @error('details') <span id="listing-report-details-error" class="form-error">{{ $message }}</span> @enderror
+                            </label>
+                            <div class="form-honeypot" aria-hidden="true"><label>Strona internetowa <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+                            <button type="submit" class="btn btn-secondary">Wyślij zgłoszenie</button>
+                        </form>
+                    </details>
                 </section>
             </div>
 
@@ -119,36 +164,6 @@
             </aside>
         </div>
 
-        <section class="listing-report-section panel-card" aria-labelledby="listing-report-heading">
-            <details class="listing-report" @if ($errors->hasAny(['reason', 'details', 'website'])) open @endif>
-                <summary id="listing-report-heading">Zgłoś nieaktualne lub niewłaściwe ogłoszenie</summary>
-                <p>Zgłoszenie trafi do administratora i nie jest widoczne dla sprzedającego.</p>
-                <form method="POST" action="{{ route('listings.report', $listing) }}" class="contact-form">
-                    @csrf
-                    <label for="listing-report-reason">
-                        <span class="form-label-text">
-                            Powód zgłoszenia <span class="form-required" aria-hidden="true">*</span>
-                            <span class="sr-only">(pole wymagane)</span>
-                        </span>
-                        <select id="listing-report-reason" name="reason" required @error('reason') aria-invalid="true" aria-describedby="listing-report-reason-error" @enderror>
-                            <option value="">Wybierz powód</option>
-                            @foreach ($reportReasons as $value => $label)
-                                <option value="{{ $value }}" @selected(old('reason') === $value)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        @error('reason') <span id="listing-report-reason-error" class="form-error">{{ $message }}</span> @enderror
-                    </label>
-                    <label for="listing-report-details">
-                        Dodatkowe informacje
-                        <textarea id="listing-report-details" name="details" rows="4" maxlength="2000" @error('details') aria-invalid="true" aria-describedby="listing-report-details-error" @enderror>{{ old('details') }}</textarea>
-                        @error('details') <span id="listing-report-details-error" class="form-error">{{ $message }}</span> @enderror
-                    </label>
-                    <div class="form-honeypot" aria-hidden="true"><label>Strona internetowa <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-                    <button type="submit" class="btn btn-secondary">Wyślij zgłoszenie</button>
-                </form>
-            </details>
-        </section>
-
         @if ($primaryImage)
             <dialog class="listing-lightbox" aria-labelledby="listing-lightbox-title" data-listing-lightbox>
                 <div class="listing-lightbox__header">
@@ -156,7 +171,7 @@
                     <button type="button" class="listing-lightbox__close" aria-label="Zamknij podgląd zdjęcia" data-listing-lightbox-close>×</button>
                 </div>
                 <figure>
-                    <img src="{{ $primaryImage->url() }}" alt="{{ $primaryImage->alt_text ?: $listing->title }}" data-listing-lightbox-image>
+                    <img src="{{ $primaryImageUrl }}" alt="{{ $primaryImage->alt_text ?: $listing->title }}" data-listing-lightbox-image>
                     <figcaption data-listing-lightbox-caption @if (! $primaryImage->caption) hidden @endif>{{ $primaryImage->caption }}</figcaption>
                 </figure>
             </dialog>

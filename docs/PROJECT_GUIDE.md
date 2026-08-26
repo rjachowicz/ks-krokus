@@ -103,6 +103,30 @@ czas potwierdzenia. Wyłączenie nie wymaga hasła, zeruje czas potwierdzenia or
 usuwa wszystkie subskrypcje użytkownika, dzięki czemu zatrzymuje również
 zakolejkowane, ale jeszcze niewysłane przypomnienie.
 
+## Wyniki zawodów
+
+Publiczny szczegół zawodów pozwala wyszukać zawodnika parametrem GET `q` po
+imieniu, nazwisku lub pełnej nazwie. Filtrowanie odbywa się w PostgreSQL przez
+`ILIKE`, zachowuje grupowanie konkurencji, ukrywa puste grupy i podaje liczbę
+dopasowanych wyników.
+
+Panel wyników filtruje po wydarzeniu, rzeczywistym przypisaniu
+`event_competitions`, nazwie zawodnika i statusie. Formularz nie pobiera pełnej
+listy kont: chroniony i limitowany endpoint autocomplete zwraca maksymalnie 10
+aktywnych użytkowników oraz wyłącznie identyfikator, nazwę, centralną nazwę klubu
+i kategorię wiekową. Wybór konta zapisuje w wyniku snapshot imienia i nazwiska,
+klubu oraz kategorii; późniejsza zmiana profilu nie aktualizuje historii.
+Zawodnika zewnętrznego nadal można wpisać ręcznie.
+
+Nowy wynik można dodać wyłącznie do nieusuniętych, opublikowanych zawodów.
+Wyniki wydarzenia o statusie `archived` są tylko do odczytu: serwer blokuje ich
+aktualizację, przeniesienie i usunięcie. Ponowne ustawienie wydarzenia jako
+`published` przywraca możliwość edycji.
+
+Kategoria wiekowa należy do `MemberProfile` i używa `MemberAgeCategory`.
+Dywizja IPSC używa `IpscDivision`; rozpoznane starsze etykiety są normalizowane,
+a nieznane wartości historyczne pozostają czytelne i możliwe do zachowania.
+
 ## Centrum powiadomień
 
 Aktywny zalogowany użytkownik ma pod `/powiadomienia` paginowaną listę własnych

@@ -18,13 +18,18 @@
             @endif
         </header>
 
-        @if ($post->coverUrl())
+        @php($coverUrl = $post->coverVariantUrl())
+        @if ($coverUrl)
             <figure class="article-cover">
                 <img
-                    src="{{ $post->coverUrl() }}"
+                    src="{{ $coverUrl }}"
                     alt="{{ $post->cover_image_alt ?: $post->title }}"
                 >
             </figure>
+        @elseif ($post->cover_image_path || $post->cover_variant_path)
+            <div class="article-cover">
+                <x-image-placeholder label="Zdjęcie aktualności jest chwilowo niedostępne" />
+            </div>
         @endif
 
         <div class="article-body">
@@ -34,12 +39,17 @@
         @if ($post->images->isNotEmpty())
             <div class="article-gallery">
                 @foreach ($post->images as $image)
+                    @php($imageUrl = $image->url())
                     <figure>
-                        <img
-                            src="{{ $image->url() }}"
-                            alt="{{ $image->alt_text ?: $post->title }}"
-                            loading="lazy"
-                        >
+                        @if ($imageUrl)
+                            <img
+                                src="{{ $imageUrl }}"
+                                alt="{{ $image->alt_text ?: $post->title }}"
+                                loading="lazy"
+                            >
+                        @else
+                            <x-image-placeholder />
+                        @endif
 
                         @if ($image->caption)
                             <figcaption>{{ $image->caption }}</figcaption>

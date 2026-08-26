@@ -63,12 +63,23 @@ abstract class SaleListingFormRequest extends LocalizedFormRequest
             'new_image_alt.*' => ['nullable', 'string', 'max:255'],
             'new_image_caption' => ['nullable', 'array', "max:{$maxImages}"],
             'new_image_caption.*' => ['nullable', 'string', 'max:1000'],
+            'new_image_crop' => ['nullable', 'array', "max:{$maxImages}"],
+            'new_image_crop.*' => ['array:x,y,width,height'],
+            'new_image_crop.*.x' => ['required', 'numeric', 'between:0,1'],
+            'new_image_crop.*.y' => ['required', 'numeric', 'between:0,1'],
+            'new_image_crop.*.width' => ['required', 'numeric', 'gt:0', 'max:1'],
+            'new_image_crop.*.height' => ['required', 'numeric', 'gt:0', 'max:1'],
             'primary_new_index' => ['nullable', 'integer', 'min:0', 'max:9'],
             'existing_images' => ['nullable', 'array'],
             'existing_images.*' => ['array'],
             'existing_images.*.alt_text' => ['nullable', 'string', 'max:255'],
             'existing_images.*.caption' => ['nullable', 'string', 'max:1000'],
             'existing_images.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
+            'existing_images.*.crop' => ['nullable', 'array:x,y,width,height'],
+            'existing_images.*.crop.x' => ['required_with:existing_images.*.crop', 'numeric', 'between:0,1'],
+            'existing_images.*.crop.y' => ['required_with:existing_images.*.crop', 'numeric', 'between:0,1'],
+            'existing_images.*.crop.width' => ['required_with:existing_images.*.crop', 'numeric', 'gt:0', 'max:1'],
+            'existing_images.*.crop.height' => ['required_with:existing_images.*.crop', 'numeric', 'gt:0', 'max:1'],
             'primary_image_id' => [
                 'nullable',
                 'integer',
@@ -113,6 +124,18 @@ abstract class SaleListingFormRequest extends LocalizedFormRequest
                 $validator->errors()->add('images', "Możesz dodać maksymalnie {$maxImages} zdjęć.");
             }
 
+            $this->validateCropBounds($validator, (array) $this->input('new_image_crop', []), 'new_image_crop');
+
+            foreach ((array) $this->input('existing_images', []) as $imageId => $values) {
+                if (is_array($values) && isset($values['crop'])) {
+                    $this->validateCropBounds(
+                        $validator,
+                        [$imageId => $values['crop']],
+                        'existing_images',
+                    );
+                }
+            }
+
             $ownerEditingApproved = $listing instanceof SaleListing
                 && $listing->status === SaleListingStatus::Approved
                 && $this->user()?->canManageContent() === false;
@@ -141,6 +164,10 @@ abstract class SaleListingFormRequest extends LocalizedFormRequest
             'images.*.mimes' => 'Zdjęcie musi być w formacie JPG, PNG lub WEBP.',
             'images.*.max' => 'Jedno zdjęcie może mieć maksymalnie 6 MB.',
             'images.*.dimensions' => 'Zdjęcie ma zbyt duże wymiary. Maksymalnie 12000 × 12000 px.',
+            'new_image_crop.*.*.numeric' => 'Współrzędne kadru muszą być liczbami.',
+            'new_image_crop.*.*.between' => 'Współrzędne kadru muszą mieścić się w zakresie od 0 do 1.',
+            'new_image_crop.*.*.gt' => 'Szerokość i wysokość kadru muszą być większe od zera.',
+            'existing_images.*.crop.*.numeric' => 'Współrzędne kadru muszą być liczbami.',
         ];
     }
 
@@ -168,10 +195,13 @@ abstract class SaleListingFormRequest extends LocalizedFormRequest
             'images.*' => 'zdjęcie',
             'new_image_alt.*' => 'tekst alternatywny zdjęcia',
             'new_image_caption.*' => 'opis zdjęcia',
+            'new_image_crop' => 'kadry nowych zdjęć',
+            'new_image_crop.*' => 'kadr zdjęcia',
             'existing_images' => 'zapisane zdjęcia',
             'existing_images.*.alt_text' => 'tekst alternatywny zdjęcia',
             'existing_images.*.caption' => 'opis zdjęcia',
             'existing_images.*.sort_order' => 'kolejność zdjęcia',
+            'existing_images.*.crop' => 'kadr zapisanego zdjęcia',
             'primary_image_id' => 'zdjęcie główne',
             'delete_images' => 'usuwane zdjęcia',
             'delete_images.*' => 'usuwane zdjęcie',
@@ -185,6 +215,7 @@ abstract class SaleListingFormRequest extends LocalizedFormRequest
             'images',
             'new_image_alt',
             'new_image_caption',
+            'new_image_crop',
             'existing_images',
             'delete_images',
         ];
@@ -208,5 +239,33 @@ abstract class SaleListingFormRequest extends LocalizedFormRequest
         }
 
         return array_values(array_unique($ids));
+    }
+
+    /** @param array<array-key, mixed> $crops */
+    private function validateCropBounds(Validator $validator, array $crops, string $prefix): void
+    {
+        foreach ($crops as $key => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+
+            $x = filter_var($value['x'] ?? null, FILTER_VALIDATE_FLOAT);
+            $y = filter_var($value['y'] ?? null, FILTER_VALIDATE_FLOAT);
+            $width = filter_var($value['width'] ?? null, FILTER_VALIDATE_FLOAT);
+            $height = filter_var($value['height'] ?? null, FILTER_VALIDATE_FLOAT);
+
+            if (
+                $x !== false
+                && $y !== false
+                && $width !== false
+                && $height !== false
+                && (($x + $width) > 1.000001 || ($y + $height) > 1.000001)
+            ) {
+                $field = $prefix === 'existing_images'
+                    ? "existing_images.{$key}.crop"
+                    : "{$prefix}.{$key}";
+                $validator->errors()->add($field, 'Kadr nie może wykraczać poza zdjęcie.');
+            }
+        }
     }
 }

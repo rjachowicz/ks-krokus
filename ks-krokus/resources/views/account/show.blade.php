@@ -253,6 +253,7 @@
                     <div><dt>Numer pozwolenia na broń</dt><dd>{{ $user->memberProfile->firearm_permit_number ?: '—' }}</dd></div>
                     <div><dt>Numer członkowski</dt><dd>{{ $user->memberProfile->club_member_number ?: '—' }}</dd></div>
                     <div><dt>Rok wstąpienia do klubu</dt><dd>{{ $user->memberProfile->joined_club_year ?: '—' }}</dd></div>
+                    <div><dt>Kategoria wiekowa</dt><dd>{{ $user->memberProfile->age_category?->label() ?: '—' }}</dd></div>
                     <div class="account-data-grid__full">
                         <dt>Dyscypliny</dt>
                         <dd>

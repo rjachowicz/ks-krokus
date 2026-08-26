@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\MemberAgeCategory;
 use App\Enums\MemberVerificationStatus;
 use Database\Factories\MemberProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,6 +25,7 @@ final class MemberProfile extends Model
         'firearm_permit_number',
         'club_member_number',
         'joined_club_year',
+        'age_category',
         'disciplines',
         'verification_status',
         'verified_at',
@@ -35,6 +37,7 @@ final class MemberProfile extends Model
         return [
             'pzss_license_expires_at' => 'date',
             'joined_club_year' => 'integer',
+            'age_category' => MemberAgeCategory::class,
             'disciplines' => 'array',
             'verification_status' => MemberVerificationStatus::class,
             'verified_at' => 'datetime',

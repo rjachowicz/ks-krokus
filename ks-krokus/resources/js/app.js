@@ -32,6 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (document.querySelector('[data-crop-control], [data-crop-enabled]')) {
+        import('./modules/media-cropper').then(({ initMediaCropper }) => {
+            initMediaCropper();
+        });
+    }
+
     if (document.querySelector('[data-listing-images], [data-listing-gallery]')) {
         import('./modules/listing-images').then(({ initListingGallery, initListingImages }) => {
             initListingGallery();
@@ -48,6 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('[data-event-dialog]')) {
         import('./modules/event-dialog').then(({ initEventDialogs }) => {
             initEventDialogs();
+        });
+    }
+
+    if (document.querySelector('[data-result-user-combobox]')) {
+        import('./modules/result-user-combobox').then(({ initResultUserComboboxes }) => {
+            initResultUserComboboxes();
         });
     }
 

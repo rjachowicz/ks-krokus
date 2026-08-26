@@ -83,6 +83,18 @@
                         @error('joined_club_year') aria-invalid="true" aria-describedby="member-joined-year-error" @enderror>
                     @error('joined_club_year') <span id="member-joined-year-error" class="form-error" role="alert">{{ $message }}</span> @enderror
                 </label>
+
+                <label>
+                    Kategoria wiekowa
+                    <select id="member-age-category" name="age_category"
+                        @error('age_category') aria-invalid="true" aria-describedby="member-age-category-error" @enderror>
+                        <option value="">Nie określono</option>
+                        @foreach ($ageCategories as $value => $label)
+                            <option value="{{ $value }}" @selected(old('age_category', $profile?->age_category?->value) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('age_category') <span id="member-age-category-error" class="form-error" role="alert">{{ $message }}</span> @enderror
+                </label>
             </div>
         </section>
 

@@ -66,9 +66,10 @@ final class SaleListingPersistence
         SaleListing $listing,
     ): SaleListing {
         $uploads = $this->prepareUploads($request);
+        $generatedVariants = [];
 
         try {
-            [$updated, $pathsToDelete] = DB::transaction(function () use ($request, $listing, $uploads): array {
+            [$updated, $pathsToDelete] = DB::transaction(function () use ($request, $listing, $uploads, &$generatedVariants): array {
                 $locked = SaleListing::query()
                     ->whereKey($listing->getKey())
                     ->lockForUpdate()
@@ -86,7 +87,13 @@ final class SaleListingPersistence
                 }
 
                 $locked->update($data);
-                $pathsToDelete = $this->updateImages($locked, $images, $uploads, $request);
+                $pathsToDelete = $this->updateImages(
+                    $locked,
+                    $images,
+                    $uploads,
+                    $request,
+                    $generatedVariants,
+                );
 
                 if (! $request->user()->canManageContent() && $fromStatus === SaleListingStatus::Approved) {
                     $locked->update([
@@ -117,7 +124,7 @@ final class SaleListingPersistence
                 return [$locked->refresh(), $pathsToDelete];
             });
         } catch (Throwable $exception) {
-            $this->deletePaths($this->uploadPaths($uploads));
+            $this->deletePaths([...$this->uploadPaths($uploads), ...$generatedVariants]);
 
             throw $exception;
         }
@@ -160,6 +167,7 @@ final class SaleListingPersistence
                     $copy->images()->create([
                         'path' => $path,
                         'thumbnail_path' => $thumbnailPath,
+                        'crop' => $image->crop,
                         'alt_text' => $image->alt_text,
                         'caption' => $image->caption,
                         'sort_order' => $image->sort_order,
@@ -178,7 +186,7 @@ final class SaleListingPersistence
         }
     }
 
-    /** @return list<array{path: string, thumbnail_path: string|null, index: int}> */
+    /** @return list<array{path: string, thumbnail_path: string, crop: array{x: float, y: float, width: float, height: float}, index: int}> */
     private function prepareUploads(SaleListingFormRequest $request): array
     {
         $files = $request->file('images', []);
@@ -188,6 +196,7 @@ final class SaleListingPersistence
         }
 
         $uploads = [];
+        $crops = (array) $request->input('new_image_crop', []);
 
         try {
             foreach (array_values($files) as $index => $file) {
@@ -195,7 +204,10 @@ final class SaleListingPersistence
                     continue;
                 }
 
-                $stored = $this->imageStorage->store($file);
+                $stored = $this->imageStorage->store(
+                    $file,
+                    MediaCrop::fromInput($crops[$index] ?? null),
+                );
                 $uploads[] = [...$stored, 'index' => $index];
             }
         } catch (Throwable $exception) {
@@ -207,7 +219,7 @@ final class SaleListingPersistence
         return $uploads;
     }
 
-    /** @param list<array{path: string, thumbnail_path: string|null, index: int}> $uploads */
+    /** @param list<array{path: string, thumbnail_path: string, crop: array{x: float, y: float, width: float, height: float}, index: int}> $uploads */
     private function createImages(
         SaleListing $listing,
         array $uploads,
@@ -221,6 +233,7 @@ final class SaleListingPersistence
             $created[] = $listing->images()->create([
                 'path' => $upload['path'],
                 'thumbnail_path' => $upload['thumbnail_path'],
+                'crop' => $upload['crop'],
                 'alt_text' => filled($alts[$upload['index']] ?? null)
                     ? $alts[$upload['index']]
                     : $listing->title,
@@ -238,7 +251,8 @@ final class SaleListingPersistence
 
     /**
      * @param  Collection<int, SaleListingImage>  $images
-     * @param  list<array{path: string, thumbnail_path: string|null, index: int}>  $uploads
+     * @param  list<array{path: string, thumbnail_path: string, crop: array{x: float, y: float, width: float, height: float}, index: int}>  $uploads
+     * @param  list<string>  $generatedVariants
      * @return list<string>
      */
     private function updateImages(
@@ -246,6 +260,7 @@ final class SaleListingPersistence
         $images,
         array $uploads,
         SaleListingFormRequest $request,
+        array &$generatedVariants,
     ): array {
         $deleteIds = $this->normalizedIds((array) $request->input('delete_images', []));
         $selected = $images->whereIn('id', $deleteIds);
@@ -266,11 +281,30 @@ final class SaleListingPersistence
                 continue;
             }
 
-            $image->update([
+            $update = [
                 'alt_text' => $values['alt_text'] ?? null,
                 'caption' => $values['caption'] ?? null,
                 'sort_order' => (int) ($values['sort_order'] ?? $image->sort_order),
-            ]);
+            ];
+            $crop = MediaCrop::fromInput($values['crop'] ?? null);
+
+            if ($crop !== null && $crop !== $image->crop) {
+                $recropped = $this->imageStorage->recrop(
+                    $image->path,
+                    $crop,
+                    "existing_images.{$image->getKey()}.crop",
+                );
+                $generatedVariants[] = $recropped['thumbnail_path'];
+
+                if ($image->thumbnail_path !== null) {
+                    $pathsToDelete[] = $image->thumbnail_path;
+                }
+
+                $update['thumbnail_path'] = $recropped['thumbnail_path'];
+                $update['crop'] = $recropped['crop'];
+            }
+
+            $image->update($update);
         }
 
         $nextOrder = ((int) $listing->images()->max('sort_order')) + 1;
@@ -282,6 +316,7 @@ final class SaleListingPersistence
             $createdByIndex[$upload['index']] = $listing->images()->create([
                 'path' => $upload['path'],
                 'thumbnail_path' => $upload['thumbnail_path'],
+                'crop' => $upload['crop'],
                 'alt_text' => filled($alts[$upload['index']] ?? null)
                     ? $alts[$upload['index']]
                     : $listing->title,
@@ -314,7 +349,7 @@ final class SaleListingPersistence
 
     private function copyPath(string $source): string
     {
-        $disk = Storage::disk(config('listings.media_disk'));
+        $disk = Storage::disk((string) config('media.disk'));
         $extension = pathinfo($source, PATHINFO_EXTENSION);
         $directory = trim(pathinfo($source, PATHINFO_DIRNAME), '.');
         $target = $directory.'/'.Str::uuid().($extension !== '' ? '.'.$extension : '');
@@ -328,7 +363,7 @@ final class SaleListingPersistence
         return $target;
     }
 
-    /** @param list<array{path: string, thumbnail_path: string|null, index: int}> $uploads @return list<string|null> */
+    /** @param list<array{path: string, thumbnail_path: string, crop: array{x: float, y: float, width: float, height: float}, index: int}> $uploads @return list<string|null> */
     private function uploadPaths(array $uploads): array
     {
         return array_merge(...array_map(

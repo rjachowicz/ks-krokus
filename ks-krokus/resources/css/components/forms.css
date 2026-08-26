@@ -624,6 +624,107 @@ select {
     font-weight: 400;
 }
 
+.media-cropper {
+    width: min(920px, calc(100vw - 2rem));
+    max-width: 920px;
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-panel);
+    color: var(--text);
+    background: var(--surface-solid);
+}
+
+.file-preview__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.media-cropper::backdrop {
+    background: rgb(0 0 0 / 72%);
+    backdrop-filter: blur(3px);
+}
+
+.media-cropper__panel {
+    display: grid;
+    gap: var(--space-4);
+    padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.media-cropper__panel > header,
+.media-cropper__controls {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.media-cropper__panel h2,
+.media-cropper__panel p {
+    margin: 0;
+}
+
+.media-cropper__panel p {
+    margin-top: var(--space-2);
+    color: var(--text-muted);
+}
+
+.media-cropper__stage {
+    height: min(62dvh, 620px);
+    min-height: 280px;
+    overflow: hidden;
+    background: #101214;
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+}
+
+.media-cropper__stage:focus-visible {
+    outline-color: var(--gold-strong);
+}
+
+.media-cropper__stage img {
+    display: block;
+    max-width: 100%;
+}
+
+.media-cropper__controls {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+@media (max-width: 560px) {
+    .media-cropper {
+        width: calc(100vw - 1rem);
+        max-height: calc(100dvh - 1rem);
+    }
+
+    .media-cropper__panel > header,
+    .media-cropper__controls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .media-cropper__stage {
+        height: 48dvh;
+        min-height: 220px;
+    }
+
+    .media-cropper__controls .btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .media-cropper,
+    .media-cropper * {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
 .file-preview-list {
     display: grid;
     gap: 8px;

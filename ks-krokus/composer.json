@@ -11,6 +11,7 @@
         "ext-pdo": "*",
         "ext-pdo_pgsql": "*",
         "laravel/framework": "^13.8",
+        "league/flysystem-aws-s3-v3": "^3.25.1",
         "resend/resend-php": "1.7",
         "symfony/html-sanitizer": "^8.1"
     },

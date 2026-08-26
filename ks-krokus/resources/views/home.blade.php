@@ -115,10 +115,11 @@
             <div class="news-grid ui-grid ui-grid--3">
                 @foreach ($latestNews as $post)
                     <x-content-card class="news-card">
-                        @if ($post->coverUrl())
+                        @php($coverUrl = $post->coverVariantUrl())
+                        @if ($coverUrl)
                             <div class="news-card__media">
                                 <img
-                                    src="{{ $post->coverUrl() }}"
+                                    src="{{ $coverUrl }}"
                                     alt="{{ $post->cover_image_alt ?: $post->title }}"
                                     loading="lazy"
                                 >

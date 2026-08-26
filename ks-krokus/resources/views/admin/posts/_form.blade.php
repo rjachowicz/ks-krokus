@@ -20,6 +20,7 @@
         $errors->has('gallery_images') ? 'gallery-images-error' : null,
         $errors->has('gallery_images.*') ? 'gallery-image-items-error' : null,
     ]));
+    $coverUrl = isset($post) ? $post->coverUrl() : null;
 @endphp
 
 <div class="form-grid">
@@ -94,10 +95,21 @@
 
     <h2 class="admin-section-title form-grid--span-full">Zdjęcie główne</h2>
 
-    @if (isset($post) && $post->coverUrl())
-        <div class="form-grid--span-full image-edit-card">
-            <img src="{{ $post->coverUrl() }}" alt="{{ $post->cover_image_alt ?: $post->title }}">
+    @if (isset($post) && $post->cover_image_path)
+        <div class="form-grid--span-full image-edit-card" data-crop-scope data-existing-cover-crop>
+            @if ($coverUrl)
+                <img src="{{ $coverUrl }}" alt="{{ $post->cover_image_alt ?: $post->title }}">
+            @else
+                <x-image-placeholder />
+            @endif
             <div class="image-edit-card__body">
+                <x-media-crop-fields name="cover_crop" :crop="old('cover_crop', $post->cover_crop)" />
+                @if ($coverUrl)
+                    <button type="button" class="btn btn-secondary" data-crop-control
+                            data-crop-url="{{ $coverUrl }}" data-crop-aspect="1.7777777778">
+                        Ustaw ponownie kadr okładki
+                    </button>
+                @endif
                 <label class="form-check">
                     <input id="post-remove-cover" type="checkbox" name="remove_cover" value="1"
                            data-cover-remove
@@ -123,12 +135,12 @@
             <strong>Nowe zdjęcie główne</strong>
             <span>Przeciągnij obraz tutaj lub wybierz plik</span>
             <input id="post-cover-image" type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
-                   data-cover-file
+                   data-cover-file data-crop-enabled data-crop-name="cover_crop" data-crop-aspect="1.7777777778"
                    aria-describedby="post-cover-image-help @error('cover_image') cover-image-error @enderror"
                    @error('cover_image') aria-invalid="true" @enderror>
             <small id="post-cover-image-help">
                 JPG, PNG lub WebP, maksymalnie 6 MB.
-                @if (isset($post) && $post->coverUrl())
+                @if ($coverUrl)
                     Nowy plik zastąpi obecne zdjęcie.
                 @endif
             </small>
@@ -137,6 +149,9 @@
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
         <p class="form-error" data-file-error aria-live="assertive" hidden></p>
+        @if ($errors->has('cover_crop') || $errors->has('cover_crop.*'))
+            <span class="form-error" role="alert">{{ $errors->first('cover_crop') ?: $errors->first('cover_crop.*') }}</span>
+        @endif
     </div>
 
     <label>
@@ -171,6 +186,7 @@
                 name="gallery_images[]"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
+                data-crop-enabled data-crop-name="gallery_crops" data-crop-aspect="1.3333333333"
                 aria-describedby="post-gallery-images-help{{ $galleryErrorIds !== '' ? ' '.$galleryErrorIds : '' }}"
                 @if ($galleryErrorIds !== '')
                     aria-invalid="true"
@@ -184,6 +200,9 @@
         </label>
         <div class="file-preview-list" data-file-preview aria-live="polite"></div>
         <p class="form-error" data-file-error aria-live="assertive" hidden></p>
+        @if ($errors->has('gallery_crops') || $errors->has('gallery_crops.*'))
+            <span class="form-error" role="alert">{{ $errors->first('gallery_crops') ?: $errors->first('gallery_crops.*') }}</span>
+        @endif
     </div>
 
     @if (isset($post) && $post->images->isNotEmpty())
@@ -202,10 +221,28 @@
             @endif
         >
             @foreach ($post->images as $image)
-                <div class="image-edit-card">
-                    <img src="{{ $image->url() }}" alt="{{ $image->alt_text ?: $post->title }}">
+                @php($imageUrl = $image->url())
+                <div class="image-edit-card" data-crop-scope>
+                    @if ($imageUrl)
+                        <img src="{{ $imageUrl }}" alt="{{ $image->alt_text ?: $post->title }}">
+                    @else
+                        <x-image-placeholder />
+                    @endif
 
                     <div class="image-edit-card__body">
+                        <x-media-crop-fields
+                            name="existing_images[{{ $image->id }}][crop]"
+                            :crop="old("existing_images.{$image->id}.crop", $image->crop)"
+                        />
+                        @if ($imageUrl)
+                            <button type="button" class="btn btn-secondary" data-crop-control
+                                    data-crop-url="{{ $imageUrl }}" data-crop-aspect="1.3333333333">
+                                Ustaw ponownie kadr miniatury
+                            </button>
+                        @endif
+                        @if ($errors->has("existing_images.{$image->id}.crop") || $errors->has("existing_images.{$image->id}.crop.*"))
+                            <span class="form-error" role="alert">{{ $errors->first("existing_images.{$image->id}.crop") ?: $errors->first("existing_images.{$image->id}.crop.*") }}</span>
+                        @endif
                         <label>
                             Tekst alternatywny
                             <input
@@ -273,6 +310,8 @@
         </div>
     @endif
 </div>
+
+<x-media-cropper-dialog />
 
 <div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary">Zapisz aktualność</button>

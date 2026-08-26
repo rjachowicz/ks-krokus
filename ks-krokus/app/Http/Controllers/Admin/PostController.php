@@ -9,13 +9,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PostRequest;
 use App\Models\Post;
 use App\Models\PostImage;
+use App\Support\MediaCrop;
+use App\Support\MediaFileCleanup;
+use App\Support\MediaImageStorage;
 use App\Support\UniqueSlug;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -23,6 +25,11 @@ use Throwable;
 
 final class PostController extends Controller
 {
+    public function __construct(
+        private readonly MediaImageStorage $imageStorage,
+        private readonly MediaFileCleanup $fileCleanup,
+    ) {}
+
     public function index(Request $request): View
     {
         $filters = $request->validate(
@@ -69,16 +76,24 @@ final class PostController extends Controller
 
     public function store(PostRequest $request): RedirectResponse
     {
-        $coverPath = null;
-        $galleryPaths = [];
+        $cover = null;
+        $gallery = [];
 
         try {
-            $coverPath = $request->hasFile('cover_image')
-                ? $this->storeUploadedFile($request->file('cover_image'), 'news/covers', 'cover_image')
+            $cover = $request->hasFile('cover_image')
+                ? $this->storeUploadedFile(
+                    $request->file('cover_image'),
+                    'news/covers',
+                    'news/variants/covers',
+                    (int) config('media.cover_width'),
+                    (int) config('media.cover_height'),
+                    MediaCrop::fromInput($request->input('cover_crop')),
+                    'cover_image',
+                )
                 : null;
-            $this->storeUploadedFiles($request, $galleryPaths);
+            $this->storeUploadedFiles($request, $gallery);
 
-            $post = DB::transaction(function () use ($request, $coverPath, $galleryPaths): Post {
+            $post = DB::transaction(function () use ($request, $cover, $gallery): Post {
                 $data = $request->validated();
                 $data['slug'] = UniqueSlug::for(Post::class, $data['title']);
                 $data['content_format'] = $data['content_format'] ?? 'plain';
@@ -95,21 +110,28 @@ final class PostController extends Controller
                     $data['remove_cover'],
                     $data['existing_images'],
                     $data['delete_images'],
+                    $data['cover_crop'],
+                    $data['gallery_crops'],
                 );
 
-                if ($coverPath !== null) {
-                    $data['cover_image_path'] = $coverPath;
+                if ($cover !== null) {
+                    $data['cover_image_path'] = $cover['path'];
+                    $data['cover_variant_path'] = $cover['variant_path'];
+                    $data['cover_crop'] = $cover['crop'];
                 } else {
                     $data['cover_image_alt'] = null;
                 }
 
                 $post = Post::query()->create($data);
-                $this->createGalleryImages($post, $galleryPaths);
+                $this->createGalleryImages($post, $gallery);
 
                 return $post;
             });
         } catch (Throwable $exception) {
-            $this->deleteFiles(array_filter([$coverPath, ...$galleryPaths]));
+            $this->deleteFiles([
+                ...$this->storedPaths($cover === null ? [] : [$cover]),
+                ...$this->storedPaths($gallery),
+            ]);
 
             throw $exception;
         }
@@ -133,16 +155,25 @@ final class PostController extends Controller
         PostRequest $request,
         Post $post,
     ): RedirectResponse {
-        $newCoverPath = null;
-        $galleryPaths = [];
+        $newCover = null;
+        $gallery = [];
+        $generatedVariants = [];
 
         try {
-            $newCoverPath = $request->hasFile('cover_image')
-                ? $this->storeUploadedFile($request->file('cover_image'), 'news/covers', 'cover_image')
+            $newCover = $request->hasFile('cover_image')
+                ? $this->storeUploadedFile(
+                    $request->file('cover_image'),
+                    'news/covers',
+                    'news/variants/covers',
+                    (int) config('media.cover_width'),
+                    (int) config('media.cover_height'),
+                    MediaCrop::fromInput($request->input('cover_crop')),
+                    'cover_image',
+                )
                 : null;
-            $this->storeUploadedFiles($request, $galleryPaths);
+            $this->storeUploadedFiles($request, $gallery);
 
-            $pathsToDelete = DB::transaction(function () use ($request, $post, $newCoverPath, $galleryPaths): array {
+            $pathsToDelete = DB::transaction(function () use ($request, $post, $newCover, $gallery, &$generatedVariants): array {
                 $lockedPost = Post::query()
                     ->whereKey($post->getKey())
                     ->lockForUpdate()
@@ -153,7 +184,7 @@ final class PostController extends Controller
                 $this->guardGalleryLimit(
                     $request,
                     $lockedImages,
-                    count($galleryPaths),
+                    count($gallery),
                 );
 
                 $data = $request->validated();
@@ -171,26 +202,61 @@ final class PostController extends Controller
                     $data['remove_cover'],
                     $data['existing_images'],
                     $data['delete_images'],
+                    $data['cover_crop'],
+                    $data['gallery_crops'],
                 );
 
                 $pathsToDelete = [];
 
-                if ($newCoverPath !== null) {
+                if ($newCover !== null) {
                     if ($lockedPost->cover_image_path) {
                         $pathsToDelete[] = $lockedPost->cover_image_path;
                     }
 
-                    $data['cover_image_path'] = $newCoverPath;
+                    if ($lockedPost->cover_variant_path) {
+                        $pathsToDelete[] = $lockedPost->cover_variant_path;
+                    }
+
+                    $data['cover_image_path'] = $newCover['path'];
+                    $data['cover_variant_path'] = $newCover['variant_path'];
+                    $data['cover_crop'] = $newCover['crop'];
                 } elseif ($request->boolean('remove_cover') && $lockedPost->cover_image_path) {
                     $pathsToDelete[] = $lockedPost->cover_image_path;
+                    if ($lockedPost->cover_variant_path) {
+                        $pathsToDelete[] = $lockedPost->cover_variant_path;
+                    }
                     $data['cover_image_path'] = null;
+                    $data['cover_variant_path'] = null;
+                    $data['cover_crop'] = null;
                     $data['cover_image_alt'] = null;
+                } elseif (
+                    $lockedPost->cover_image_path
+                    && ($coverCrop = MediaCrop::fromInput($request->input('cover_crop'))) !== null
+                    && $coverCrop !== $lockedPost->cover_crop
+                ) {
+                    $variant = $this->imageStorage->regenerateVariant(
+                        $lockedPost->cover_image_path,
+                        'news/variants/covers',
+                        (int) config('media.cover_width'),
+                        (int) config('media.cover_height'),
+                        $coverCrop,
+                        'cover_crop',
+                    );
+                    $generatedVariants[] = $variant['path'];
+                    if ($lockedPost->cover_variant_path) {
+                        $pathsToDelete[] = $lockedPost->cover_variant_path;
+                    }
+                    $data['cover_variant_path'] = $variant['path'];
+                    $data['cover_crop'] = $variant['crop'];
                 } elseif (! $lockedPost->cover_image_path) {
                     $data['cover_image_alt'] = null;
                 }
 
                 $lockedPost->update($data);
-                $this->updateExistingImages($request, $lockedImages);
+                $pathsToDelete = [
+                    ...$pathsToDelete,
+                    ...$this->updateExistingImages($request, $lockedImages, $generatedVariants),
+                ];
                 $pathsToDelete = [
                     ...$pathsToDelete,
                     ...$this->deleteSelectedImages(
@@ -199,12 +265,16 @@ final class PostController extends Controller
                         $lockedImages,
                     ),
                 ];
-                $this->createGalleryImages($lockedPost, $galleryPaths);
+                $this->createGalleryImages($lockedPost, $gallery);
 
                 return array_values(array_unique($pathsToDelete));
             });
         } catch (Throwable $exception) {
-            $this->deleteFiles(array_filter([$newCoverPath, ...$galleryPaths]));
+            $this->deleteFiles([
+                ...$this->storedPaths($newCover === null ? [] : [$newCover]),
+                ...$this->storedPaths($gallery),
+                ...$generatedVariants,
+            ]);
 
             throw $exception;
         }
@@ -246,31 +316,42 @@ final class PostController extends Controller
     }
 
     /**
-     * @param  list<string>  $paths
+     * @param  list<array{path: string, variant_path: string, crop: array{x: float, y: float, width: float, height: float}}>  $stored
      */
-    private function storeUploadedFiles(Request $request, array &$paths): void
+    private function storeUploadedFiles(Request $request, array &$stored): void
     {
         $files = $request->file('gallery_images', []);
+        $crops = (array) $request->input('gallery_crops', []);
 
         if (! is_array($files)) {
             return;
         }
 
-        foreach ($files as $file) {
-            $paths[] = $this->storeUploadedFile($file, 'news/gallery', 'gallery_images');
+        foreach (array_values($files) as $index => $file) {
+            $stored[] = $this->storeUploadedFile(
+                $file,
+                'news/gallery',
+                'news/variants/thumbnails',
+                (int) config('media.thumbnail_width'),
+                (int) config('media.thumbnail_height'),
+                MediaCrop::fromInput($crops[$index] ?? null),
+                'gallery_images',
+            );
         }
     }
 
     /**
-     * @param  list<string>  $paths
+     * @param  list<array{path: string, variant_path: string, crop: array{x: float, y: float, width: float, height: float}}>  $stored
      */
-    private function createGalleryImages(Post $post, array $paths): void
+    private function createGalleryImages(Post $post, array $stored): void
     {
         $nextOrder = ((int) $post->images()->max('sort_order')) + 1;
 
-        foreach ($paths as $path) {
+        foreach ($stored as $image) {
             $post->images()->create([
-                'path' => $path,
+                'path' => $image['path'],
+                'thumbnail_path' => $image['variant_path'],
+                'crop' => $image['crop'],
                 'alt_text' => $post->title,
                 'sort_order' => $nextOrder++,
             ]);
@@ -299,28 +380,28 @@ final class PostController extends Controller
         }
     }
 
+    /**
+     * @param  array{x: float, y: float, width: float, height: float}|null  $crop
+     * @return array{path: string, variant_path: string, crop: array{x: float, y: float, width: float, height: float}}
+     */
     private function storeUploadedFile(
         mixed $file,
         string $directory,
+        string $variantDirectory,
+        int $variantWidth,
+        int $variantHeight,
+        ?array $crop,
         string $field,
-    ): string {
-        try {
-            $path = $file?->store($directory, config('content.media_disk'));
-        } catch (Throwable $exception) {
-            report($exception);
-
-            throw ValidationException::withMessages([
-                $field => 'Nie udało się zapisać zdjęcia. Spróbuj ponownie później.',
-            ]);
-        }
-
-        if (! is_string($path) || $path === '') {
-            throw ValidationException::withMessages([
-                $field => 'Nie udało się zapisać przesłanego pliku. Spróbuj ponownie.',
-            ]);
-        }
-
-        return $path;
+    ): array {
+        return $this->imageStorage->store(
+            $file,
+            $directory,
+            $variantDirectory,
+            $variantWidth,
+            $variantHeight,
+            $crop,
+            $field,
+        );
     }
 
     /**
@@ -335,7 +416,7 @@ final class PostController extends Controller
         }
 
         try {
-            $deleted = Storage::disk(config('content.media_disk'))->delete($paths);
+            $deleted = $this->fileCleanup->deleteUnreferenced($paths);
 
             if (! $deleted) {
                 Log::warning('Nie wszystkie nieużywane pliki aktualności zostały usunięte.', [
@@ -350,17 +431,23 @@ final class PostController extends Controller
         }
     }
 
+    /**
+     * @param  list<string>  $generatedVariants
+     * @return list<string>
+     */
     private function updateExistingImages(
         Request $request,
         EloquentCollection $images,
-    ): void {
+        array &$generatedVariants,
+    ): array {
         $imageData = $request->input('existing_images', []);
 
         if (! is_array($imageData)) {
-            return;
+            return [];
         }
 
         $imagesById = $images->keyBy('id');
+        $pathsToDelete = [];
 
         foreach ($imageData as $imageId => $data) {
             $image = $imagesById->get((int) $imageId);
@@ -369,12 +456,36 @@ final class PostController extends Controller
                 continue;
             }
 
-            $image->update([
+            $update = [
                 'alt_text' => $data['alt_text'] ?? null,
                 'caption' => $data['caption'] ?? null,
                 'sort_order' => (int) ($data['sort_order'] ?? 0),
-            ]);
+            ];
+            $crop = MediaCrop::fromInput($data['crop'] ?? null);
+
+            if ($crop !== null && $crop !== $image->crop) {
+                $variant = $this->imageStorage->regenerateVariant(
+                    $image->path,
+                    'news/variants/thumbnails',
+                    (int) config('media.thumbnail_width'),
+                    (int) config('media.thumbnail_height'),
+                    $crop,
+                    "existing_images.{$image->getKey()}.crop",
+                );
+                $generatedVariants[] = $variant['path'];
+
+                if ($image->thumbnail_path) {
+                    $pathsToDelete[] = $image->thumbnail_path;
+                }
+
+                $update['thumbnail_path'] = $variant['path'];
+                $update['crop'] = $variant['crop'];
+            }
+
+            $image->update($update);
         }
+
+        return $pathsToDelete;
     }
 
     /**
@@ -397,7 +508,10 @@ final class PostController extends Controller
             return [];
         }
 
-        $paths = $selectedImages->pluck('path')->all();
+        $paths = $selectedImages
+            ->flatMap(static fn (PostImage $image): array => $image->filePaths())
+            ->values()
+            ->all();
         $post->images()->whereKey($selectedImages->modelKeys())->delete();
 
         return $paths;
@@ -431,5 +545,17 @@ final class PostController extends Controller
         }
 
         return array_values(array_unique($ids));
+    }
+
+    /**
+     * @param  list<array{path: string, variant_path: string, crop: array{x: float, y: float, width: float, height: float}}>  $stored
+     * @return list<string>
+     */
+    private function storedPaths(array $stored): array
+    {
+        return array_merge(...array_map(
+            static fn (array $image): array => [$image['path'], $image['variant_path']],
+            $stored,
+        )) ?: [];
     }
 }

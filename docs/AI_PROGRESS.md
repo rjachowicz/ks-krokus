@@ -1,5 +1,118 @@
 # AI_PROGRESS.md
 
+## Bieżąca sesja — 2026-08-26 — etap 7/9: ogłoszenia, moderacja i układ widoków
+
+### Cel
+
+Naprawić utratę `intent=pending` przy wysyłaniu formularza, potwierdzić pełną
+macierz workflow właściciela oraz uporządkować publiczne i panelowe widoki
+ogłoszeń bez zmiany istniejącego modelu moderacji.
+
+### Przyczyna i wykonane zmiany
+
+- [x] Ustalono faktyczną przyczynę pozostawania szkicu: globalny `form-state.js`
+  wyłączał aktywny przycisk w obsłudze `submit`, zanim przeglądarka zbudowała dane
+  formularza. Wyłączony submitter nie wnosił `name="intent" value="pending"` do
+  payloadu multipart, więc poprawny backend otrzymywał brak intencji.
+- [x] Skrypt kopiuje nazwę i wartość klikniętego submittera do tymczasowego
+  ukrytego inputa przed wyłączeniem przycisków, zachowując jednocześnie loading,
+  blokadę podwójnego submitu i reset stanu po `pageshow`.
+- [x] Potwierdzono bez tworzenia drugiego workflow, że create z `pending` ustawia
+  status i `submitted_at`, zapisuje historię `draft -> pending`, powiadamia
+  administratora, przekierowuje do listy i zwraca polski komunikat. `draft`
+  pozostaje szkicem.
+- [x] Potwierdzono ponowne wysłanie `rejected -> pending` oraz automatyczne
+  wycofanie publikacji i przejście `approved -> draft -> pending` po edycji przez
+  właściciela. Dane odrzucenia i publikacji są czyszczone w istniejącym workflow.
+- [x] Zweryfikowano Policy i endpointy dla wszystkich siedmiu statusów: edycję,
+  wysłanie, usunięcie, sprzedaż, widoczność i kopiowanie; niedozwolone operacje
+  zwracają 403 i nie zmieniają rekordu.
+- [x] „Moje ogłoszenia” nie używają już `<details>` ani osobnej akcji wysyłania.
+  Renderują bezpośrednio wyłącznie dozwolone akcje Edytuj, Oznacz jako sprzedane,
+  Podgląd, Kopiuj i Usuń, bez duplikatów i bez `target="_blank"`.
+- [x] Kartę zgłoszenia przeniesiono do głównego stacka szczegółów i usunięto
+  przypadkowe ograniczenia szerokości. Ma geometrię wspólną z opisem i parametrami.
+- [x] Sticky karta kontaktu nie używa już `overflow: hidden`; dodano bezpieczne
+  szerokości, padding i `overflow-wrap: anywhere` dla długiego telefonu, e-maila
+  i treści „Bezpiecznej transakcji”.
+- [x] Publiczne filtry oraz filtr właściciela nadal korzystają ze wspólnego
+  `filter-form` i toru akcji bez ręcznego `margin-top`.
+
+### Testy i kontrole
+
+- [x] Testy ogłoszeń, enumu i audytu interfejsu — 37 testów, 462 asercje.
+- [x] `composer test` — 206 testów, 1813 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm.cmd run build` — poprawny build Vite, 63 moduły. Bezpośrednie
+  `npm run build` blokuje lokalna polityka PowerShell dla `npm.ps1`; użyto
+  równoważnego pliku wykonywalnego Windows. Pozostało zastane ostrzeżenie npm
+  o przyszłym wycofaniu opcji `min-release-age`.
+- [x] `php artisan route:list` — 117 tras; `php artisan view:cache` — poprawny.
+- [x] `git diff --check` — bez błędów.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Nie dodano migracji ani nowych zmiennych środowiskowych.
+- Sesja Browser nie udostępniła żadnej instancji, dlatego rzeczywisty audyt
+  interakcji i geometrii 320–1920 px w light/dark pozostaje kontrolą do
+  powtórzenia. Struktura Blade, CSS, testy Feature i produkcyjny build są poprawne.
+- Nie wykonano commita, pusha ani operacji cofającej lokalne zmiany.
+
+## Bieżąca sesja — 2026-08-26 — etap 6/9: publiczne i administracyjne wyniki zawodów
+
+### Cel
+
+Doprowadzić publiczne wyszukiwanie, panelowe filtry, profil zawodnika, dywizje
+IPSC, autocomplete i ochronę archiwum do jednego spójnego przepływu produkcyjnego.
+
+### Wykonane
+
+- [x] Publiczny szczegół zawodów wyszukuje GET `q` przez PostgreSQL `ILIKE` po
+  snapshotcie zawodnika i nazwie powiązanego konta, zachowuje grupowanie, ukrywa
+  puste konkurencje i pokazuje licznik oraz akcję „Wyczyść”.
+- [x] Dodano nullable `member_profiles.age_category`, enum `MemberAgeCategory`,
+  cast, fillable, factory, walidację, formularz administratora i podgląd konta.
+- [x] Dodano `IpscDivision` z Open, Standard, Classic, Production, Production
+  Optics i Revolver. Formularz używa selecta, a fallback zachowuje nieznane dane
+  historyczne bez ryzykownego castu kolumny.
+- [x] Lista panelowa filtruje po wydarzeniu, rzeczywistym `event_competitions`,
+  tekście zawodnika i `ResultStatus`, zachowuje parametry paginacji i eager loading.
+- [x] Usunięto oba pełne dropdowny użytkowników. Chroniony endpoint autocomplete
+  wymaga 2–100 znaków, zwraca maksymalnie 10 aktywnych kont, używa minimalnego
+  eager loadingu profilu i nie ujawnia e-maila, telefonu, adresu ani dokumentów.
+- [x] Dostępny combobox obsługuje klawiaturę, role ARIA, Escape, loading, brak
+  wyników i usunięcie powiązania. Po wyborze uzupełnia imię, centralną nazwę klubu
+  i kategorię, a serwer zapisuje te pola jako niezmienny snapshot.
+- [x] Nowe wyniki przyjmują wyłącznie konkurencje nieusuniętych, opublikowanych
+  zawodów. `EventResultPolicy` i kontrole transakcyjne blokują update, przeniesienie
+  i delete archiwum; widok archiwalny jest osobną kartą tylko do odczytu.
+- [x] Dodano regresje wyszukiwania, grupowania, profilu, autocomplete, prywatności,
+  snapshotów, zawodnika zewnętrznego, IPSC i historii, statusów, archiwum, filtrów
+  oraz ograniczonej liczby zapytań.
+
+### Testy i kontrole
+
+- [x] Testy modułu wyników — 17 testów, 100 asercji; testy konta — 8 testów,
+  76 asercji.
+- [x] `composer test` — 199 testów, 1711 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm.cmd run build` — poprawny build Vite, 63 moduły; osobny chunk
+  autocomplete 3,33 kB (1,45 kB gzip).
+- [x] `php artisan route:list` — 117 tras, w tym `admin.results.participants`;
+  `php artisan view:cache` i `git diff --check` — poprawne.
+- `composer validate --strict` potwierdza poprawny `composer.json`, ale zwraca dwa
+  zastane ostrzeżenia: niezsynchronizowany lock i dokładną wersję
+  `resend/resend-php`.
+
+### Migracje, konfiguracja i ograniczenia
+
+- Dodano `2026_08_26_000400_add_age_category_to_member_profiles_table.php`.
+- Dodano limiter `result-participants` 30/min na zalogowane konto; bez nowych
+  zmiennych środowiskowych.
+- Rzeczywisty test comboboxu czytnikiem ekranu i na produkcyjnym zbiorze danych
+  pozostaje kontrolą wdrożeniową.
+- Nie wykonano commita ani pusha zgodnie z poleceniem.
+
 ## Branch bazowy
 
 `main`

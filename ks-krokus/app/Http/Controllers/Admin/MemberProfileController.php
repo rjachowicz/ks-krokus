@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Discipline;
+use App\Enums\MemberAgeCategory;
 use App\Enums\MemberVerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateMemberProfileRequest;
@@ -36,6 +37,7 @@ final class MemberProfileController extends Controller
             'profile' => $profile,
             'sourceRequest' => $sourceRequest,
             'disciplines' => Discipline::options(),
+            'ageCategories' => MemberAgeCategory::options(),
             'verificationStatuses' => MemberVerificationStatus::options(),
         ]);
     }

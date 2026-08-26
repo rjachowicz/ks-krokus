@@ -151,6 +151,7 @@ export function initListingImages() {
                 card.className = 'listing-upload-item';
                 card.draggable = true;
                 card.dataset.index = String(index);
+                card.dataset.cropScope = '';
 
                 const image = document.createElement('img');
                 const objectUrl = URL.createObjectURL(item.file);
@@ -217,6 +218,26 @@ export function initListingImages() {
 
                 const actions = document.createElement('div');
                 actions.className = 'listing-upload-item__actions';
+                ['x', 'y', 'width', 'height'].forEach((field) => {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = `new_image_crop[${index}][${field}]`;
+                    hidden.dataset.cropField = field;
+                    hidden.value = item.crop?.[field] ?? '';
+                    hidden.disabled = hidden.value === '';
+                    card.append(hidden);
+                });
+                card.addEventListener('media-crop:changed', (event) => {
+                    item.crop = event.detail.crop;
+                });
+                const crop = document.createElement('button');
+                crop.type = 'button';
+                crop.className = 'btn btn-secondary';
+                crop.textContent = 'Ustaw kadr';
+                crop.dataset.cropControl = '';
+                crop.dataset.cropSource = '#listing-images';
+                crop.dataset.cropFileIndex = String(index);
+                crop.dataset.cropAspect = '1.3333333333';
                 const up = document.createElement('button');
                 up.type = 'button';
                 up.className = 'btn btn-secondary';
@@ -249,7 +270,7 @@ export function initListingImages() {
                     }
                     render();
                 });
-                actions.append(up, down, remove);
+                actions.append(crop, up, down, remove);
                 card.append(previewWrap, details, altLabel, captionLabel, primaryLabel, actions);
 
                 card.addEventListener('dragstart', () => { draggedIndex = index; });
@@ -275,6 +296,7 @@ export function initListingImages() {
                 alt: '',
                 caption: '',
                 primary: false,
+                crop: null,
             });
             items = replace ? candidates : [...items, ...candidates];
             if (items.length && !items.some((item) => item.primary)) {

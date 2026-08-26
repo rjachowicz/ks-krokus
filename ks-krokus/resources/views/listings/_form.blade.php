@@ -161,6 +161,9 @@
             @if ($errors->has('images') || $errors->has('images.*')) aria-invalid="true" @endif>
         <span id="listing-images-help" class="form-help">Pierwsze zdjęcie zostanie główne, jeśli nie wskażesz innego.</span>
         <div class="listing-upload-preview" data-listing-image-preview aria-live="polite"></div>
+        @if ($errors->has('new_image_crop') || $errors->has('new_image_crop.*'))
+            <span class="form-error" role="alert">{{ $errors->first('new_image_crop') ?: $errors->first('new_image_crop.*') }}</span>
+        @endif
         @error('primary_new_index')
             <span id="listing-primary-new-image-error" class="form-error" role="alert">{{ $message }}</span>
         @enderror
@@ -179,12 +182,33 @@
             @enderror
             <div class="listing-existing-images__grid">
                 @foreach ($existingImages as $image)
-                    <article class="listing-image-editor">
+                    @php
+                        $imageUrl = $image->url();
+                        $thumbnailUrl = $image->thumbnailUrl();
+                    @endphp
+                    <article class="listing-image-editor" data-crop-scope>
                         <div class="listing-image-editor__preview">
-                            <img src="{{ $image->thumbnailUrl() }}" alt="{{ $image->alt_text ?: $listing->title }}">
+                            @if ($thumbnailUrl)
+                                <img src="{{ $thumbnailUrl }}" alt="{{ $image->alt_text ?: $listing->title }}">
+                            @else
+                                <x-image-placeholder />
+                            @endif
                             @if ($image->is_primary)<span class="listing-image-primary">Zdjęcie główne</span>@endif
                         </div>
                         <div class="listing-image-editor__fields">
+                            <x-media-crop-fields
+                                name="existing_images[{{ $image->id }}][crop]"
+                                :crop="old("existing_images.{$image->id}.crop", $image->crop)"
+                            />
+                            @if ($imageUrl)
+                                <button type="button" class="btn btn-secondary" data-crop-control
+                                        data-crop-url="{{ $imageUrl }}" data-crop-aspect="1.3333333333">
+                                    Ustaw ponownie kadr miniatury
+                                </button>
+                            @endif
+                            @if ($errors->has("existing_images.{$image->id}.crop") || $errors->has("existing_images.{$image->id}.crop.*"))
+                                <span class="form-error" role="alert">{{ $errors->first("existing_images.{$image->id}.crop") ?: $errors->first("existing_images.{$image->id}.crop.*") }}</span>
+                            @endif
                             <label class="form-check listing-image-editor__primary">
                                 <input type="radio" name="primary_image_id" value="{{ $image->id }}"
                                     @checked((int) old('primary_image_id', $existingImages->firstWhere('is_primary', true)?->id) === $image->id)
@@ -224,6 +248,8 @@
         </fieldset>
     @endif
 </section>
+
+<x-media-cropper-dialog />
 
 <section class="form-section" aria-labelledby="listing-contact-heading">
     <header class="form-section__header">

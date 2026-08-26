@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\IpscDivision;
+use App\Enums\MemberAgeCategory;
+use App\Enums\PublicationStatus;
 use App\Enums\ResultStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,8 +47,31 @@ class EventResult extends Model
         return $this->belongsTo(EventCompetition::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class)->withTrashed();
+    }
+
     public function displayName(): string
     {
         return $this->participant_name;
+    }
+
+    public function categoryLabel(): ?string
+    {
+        return MemberAgeCategory::labelForStoredValue($this->category);
+    }
+
+    public function classificationLabel(): ?string
+    {
+        return IpscDivision::labelForStoredValue($this->classification);
+    }
+
+    public function belongsToArchivedEvent(): bool
+    {
+        $this->loadMissing('eventCompetition.event');
+
+        return $this->eventCompetition->event->status
+            === PublicationStatus::Archived;
     }
 }
