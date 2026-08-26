@@ -4,6 +4,259 @@
 
 `main`
 
+## Bieżąca sesja — 2026-08-26 — etap 5/9: e-mailowe przypomnienia o wydarzeniach
+
+### Cel
+
+Dodać prywatny, bezpieczny i idempotentny zapis na jednorazowe przypomnienie
+e-mail około 24 godziny przed wydarzeniem, bez tworzenia listy uczestników i bez
+publicznego ujawniania subskrypcji.
+
+### Wykonane
+
+- [x] Dodano domyślnie wyłączoną zgodę użytkownika i czas potwierdzenia. Osobny
+  formularz „Mojego konta” wymaga aktualnego hasła przy włączaniu; wyłączenie bez
+  hasła zeruje potwierdzenie i usuwa wszystkie subskrypcje.
+- [x] Dodano `email_reminders_enabled` wydarzenia z migracją, castem, fillable,
+  walidacją i checkboxem administratora. Wyłączenie usuwa subskrypcje wydarzenia.
+- [x] Dodano `EventReminderSubscription`, relacje i fabryki, kaskadowe klucze obce,
+  czasy zapisu/wysłania oraz unikalny indeks użytkownik + wydarzenie.
+- [x] `EventReminderService` atomowo włącza zgodę i tworzy subskrypcję, blokuje
+  użytkownika i wydarzenie, ponawia kontrolę oraz zapewnia idempotencję. Anulowanie
+  wybiera rekord wyłącznie przez użytkownika sesji i wydarzenie z URL.
+- [x] Endpointy używają `auth`, `active` i limitera 10/min na użytkownika. Hasła
+  są walidowane przez `current_password:web`, wyłączone z flashowania do sesji i
+  nie są umieszczane w tooltipach, logach ani danych subskrypcji.
+- [x] Modal i pełny widok pokazują prywatny stan bieżącego użytkownika, dostępny
+  dialog hasła, wymagany opis potwierdzenia oraz akcje „Przypomnij mi” i „Anuluj”.
+  Gość widzi logowanie, a publiczny HTML nie zawiera listy ani liczby zapisanych.
+- [x] Zapis zamyka się dokładnie przy `start_at - 24h`; UI, serwis i transakcja
+  wymagają wydarzenia przyszłego, publicznego, opublikowanego i z aktywnymi
+  przypomnieniami.
+- [x] Dodano szyfrowaną `EventReminderNotification` na kolejce z nazwą, terminem,
+  miejscem, linkiem i przyczyną wiadomości. Przed wysyłką ponownie sprawdza ona
+  subskrypcję, użytkownika, zgodę oraz bieżący stan wydarzenia.
+- [x] `events:send-reminders` działa w oknie 23:45–24:15 do rozpoczęcia, blokuje
+  rekordy i ustawia `reminder_sent_at` przed dispatch. `beforeCommit()` zapisuje
+  szyfrowane zadanie kolejki bazodanowej w tej samej transakcji co znacznik, więc
+  rollback, równoległy scheduler i retry workera nie tworzą drugiego dispatchu.
+- [x] Scheduler uruchamia komendę co 5 minut w `Europe/Warsaw` z
+  `withoutOverlapping()`.
+
+### Testy i ograniczenia
+
+- [x] Testy modułu — 17 testów, 107 asercji, w tym rzeczywisty rekord `jobs`
+  zapisany atomowo ze znacznikiem i zaszyfrowany bez jawnej nazwy wydarzenia.
+- [x] `composer test` — 185 testów, 1634 asercje.
+- Nie dodano nowych zmiennych środowiskowych; używana jest istniejąca konfiguracja
+  mailera/Resend, kolejki bazodanowej, `APP_URL` i strefy `Europe/Warsaw`.
+- Dostarczenie przez rzeczywisty Resend, działanie usług worker/cron oraz fizyczny
+  test dostępności dialogu wymagają środowiska wdrożeniowego. Transport e-mail ma
+  semantykę at-least-once; aplikacja zapewnia pojedynczy rekord zadania, ale nie
+  może zawrzeć transakcji rozproszonej z zewnętrznym dostawcą.
+- Nie wykonano commita, pusha ani innej operacji zapisującej historię Git.
+
+## Bieżąca sesja — 2026-08-26 — etap 4/9: modal wydarzenia w kalendarzu
+
+### Cel
+
+Dodać dostępny podgląd wydarzenia w natywnym modalu bez utraty pełnego widoku,
+bezskryptowego fallbacku, filtrów kalendarza ani serwerowego źródła prawdy Blade.
+
+### Wykonane
+
+- [x] Linki wydarzeń zachowują pełny `href` do `calendar.show`, a osobny atrybut
+  wskazuje fragment modala. Bez JS i przy zmodyfikowanym kliknięciu działa zwykła
+  nawigacja; Enter korzysta z semantyki linku, a Space uruchamia ten sam podgląd.
+- [x] Dodano `GET /kalendarz/{slug}/podglad` (`calendar.modal`). Pełna strona i
+  fragment korzystają z jednego zapytania `publiclyVisible()` z eager loadingiem
+  konkurencji, dlatego szkic, rekord niepubliczny, usunięty lub brakujący zwraca 404.
+- [x] Wydzielono `calendar.partials.event-details` z opisem, osobnymi datami
+  rozpoczęcia i zakończenia, miejscem, adresem, dyscypliną, systemem, konkurencjami,
+  rejestracją oraz wyłączonym miejscem na przyszłe przypomnienie.
+- [x] Dodano natywny `<dialog>` z `aria-labelledby`, `aria-describedby`, jawnym
+  zamknięciem, natywnym Escape i izolacją fokusu oraz przywracaniem fokusu do
+  dokładnie klikniętego wystąpienia wydarzenia.
+- [x] Dynamiczny moduł `event-dialog.js` obsługuje loading z `aria-busy`, błąd z
+  `role="alert"`, retry, `AbortController`, ignorowanie nieaktualnej odpowiedzi,
+  ochronę przed ponownym otwarciem i brak przeładowania przy poprawnym JS.
+- [x] Dialog ma ograniczony viewport, przewijalną treść, układ mobilny od 320 px,
+  cele 44 px i animacje wyłączane przez `prefers-reduced-motion`.
+- [x] Dodano siedem testów Feature dla pełnego widoku, danych fragmentu, braku pól
+  administracyjnych, szkicu, prywatności, brakującego rekordu, fallbacku i filtrów. Zachowano
+  dotychczasowe testy kalendarza wielodniowego i filtrów relacyjnych.
+
+### Testy i ograniczenia
+
+- [x] Testy kalendarza — 17 testów, 71 asercji.
+- [x] `composer test` — 168 testów, 1527 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 61 modułów; osobny chunk modala
+  2,56 kB (1,19 kB gzip).
+- [x] `php artisan route:list` — 112 tras, w tym `calendar.modal`;
+  `php artisan view:cache` i `git diff --check` — poprawne.
+- Lokalna kontrola HTTP potwierdziła status 200 kalendarza i fragmentu, fallback
+  linku, adres endpointu oraz render danych; tymczasowy rekord usunięto po audycie.
+- Backend Browser nie udostępnił żadnej instancji, dlatego rzeczywisty test fokusu,
+  Escape i wizualny audyt 320–1920 px pozostaje do powtórzenia. Struktura DOM,
+  CSS, JS, cache Blade i testy serwerowe są poprawne.
+- Nie dodano migracji ani zmiennych środowiskowych. Nie wykonano commita, pusha
+  ani innej operacji zapisującej historię Git.
+
+## Bieżąca sesja — 2026-08-26 — etap 3/9: usuwanie i retencja powiadomień
+
+### Cel
+
+Rozbudować istniejące centrum powiadomień o dostępny wybór wpisów, bezpieczne
+usuwanie właścicielskie oraz automatyczną, konfigurowalną retencję bez naruszania
+zmian etapów 1 i 2.
+
+### Wykonane
+
+- [x] Dodano checkbox przy każdym wpisie, „Zaznacz wszystkie widoczne”, etykiety
+  dla czytników ekranu i backendowy fallback bieżącej strony działający bez JS.
+- [x] Lekkie ulepszenie JS synchronizuje checkboxy, stan częściowego wyboru,
+  licznik zaznaczonych i dostępność akcji grupowej.
+- [x] Dodano potwierdzane endpointy usuwania pojedynczego, zaznaczonych i wszystkich
+  powiadomień wraz z komunikatami sukcesu, pustą selekcją i zachowaniem paginacji.
+- [x] Pojedyncze i grupowe zapytania rozpoczynają się od relacji bieżącego
+  użytkownika. Tablice UUID waliduje osobny Form Request, cudze identyfikatory nie
+  usuwają danych ani nie ujawniają treści, a operacje grupowe są transakcyjne.
+- [x] Wydzielono wspólny dialog potwierdzenia dla layoutu publicznego i panelowego,
+  zachowując dotychczasowe potwierdzenia panelu.
+- [x] Dodano `NOTIFICATION_RETENTION_DAYS=7`, indeks `created_at`, komendę
+  `notifications:prune` przetwarzającą partie po 500 i statystyki bez treści wpisów.
+- [x] `0` wyłącza retencję, błędna lub ujemna wartość kończy się bezpiecznym błędem,
+  a scheduler uruchamia komendę o 02:45 `Europe/Warsaw` z `withoutOverlapping()`.
+- [x] Dodano testy własności, operacji pojedynczych i grupowych, pustej selekcji,
+  działania bez JS, gościa, retencji, wartości 0, błędnej konfiguracji,
+  idempotencji oraz schedulera.
+
+### Testy i ograniczenia
+
+- [x] Testy modułu — 17 testów, 153 asercje.
+- [x] `composer test` — 161 testów, 1487 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 60 modułów.
+- [x] `php artisan route:list` — 111 tras, w tym komplet sześciu tras centrum
+  powiadomień; `php artisan schedule:list` — retencja codziennie o 02:45.
+- [x] `php artisan view:cache` i `git diff --check` — poprawne.
+- `composer validate --strict` potwierdza poprawny `composer.json`, ale zwraca dwa
+  zastane ostrzeżenia: niezsynchronizowany lock względem `composer.json` oraz
+  dokładną wersję `resend/resend-php`.
+- Dodano migrację indeksu `notifications.created_at` i zmienną
+  `NOTIFICATION_RETENTION_DAYS`. Nie wykonano commita, pusha ani innej operacji
+  zapisującej historię Git.
+
+## Bieżąca sesja — 2026-08-26 — etap 2/9: header, ikony i konto w panelu
+
+### Cel
+
+Wzmocnić efekt blur publicznego headera, usunąć duplikaty i pseudoikony oraz
+przenieść obsługę własnego konta do spójnego dropdownu i layoutu panelu bez
+powielania kontrolera, walidacji ani logiki aktualizacji.
+
+### Potwierdzone problemy
+
+- Panelowe „Moje konto” prowadziło do publicznego `layouts.app`, a topbar rozdzielał
+  dane użytkownika, powiadomienia, motyw i wylogowanie na osobne elementy.
+- Topbar używał tekstowych znaków `●` i `◐`; publiczny header duplikował
+  identyczne SVG konta, powiadomień, motywu, chevrona i wylogowania.
+- „Otwórz stronę” wymuszało nową kartę i komunikowało ją w `aria-label`.
+- Publiczny header miał oba warianty `backdrop-filter`, ale bez `isolation` i
+  jawnego fallbacku dla przeglądarek bez tej funkcji.
+
+### Wykonane
+
+- [x] Dodano wspólny komponent `<x-icon>` dla słońca, księżyca, powiadomień,
+  konta, chevrona, wylogowania, powrotu i strony głównej. Wszystkie SVG w widokach
+  zostały zastąpione komponentem z `aria-hidden`, `currentColor` i wspólnym stroke.
+- [x] Publiczny header ma półprzezroczyste tokeny light/dark, blur 20 px z
+  saturacją, prefiks WebKit, `isolation`, jawny `z-index`, mocniejsze obramowanie
+  po scrollu i prawie nieprzezroczysty fallback przez `@supports not`.
+- [x] Dodano `admin.account.show`, `admin.account.profile.update`,
+  `admin.account.email.update` i `admin.account.password.update` pod
+  `/panel/moje-konto*`, chronione `auth` i `active`.
+- [x] Ten sam `AccountController`, trzy istniejące Form Requesty i jeden widok
+  route-aware obsługują publiczny oraz panelowy wariant konta. Formularze panelowe
+  wracają do panelu i zachowują dotychczasowe zasady profilu, e-maila i hasła.
+- [x] Topbar panelu zawiera przełącznik motywu i jeden dropdown konta z tożsamością,
+  rolą, kontem, powiadomieniami i badge, stroną publiczną w tej samej karcie oraz
+  wylogowaniem POST+CSRF. Usunięto `target="_blank"`, `rel` i wzmiankę o karcie.
+- [x] Menu synchronizuje `aria-expanded`, `aria-hidden`, `hidden` i `inert`, działa
+  przez klik, Enter, Space i ArrowDown, zamyka się Escape z powrotem fokusu oraz
+  po kliknięciu lub przeniesieniu fokusu poza obszar. CSS ogranicza je viewportem.
+- [x] Dodano regresje tras, aktywności i logowania, layoutu panelu, menu, ikon,
+  linku bez nowej karty oraz wszystkich trzech operacji aktualizacji konta.
+
+### Testy i ograniczenia
+
+- [x] `composer test` — 148 testów, 1419 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 58 modułów.
+- [x] `php artisan route:list` — 108 tras; `php artisan view:cache` i
+  `git diff --check` — poprawne.
+- Backend przeglądarki ponownie nie udostępnił żadnej instancji. Nie zaliczono
+  przez to rzeczywistego `getComputedStyle`, wizualnego blur ani interakcji menu
+  na renderowanej stronie; statyczna struktura, CSS, JS, Blade i breakpointy są
+  poprawne, ale audyt przeglądarkowy pozostaje do powtórzenia.
+- Nie dodano migracji ani zmiennych środowiskowych. Nie wykonano commita, pusha,
+  brancha, PR, merge, rebase ani resetu.
+
+## Bieżąca sesja — 2026-08-26 — etap 1/9: stopka, logowanie i geometria filtrów
+
+### Cel
+
+Usunąć wspólne przyczyny zawijania stopki i nierównego ustawienia akcji
+formularzy, dodać jawną drogę powrotu z logowania oraz zachować responsywną,
+dostępną geometrię bez zmiany logiki biznesowej i historii Git.
+
+### Potwierdzone problemy
+
+- Środkowa kolumna stopki miała tylko `1fr` przy szerszej kolumnie adresu,
+  dlatego ostatni z ośmiu linków zostawał sam w drugim wierszu na desktopie.
+- Stopka zagnieżdżała `@auth` z dodatkową gałęzią `@else` wewnątrz
+  `@guest ... @else`, więc zawierała nieosiągalną i mylącą strukturę Blade.
+- Publiczne, panelowe i ogłoszeniowe formularze wyrównywały przyciski trzema
+  lokalnymi wartościami `margin-top: calc(...)`. Błąd pod polem zwiększał wysokość
+  całego labela i zmieniał położenie akcji względem kontrolki.
+- Logo było jedyną akcją powrotu z karty logowania.
+
+### Wykonane
+
+- [x] Uproszczono stopkę do jednego warunku `@guest/@else`, poszerzono elastyczną
+  kolumnę nawigacji i zmniejszono odstępy bez zmiany rozmiaru tekstu. Linki mają
+  minimum 44 px wysokości oraz jawny fokus; poniżej 1240 px stopka świadomie
+  przechodzi do wyśrodkowanego układu jednokolumnowego.
+- [x] Dodano przed formularzem logowania przycisk drugorzędny
+  „← Wróć do strony głównej” prowadzący do `route('home')`; logo pozostało
+  niezależnym linkiem.
+- [x] Dodano wspólny `filter-form` z osobnymi torami etykiety, kontrolki i
+  informacji zwrotnej. Akcje zajmują tor kontrolki, a błąd tor poniżej, więc
+  komunikaty nie przesuwają przycisków ani sąsiednich kontrolek.
+- [x] Przepięto aktualności, kalendarz wraz z wyborem miesiąca, publiczne wyniki,
+  publiczne i moderowane ogłoszenia, „Moje ogłoszenia” oraz filtry aktualności,
+  wydarzeń, wyników, użytkowników, konkurencji i wniosków w panelu.
+- [x] Usunięto wszystkie `margin-top: calc(...)` z układów filtrów i dodano
+  regresje struktury stopki, logowania, wspólnych klas oraz zakazu ręcznych korekt.
+- [x] Uzupełniono `UI_GUIDE.md` i `TODO.md` o wspólny wzorzec oraz stan etapu.
+
+### Testy i ograniczenia
+
+- [x] `composer test` — 143 testy, 1328 asercji.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` — poprawny build Vite, 58 modułów.
+- [x] `php artisan view:cache` i `git diff --check` — poprawne.
+- `composer validate --strict` potwierdza poprawny `composer.json`, ale zwraca dwa
+  zastane ostrzeżenia niezwiązane z etapem: niezsynchronizowany lock względem
+  `composer.json` oraz dokładną wersję `resend/resend-php`.
+- Backend przeglądarki był niedostępny (lista instancji pusta), dlatego nie
+  zaliczono wizualnego renderu 320, 375, 768, 1024, 1366 i 1920 px. Statyczna
+  kontrola breakpointów, minimalnych wysokości, DOM, kompilacji Blade i CSS jest
+  poprawna; fizyczny/renderowany audyt pozostaje do powtórzenia.
+- Nie dodano migracji ani zmiennych środowiskowych. Nie wykonano commita, pusha,
+  brancha, PR, merge, rebase ani resetu.
+
 ## Bieżąca sesja — 2026-08-03 — końcowa stabilizacja UI, powiadomień, retencji i bezpieczeństwa
 
 ### Cel

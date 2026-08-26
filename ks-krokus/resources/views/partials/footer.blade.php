@@ -18,15 +18,11 @@
             @guest
                 <a href="{{ route('login') }}">Logowanie</a>
             @else
-            @auth
                 @if (auth()->user()->canManageContent())
                     <a href="{{ route('admin.dashboard') }}">Panel administracyjny</a>
                 @else
                     <a href="{{ route('account.show') }}">Moje konto</a>
                 @endif
-            @else
-                <a href="{{ route('login') }}">Zaloguj się</a>
-            @endauth
             @endguest
         </nav>
 

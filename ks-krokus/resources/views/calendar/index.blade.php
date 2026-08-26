@@ -25,11 +25,12 @@
     </x-page-hero>
 
     <section class="page-container page-container--wide page-section calendar-section" aria-labelledby="calendar-month-title">
-        <form method="GET" class="content-toolbar panel-card ui-cluster calendar-filters" aria-label="Filtry kalendarza">
+        <form method="GET" class="content-toolbar filter-form panel-card calendar-filters" aria-label="Filtry kalendarza">
             <x-form-errors />
 
             <input type="hidden" name="month" value="{{ $displayDate->month }}">
             <input type="hidden" name="year" value="{{ $displayDate->year }}">
+            <div class="filter-form__row">
             <label for="calendar-filter-type">Rodzaj
                 <select id="calendar-filter-type" name="event_type"
                     @error('event_type') aria-invalid="true" aria-describedby="calendar-filter-type-error" @enderror>
@@ -66,10 +67,15 @@
                     <span id="calendar-filter-system-error" class="form-error" role="alert">{{ $message }}</span>
                 @enderror
             </label>
-            <button type="submit" class="btn btn-primary">Filtruj</button>
-            @if (request()->hasAny(['event_type', 'discipline', 'competition_system']))
-                <a href="{{ route('calendar.index', ['month' => $displayDate->month, 'year' => $displayDate->year]) }}" class="btn btn-secondary">Wyczyść</a>
-            @endif
+                <div class="filter-form__actions">
+                    <div class="filter-form__action-group">
+                        <button type="submit" class="btn btn-primary">Filtruj</button>
+                        @if (request()->hasAny(['event_type', 'discipline', 'competition_system']))
+                            <a href="{{ route('calendar.index', ['month' => $displayDate->month, 'year' => $displayDate->year]) }}" class="btn btn-secondary">Wyczyść</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </form>
 
         <div class="calendar-toolbar">
@@ -81,35 +87,41 @@
 
             <h2 id="calendar-month-title">{{ $monthNames[$displayDate->month] }} {{ $displayDate->year }}</h2>
 
-            <form method="GET" class="calendar-picker">
+            <form method="GET" class="calendar-picker filter-form">
                 @foreach ($filterQuery as $name => $value)
                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                 @endforeach
-                <label class="calendar-picker__field" for="calendar-month">
-                    <span class="sr-only">Miesiąc</span>
-                    <select id="calendar-month" name="month"
-                        @error('month') aria-invalid="true" aria-describedby="calendar-month-error" @enderror>
-                        @foreach ($monthNames as $number => $name)
-                            <option value="{{ $number }}" @selected($displayDate->month === $number)>{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('month')
-                        <span id="calendar-month-error" class="form-error" role="alert">{{ $message }}</span>
-                    @enderror
-                </label>
-                <label class="calendar-picker__field" for="calendar-year">
-                    <span class="sr-only">Rok</span>
-                    <select id="calendar-year" name="year"
-                        @error('year') aria-invalid="true" aria-describedby="calendar-year-error" @enderror>
-                        @foreach ($yearOptions as $year)
-                            <option value="{{ $year }}" @selected($displayDate->year === $year)>{{ $year }}</option>
-                        @endforeach
-                    </select>
-                    @error('year')
-                        <span id="calendar-year-error" class="form-error" role="alert">{{ $message }}</span>
-                    @enderror
-                </label>
-                <button class="btn btn-primary" type="submit">Pokaż</button>
+                <div class="filter-form__row">
+                    <label class="calendar-picker__field" for="calendar-month">
+                        <span class="sr-only">Miesiąc</span>
+                        <select id="calendar-month" name="month"
+                            @error('month') aria-invalid="true" aria-describedby="calendar-month-error" @enderror>
+                            @foreach ($monthNames as $number => $name)
+                                <option value="{{ $number }}" @selected($displayDate->month === $number)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                        @error('month')
+                            <span id="calendar-month-error" class="form-error" role="alert">{{ $message }}</span>
+                        @enderror
+                    </label>
+                    <label class="calendar-picker__field" for="calendar-year">
+                        <span class="sr-only">Rok</span>
+                        <select id="calendar-year" name="year"
+                            @error('year') aria-invalid="true" aria-describedby="calendar-year-error" @enderror>
+                            @foreach ($yearOptions as $year)
+                                <option value="{{ $year }}" @selected($displayDate->year === $year)>{{ $year }}</option>
+                            @endforeach
+                        </select>
+                        @error('year')
+                            <span id="calendar-year-error" class="form-error" role="alert">{{ $message }}</span>
+                        @enderror
+                    </label>
+                    <div class="filter-form__actions">
+                        <div class="filter-form__action-group">
+                            <button class="btn btn-primary" type="submit">Pokaż</button>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
 
@@ -137,7 +149,12 @@
                             </header>
                             <div class="calendar-day__events">
                                 @forelse ($dayEvents as $event)
-                                    <a class="calendar-event calendar-event--{{ $event->event_type->value }}" href="{{ route('calendar.show', $event) }}">
+                                    <a
+                                        class="calendar-event calendar-event--{{ $event->event_type->value }}"
+                                        href="{{ route('calendar.show', $event) }}"
+                                        data-event-dialog-trigger
+                                        data-event-dialog-url="{{ route('calendar.modal', $event) }}"
+                                    >
                                         @if (! $event->end_at)
                                             <time datetime="{{ $event->start_at->toIso8601String() }}">{{ $event->start_at->format('H:i') }}</time>
                                         @elseif ($day->isSameDay($event->start_at) && $day->isSameDay($event->end_at))
@@ -164,4 +181,32 @@
             </div>
         @endif
     </section>
+
+    @if ($events->isNotEmpty())
+        <dialog
+            class="event-dialog"
+            aria-labelledby="event-dialog-title"
+            aria-describedby="event-dialog-description"
+            data-event-dialog
+        >
+            <div class="event-dialog__surface">
+                <div class="event-dialog__toolbar">
+                    <button
+                        type="button"
+                        class="event-dialog__close"
+                        aria-label="Zamknij szczegóły wydarzenia"
+                        data-event-dialog-close
+                    >×</button>
+                </div>
+
+                <div class="event-dialog__body" aria-live="polite" data-event-dialog-body>
+                    <div class="event-dialog__state" role="status">
+                        <h2 id="event-dialog-title">Ładowanie wydarzenia</h2>
+                        <p id="event-dialog-description">Pobieramy szczegóły wydarzenia.</p>
+                        <span class="event-dialog__spinner" aria-hidden="true"></span>
+                    </div>
+                </div>
+            </div>
+        </dialog>
+    @endif
 @endsection

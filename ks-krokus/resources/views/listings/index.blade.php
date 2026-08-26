@@ -32,12 +32,12 @@
     <section class="page-container page-section page-section--flush" aria-labelledby="listings-heading">
         <x-form-errors />
 
-        <form method="GET" action="{{ route('listings.index') }}" class="listing-filters panel-card" aria-label="Filtrowanie ogłoszeń">
+        <form method="GET" action="{{ route('listings.index') }}" class="listing-filters filter-form panel-card" aria-label="Filtrowanie ogłoszeń">
             @if (request()->filled('sort'))
                 <input type="hidden" name="sort" value="{{ request('sort') }}">
             @endif
 
-            <div class="listing-filters__primary">
+            <div class="listing-filters__primary filter-form__row">
                 <label class="listing-filters__search" for="listing-filter-q">
                     Szukaj
                     <input id="listing-filter-q" type="search" name="q" maxlength="100" value="{{ request('q') }}" placeholder="Tytuł, producent lub model" autocomplete="off"
@@ -56,7 +56,11 @@
                     @error('category') <span id="listing-filter-category-error" class="form-error">{{ $message }}</span> @enderror
                 </label>
 
-                <button class="btn btn-primary" type="submit">Szukaj</button>
+                <div class="filter-form__actions">
+                    <div class="filter-form__action-group">
+                        <button class="btn btn-primary" type="submit">Szukaj</button>
+                    </div>
+                </div>
             </div>
 
             <details class="listing-filters__more" @if ($activeAdvancedFilters > 0 || $errors->hasAny($advancedFilterKeys)) open @endif>
@@ -67,7 +71,7 @@
                     @endif
                 </summary>
 
-                <div class="listing-filters__advanced">
+                <div class="listing-filters__advanced filter-form__row">
                     <label for="listing-filter-type">
                         Rodzaj
                         <select id="listing-filter-type" name="type" @error('type') aria-invalid="true" aria-describedby="listing-filter-type-error" @enderror>
@@ -106,10 +110,10 @@
                         @error('price_to') <span id="listing-filter-price-to-error" class="form-error">{{ $message }}</span> @enderror
                     </label>
 
-                    <div class="listing-filters__advanced-actions">
+                    <div class="listing-filters__advanced-actions filter-form__action-group">
                         <button class="btn btn-secondary" type="submit">Zastosuj filtry</button>
                         @if ($hasFilters)
-                            <a href="{{ route('listings.index') }}" class="listing-filters__clear">Wyczyść wszystkie filtry</a>
+                            <a href="{{ route('listings.index') }}" class="filter-form__clear">Wyczyść wszystkie filtry</a>
                         @endif
                     </div>
                 </div>
@@ -124,22 +128,29 @@
                 </p>
             </div>
 
-            <form method="GET" action="{{ route('listings.index') }}" class="listing-sort" aria-label="Sortowanie ogłoszeń">
+            <form method="GET" action="{{ route('listings.index') }}" class="listing-sort filter-form" aria-label="Sortowanie ogłoszeń">
                 @foreach ($filterKeys as $filterKey)
                     @if (request()->filled($filterKey))
                         <input type="hidden" name="{{ $filterKey }}" value="{{ request($filterKey) }}">
                     @endif
                 @endforeach
-                <label for="listing-sort">
-                    <select id="listing-sort" name="sort" aria-label="Kolejność ogłoszeń" @error('sort') aria-invalid="true" aria-describedby="listing-sort-error" @enderror>
-                        <option value="newest" @selected(request('sort', 'newest') === 'newest')>Najnowsze</option>
-                        <option value="oldest" @selected(request('sort') === 'oldest')>Najstarsze</option>
-                        <option value="price_asc" @selected(request('sort') === 'price_asc')>Cena rosnąco</option>
-                        <option value="price_desc" @selected(request('sort') === 'price_desc')>Cena malejąco</option>
-                    </select>
-                    @error('sort') <span id="listing-sort-error" class="form-error">{{ $message }}</span> @enderror
-                </label>
-                <button class="btn btn-secondary" type="submit">Sortuj</button>
+                <div class="filter-form__row">
+                    <label for="listing-sort">
+                        Kolejność
+                        <select id="listing-sort" name="sort" @error('sort') aria-invalid="true" aria-describedby="listing-sort-error" @enderror>
+                            <option value="newest" @selected(request('sort', 'newest') === 'newest')>Najnowsze</option>
+                            <option value="oldest" @selected(request('sort') === 'oldest')>Najstarsze</option>
+                            <option value="price_asc" @selected(request('sort') === 'price_asc')>Cena rosnąco</option>
+                            <option value="price_desc" @selected(request('sort') === 'price_desc')>Cena malejąco</option>
+                        </select>
+                        @error('sort') <span id="listing-sort-error" class="form-error">{{ $message }}</span> @enderror
+                    </label>
+                    <div class="filter-form__actions">
+                        <div class="filter-form__action-group">
+                            <button class="btn btn-secondary" type="submit">Sortuj</button>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
 

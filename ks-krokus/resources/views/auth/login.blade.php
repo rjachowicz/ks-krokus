@@ -9,6 +9,11 @@
             KS KROKUS
         </a>
 
+        <a href="{{ route('home') }}" class="btn btn-secondary auth-card__back">
+            <x-icon name="arrow-left" />
+            Wróć do strony głównej
+        </a>
+
         <h1>Logowanie</h1>
         <p class="auth-card__intro">
             Panel zarządzania aktualnościami, kalendarzem i wynikami zawodów.

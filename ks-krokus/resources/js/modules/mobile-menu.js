@@ -93,6 +93,8 @@ export function initAccountMenu() {
 
     const closeMenu = ({ restoreFocus = false } = {}) => {
         panel.hidden = true;
+        panel.inert = true;
+        panel.setAttribute('aria-hidden', 'true');
         button.setAttribute('aria-expanded', 'false');
 
         if (restoreFocus) {
@@ -102,6 +104,8 @@ export function initAccountMenu() {
 
     const openMenu = ({ moveFocus = false } = {}) => {
         panel.hidden = false;
+        panel.inert = false;
+        panel.setAttribute('aria-hidden', 'false');
         button.setAttribute('aria-expanded', 'true');
 
         if (moveFocus) {
@@ -109,11 +113,20 @@ export function initAccountMenu() {
         }
     };
 
-    button.addEventListener('click', () => {
+    const toggleMenu = () => {
         panel.hidden ? openMenu() : closeMenu();
-    });
+    };
+
+    button.addEventListener('click', toggleMenu);
 
     button.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleMenu();
+
+            return;
+        }
+
         if (event.key === 'ArrowDown') {
             event.preventDefault();
             openMenu({ moveFocus: true });

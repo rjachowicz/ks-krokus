@@ -181,4 +181,83 @@ final class InterfaceAuditTest extends TestCase
         self::assertStringContainsString('appearance: none', $formStyles);
         self::assertStringContainsString('input[type="radio"]:checked', $formStyles);
     }
+
+    public function test_footer_and_login_expose_clear_account_navigation(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('aria-label="Nawigacja w stopce"', false)
+            ->assertSee('href="'.route('login').'">Logowanie</a>', false);
+
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('class="btn btn-secondary auth-card__back"', false)
+            ->assertSee('href="'.route('home').'"', false)
+            ->assertSeeText('Wróć do strony głównej')
+            ->assertSee('ui-icon--arrow-left', false);
+
+        $footer = (string) file_get_contents(resource_path('views/partials/footer.blade.php'));
+
+        self::assertSame(1, substr_count($footer, '@guest'));
+        self::assertStringNotContainsString('@auth', $footer);
+    }
+
+    public function test_filter_forms_use_shared_control_alignment_without_manual_offsets(): void
+    {
+        $filterViews = [
+            resource_path('views/news/index.blade.php'),
+            resource_path('views/calendar/index.blade.php'),
+            resource_path('views/results/index.blade.php'),
+            resource_path('views/listings/index.blade.php'),
+            resource_path('views/my-listings/index.blade.php'),
+            resource_path('views/admin/account-requests/index.blade.php'),
+            resource_path('views/admin/competitions/index.blade.php'),
+            resource_path('views/admin/events/index.blade.php'),
+            resource_path('views/admin/posts/index.blade.php'),
+            resource_path('views/admin/results/index.blade.php'),
+            resource_path('views/admin/sale-listings/index.blade.php'),
+            resource_path('views/admin/users/index.blade.php'),
+        ];
+
+        foreach ($filterViews as $view) {
+            $contents = (string) file_get_contents($view);
+
+            self::assertStringContainsString('filter-form', $contents, $view);
+            self::assertStringContainsString('filter-form__row', $contents, $view);
+        }
+
+        $styleFiles = File::allFiles(resource_path('css'));
+        $styles = '';
+
+        foreach ($styleFiles as $styleFile) {
+            $styles .= file_get_contents($styleFile->getPathname());
+        }
+
+        self::assertStringNotContainsString('margin-top: calc(', $styles);
+        self::assertStringContainsString('grid-template-rows: subgrid', $styles);
+        self::assertStringContainsString('minmax(var(--control-height), auto)', $styles);
+    }
+
+    public function test_headers_use_blur_fallback_and_shared_accessible_icons(): void
+    {
+        $variables = (string) file_get_contents(resource_path('css/base/variables.css'));
+        $headerStyles = (string) file_get_contents(resource_path('css/layout/header.css'));
+        $adminStyles = (string) file_get_contents(resource_path('css/pages/admin.css'));
+        $publicHeader = (string) file_get_contents(resource_path('views/partials/header.blade.php'));
+        $adminLayout = (string) file_get_contents(resource_path('views/layouts/admin.blade.php'));
+        $icon = (string) file_get_contents(resource_path('views/components/icon.blade.php'));
+
+        self::assertStringContainsString('--header-bg-fallback:', $variables);
+        self::assertStringContainsString('isolation: isolate', $headerStyles);
+        self::assertStringContainsString('backdrop-filter: blur(20px)', $headerStyles);
+        self::assertStringContainsString('-webkit-backdrop-filter: blur(20px)', $headerStyles);
+        self::assertStringContainsString('@supports not', $headerStyles);
+        self::assertStringContainsString('@supports not', $adminStyles);
+        self::assertStringContainsString('<x-icon name="notification"', $publicHeader);
+        self::assertStringContainsString('<x-icon name="notification"', $adminLayout);
+        self::assertStringNotContainsString('<svg', $publicHeader);
+        self::assertStringNotContainsString('<svg', $adminLayout);
+        self::assertStringContainsString('aria-hidden="true"', $icon);
+        self::assertStringContainsString('focusable="false"', $icon);
+    }
 }

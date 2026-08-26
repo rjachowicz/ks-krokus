@@ -1,5 +1,93 @@
 # TODO.md
 
+## P0 — etap 5/9: e-mailowe przypomnienia o wydarzeniach
+
+- [x] Dodać domyślnie wyłączoną zgodę użytkownika, czas potwierdzenia, casty,
+  fillable i fabrykę oraz osobny formularz wymagający hasła przy włączaniu.
+- [x] Przy wyłączeniu zgody zerować potwierdzenie i usuwać wszystkie subskrypcje,
+  aby natychmiast zatrzymać oczekujące oraz zakolejkowane przypomnienia.
+- [x] Dodać `email_reminders_enabled` do wydarzenia, formularza administratora,
+  walidacji, modelu i testów; wyłączenie usuwa subskrypcje wydarzenia.
+- [x] Dodać `event_reminder_subscriptions`, relacje, fabryki, klucze obce,
+  unikalność użytkownik + wydarzenie oraz brak publicznej listy osób.
+- [x] Dodać właścicielskie, idempotentne endpointy subscribe/unsubscribe z
+  `auth`, `active`, limiterem, ochroną IDOR i polskimi komunikatami.
+- [x] W modalu i pełnym widoku dodać dostępny dialog aktualnego hasła, jawną
+  informację o potwierdzeniu i przyciski ustawienia oraz anulowania.
+- [x] Egzekwować ścisłe `start_at > now() + 24h` w UI, serwisie i ponownie pod
+  blokadą transakcyjną; odrzucać draft, archived, niepubliczne i wyłączone.
+- [x] Dodać szyfrowaną, kolejkowaną Notification z nazwą, terminem, miejscem,
+  linkiem i wyjaśnieniem źródła wiadomości oraz ponowną kontrolą stanu.
+- [x] Dodać idempotentne `events:send-reminders`, atomowy znacznik + rekord
+  kolejki, okno ±15 minut i scheduler co 5 minut w `Europe/Warsaw` z blokadą.
+- [x] Pokryć zgodę, hasło, atomowość, termin, widoczność, duplikaty, anulowanie,
+  IDOR, pomijanie, pojedynczy dispatch, kolejkę i scheduler regresjami.
+- [ ] Po wdrożeniu wykonać kontrolowany smoke test Resend, workera i crona oraz
+  fizyczny test dialogu z NVDA/VoiceOver i na urządzeniu 320 px.
+
+## P0 — etap 4/9: modal wydarzenia w kalendarzu
+
+- [x] Zachować pełny `href` wydarzenia i bezskryptowy fallback do istniejącego
+  widoku szczegółów, przechwytując wyłącznie zwykłą aktywację z JavaScriptem.
+- [x] Dodać publiczny endpoint fragmentu HTML oparty na `publiclyVisible()`, z 404
+  dla szkicu, wydarzenia niepublicznego i brakującego rekordu.
+- [x] Wydzielić wspólny partial szczegółów dla pełnej strony i odpowiedzi modala,
+  bez serializowania pól administracyjnych.
+- [x] Dodać natywny `<dialog>` z nazwą i opisem ARIA, Enter/Space, Escape,
+  przyciskiem zamknięcia, izolacją i przywracaniem fokusu.
+- [x] Dodać ładowanie, błąd, retry, anulowanie poprzedniego requestu, ochronę przed
+  wielokrotnym otwarciem oraz ignorowanie nieaktualnej odpowiedzi.
+- [x] Ładować moduł JS dynamicznie tylko na miesięcznym kalendarzu i zapewnić
+  responsywność 320 px oraz `prefers-reduced-motion`.
+- [x] Pokryć pełny widok, endpoint, widoczność publiczną, podstawowe dane fragmentu,
+  fallback link i filtry kalendarza testami regresyjnymi.
+- [ ] Powtórzyć fizyczną kontrolę fokusu, Escape, klawiatury i layoutu 320–1920 px,
+  gdy instancja Browser będzie dostępna.
+
+## P0 — etap 3/9: usuwanie i retencja powiadomień
+
+- [x] Dodać dostępne checkboxy przy wpisach, „Zaznacz wszystkie widoczne” oraz
+  działający bez JavaScriptu backendowy fallback wyboru bieżącej strony.
+- [x] Dodać potwierdzane usuwanie pojedynczego, zaznaczonych i wszystkich
+  powiadomień z czytelnymi komunikatami, pustym stanem i zachowaniem paginacji.
+- [x] Ograniczyć każde usuwanie do relacji zalogowanego użytkownika, walidować UUID,
+  ignorować cudze identyfikatory i wykonywać operacje grupowe w transakcjach.
+- [x] Dodać `NOTIFICATION_RETENTION_DAYS=7`, indeks czasu utworzenia oraz
+  idempotentne, partiami wykonywane `notifications:prune`.
+- [x] Udokumentować zachowanie wartości `0` i błędnej konfiguracji oraz zaplanować
+  komendę na 02:45 `Europe/Warsaw` z `withoutOverlapping()`.
+- [x] Pokryć endpointy, brak logowania, własność danych, walidację, retencję,
+  idempotencję i scheduler testami regresyjnymi.
+
+## P0 — etap 2/9: header, ikony i konto w panelu
+
+- [x] Wzmocnić półprzezroczyste tło i blur publicznego headera, dodać
+  `isolation`, prefiks WebKit, obramowanie po scrollu i fallback `@supports not`.
+- [x] Wydzielić wspólny komponent SVG oraz usunąć duplikaty ikon i znaki
+  tekstowe `●`/`◐` z publicznego headera i panelu.
+- [x] Dodać `/panel/moje-konto*` z `admin.account.*`, wspólnym kontrolerem,
+  Form Requestami i logiką aktualizacji bez duplikowania implementacji.
+- [x] Zastąpić rozproszone akcje topbara dostępnym, responsywnym dropdownem
+  konta z tożsamością, rolą, kontem, powiadomieniami, stroną i wylogowaniem.
+- [x] Otwierać stronę publiczną w tej samej karcie, bez `target`, `rel` i
+  komunikatu o nowej karcie.
+- [x] Pokryć trasy, autoryzację, layout, menu, ikony, link oraz zachowanie
+  istniejących aktualizacji konta testami regresyjnymi.
+- [ ] Powtórzyć rzeczywisty `getComputedStyle`, wizualny blur i interakcje
+  dropdownu przy 320–1920 px w light/dark, gdy instancja Browser będzie dostępna.
+
+## P0 — etap 1/9: stopka, logowanie i geometria filtrów
+
+- [x] Uprościć warunki `@guest`/`@auth` w stopce i zapewnić jeden logiczny rząd
+  linków na typowym desktopie bez wiązania szerokości z liczbą odnośników.
+- [x] Dodać na stronie logowania widoczną, klawiaturową akcję powrotu do strony
+  głównej niezależną od linku w logo.
+- [x] Zastąpić ręczne przesunięcia przycisków wspólnym układem filtrów dla
+  części publicznej, panelu, ogłoszeń i sekcji „Moje ogłoszenia”.
+- [x] Dodać regresje struktury stopki, logowania i wspólnego systemu filtrów.
+- [ ] Powtórzyć wizualny audyt 320–1920 px po udostępnieniu instancji
+  przeglądarki; bieżąca sesja nie udostępniła żadnego backendu Browser.
+
 ## P0 — końcowa stabilizacja UI, powiadomień, retencji i bezpieczeństwa
 
 - [x] Potwierdzić wspólne prymitywy geometrii, brak ujemnych marginesów oraz

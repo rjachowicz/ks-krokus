@@ -1,4 +1,11 @@
-@props(['notification', 'compact' => false])
+@props([
+    'notification',
+    'compact' => false,
+    'selectable' => false,
+    'selectionForm' => null,
+    'returnPage' => 1,
+    'selectedNotifications' => [],
+])
 
 @php
     $notificationUrl = $notification->data['url'] ?? route('notifications.index');
@@ -14,21 +21,39 @@
 @endphp
 
 <li class="notification-item {{ $notification->unread() ? 'notification-item--unread' : '' }}">
-    <div class="notification-item__content">
-        <div class="notification-item__heading">
-            <strong>{{ $notification->data['title'] ?? 'Powiadomienie' }}</strong>
-            <span class="notification-item__status">
-                {{ $notification->unread() ? 'Nowe' : 'Przeczytane' }}
-            </span>
-        </div>
-
-        @if (filled($notification->data['message'] ?? null))
-            <p>{{ $notification->data['message'] }}</p>
+    <div class="notification-item__main">
+        @if ($selectable && is_string($selectionForm))
+            <label class="form-check notification-item__selection">
+                <input
+                    type="checkbox"
+                    name="notifications[]"
+                    value="{{ $notification->getKey() }}"
+                    form="{{ $selectionForm }}"
+                    data-notification-select
+                    @checked(in_array($notification->getKey(), $selectedNotifications, true))
+                >
+                <span class="sr-only">
+                    Zaznacz powiadomienie: {{ $notification->data['title'] ?? 'Powiadomienie' }}
+                </span>
+            </label>
         @endif
 
-        <time datetime="{{ $notification->created_at->toIso8601String() }}">
-            {{ $notification->created_at->diffForHumans() }}
-        </time>
+        <div class="notification-item__content">
+            <div class="notification-item__heading">
+                <strong>{{ $notification->data['title'] ?? 'Powiadomienie' }}</strong>
+                <span class="notification-item__status">
+                    {{ $notification->unread() ? 'Nowe' : 'Przeczytane' }}
+                </span>
+            </div>
+
+            @if (filled($notification->data['message'] ?? null))
+                <p>{{ $notification->data['message'] }}</p>
+            @endif
+
+            <time datetime="{{ $notification->created_at->toIso8601String() }}">
+                {{ $notification->created_at->diffForHumans() }}
+            </time>
+        </div>
     </div>
 
     <div class="notification-item__actions">
@@ -41,6 +66,19 @@
                 @csrf
                 @method('PATCH')
                 <button type="submit" class="btn btn-secondary">Oznacz jako przeczytane</button>
+            </form>
+        @endif
+
+        @if (! $compact)
+            <form
+                method="POST"
+                action="{{ route('notifications.destroy', ['notification' => $notification->getKey(), 'page' => $returnPage]) }}"
+                data-confirm="Usunąć to powiadomienie? Tej operacji nie można cofnąć."
+                data-confirm-action="Usuń powiadomienie"
+            >
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger-outline">Usuń</button>
             </form>
         @endif
     </div>

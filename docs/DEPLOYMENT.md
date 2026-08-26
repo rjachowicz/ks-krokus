@@ -164,7 +164,20 @@ najstarszego wpisu oraz liczbę rekordów w tabeli `jobs`, stan usługi workera 
 przyrost `failed_jobs`. Po naprawieniu przyczyny użyj `queue:retry all`; nie
 usuwaj nieprzeanalizowanych błędów tylko po to, aby wyzerować licznik.
 
-## Scheduler, wygasanie ogłoszeń i retencja wniosków
+## Scheduler, przypomnienia wydarzeń, wygasanie i retencja
+
+`events:send-reminders` działa co 5 minut w `Europe/Warsaw`, w oknie ±15 minut
+wokół 24 godzin do rozpoczęcia wydarzenia i z `withoutOverlapping`. Produkcja
+musi używać tej samej bazy PostgreSQL dla aplikacji, schedulera i kolejki
+`database`: znacznik `reminder_sent_at` oraz szyfrowany rekord `jobs` są zapisywane
+atomowo. Worker wysyła wiadomość przez istniejący mailer/Resend i przed wysyłką
+ponownie sprawdza zgodę, aktywność oraz publiczność wydarzenia.
+
+Nie dodano nowej zmiennej środowiskowej dla przypomnień. Wymagane pozostają
+poprawne `APP_URL`, `APP_TIMEZONE=Europe/Warsaw`, `QUEUE_CONNECTION=database`,
+konfiguracja `MAIL_*`/Resend oraz stale działający worker. Po trwałym błędzie
+wysyłki przeanalizuj `php artisan queue:failed` i ponów istniejące zadanie przez
+`php artisan queue:retry`, nie zeruj ręcznie `reminder_sent_at`.
 
 `listings:expire` jest jedynym automatycznym mechanizmem przypomnień i wygaszania.
 Komenda jest idempotentna: znacznik `expiration_reminder_sent_at` zapobiega
@@ -205,6 +218,18 @@ Po konfiguracji sprawdź `php artisan schedule:list`, a następnie uruchom ręcz
 `php artisan listings:expire` oraz `php artisan account-requests:apply-retention`
 i zweryfikuj statystyki oraz stan kontrolnych rekordów bez kopiowania danych
 osobowych do logów.
+
+Przed pierwszym produkcyjnym uruchomieniem `events:send-reminders`:
+
+1. wykonaj `php artisan migrate --force`,
+2. zrestartuj worker przez `php artisan queue:restart`,
+3. potwierdź wpis komendy przez `php artisan schedule:list`,
+4. utwórz testowe publiczne wydarzenie późniejsze niż 24 godziny, włącz
+   przypomnienia i zapisz wyłącznie kontrolowane konto z adresem testowym,
+5. ustaw termin kontrolnego wydarzenia w oknie komendy, uruchom
+   `php artisan events:send-reminders` jeden raz i sprawdź jeden rekord `jobs`,
+6. uruchom worker, potwierdź treść, link HTTPS i dostarczenie przez Resend,
+7. ponownie uruchom komendę i potwierdź wynik `Zakolejkowane przypomnienia: 0`.
 
 ## Nagłówki, sesja i CSP
 
@@ -324,8 +349,10 @@ komenda `--class=AdminUserSeeder`.
 6. Dodaj aktualność i ogłoszenie z 10 zdjęciami; sprawdź WebP, miniatury,
    placeholder, usuwanie i trwałość po redeployu.
 7. Uruchom `php artisan listings:expire` dwukrotnie i potwierdź pojedyncze efekty.
-8. Sprawdź `php artisan queue:failed` i licznik `jobs`.
-9. Potwierdź cache konfiguracji, zdarzeń, tras i widoków przez `php artisan about`.
+8. Wykonaj kontrolowany smoke test `events:send-reminders`, anulowania oraz
+   wyłączenia zgody zgodnie z procedurą schedulera.
+9. Sprawdź `php artisan queue:failed` i licznik `jobs`.
+10. Potwierdź cache konfiguracji, zdarzeń, tras i widoków przez `php artisan about`.
 
 Rzeczywiste dostarczenie SMTP, zachowanie reverse proxy, backup/restore bazy i
 wolumenu oraz alerty wymagają końcowego testu w środowisku produkcyjnym.

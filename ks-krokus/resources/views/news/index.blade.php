@@ -19,31 +19,36 @@
     <section class="page-container page-section" aria-labelledby="news-list-title">
         <x-section-heading id="news-list-title" title="Wszystkie aktualności" meta="NEWS_ARCHIVE" />
 
-        <form method="GET" class="content-toolbar panel-card ui-cluster" aria-label="Filtrowanie aktualności">
+        <form method="GET" class="content-toolbar filter-form panel-card" aria-label="Filtrowanie aktualności">
             <x-form-errors />
 
-            <label for="news-filter-query">
-                Szukaj
-                <input
-                    id="news-filter-query"
-                    type="search"
-                    name="q"
-                    value="{{ request('q') }}"
-                    placeholder="Tytuł lub treść"
-                    autocomplete="off"
-                    maxlength="100"
-                    @error('q') aria-invalid="true" aria-describedby="news-filter-query-error" @enderror
-                >
-                @error('q')
-                    <span id="news-filter-query-error" class="form-error" role="alert">{{ $message }}</span>
-                @enderror
-            </label>
+            <div class="filter-form__row">
+                <label for="news-filter-query">
+                    Szukaj
+                    <input
+                        id="news-filter-query"
+                        type="search"
+                        name="q"
+                        value="{{ request('q') }}"
+                        placeholder="Tytuł lub treść"
+                        autocomplete="off"
+                        maxlength="100"
+                        @error('q') aria-invalid="true" aria-describedby="news-filter-query-error" @enderror
+                    >
+                    @error('q')
+                        <span id="news-filter-query-error" class="form-error" role="alert">{{ $message }}</span>
+                    @enderror
+                </label>
 
-            <button type="submit" class="btn btn-primary">Filtruj</button>
-
-            @if (request()->hasAny(['q']))
-                <a href="{{ route('news.index') }}" class="btn btn-secondary">Wyczyść</a>
-            @endif
+                <div class="filter-form__actions">
+                    <div class="filter-form__action-group">
+                        <button type="submit" class="btn btn-primary">Filtruj</button>
+                        @if (request()->hasAny(['q']))
+                            <a href="{{ route('news.index') }}" class="btn btn-secondary">Wyczyść</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </form>
 
         @if ($posts->isEmpty())

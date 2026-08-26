@@ -10,6 +10,7 @@ use App\Enums\EventType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\CalendarFilterRequest;
 use App\Models\SportEvent;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -83,13 +84,16 @@ final class CalendarController extends Controller
 
     public function show(string $slug): View
     {
-        $sportEvent = SportEvent::query()
-            ->publiclyVisible()
-            ->with('competitions')
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $sportEvent = $this->findPublicEvent($slug);
 
-        return view('calendar.show', compact('sportEvent'));
+        return view('calendar.show', $this->eventViewData($sportEvent));
+    }
+
+    public function modal(string $slug): View
+    {
+        $sportEvent = $this->findPublicEvent($slug);
+
+        return view('calendar.modal', $this->eventViewData($sportEvent));
     }
 
     /**
@@ -121,5 +125,32 @@ final class CalendarController extends Controller
         }
 
         return $eventsByDate;
+    }
+
+    private function findPublicEvent(string $slug): SportEvent
+    {
+        return SportEvent::query()
+            ->publiclyVisible()
+            ->with('competitions')
+            ->where('slug', $slug)
+            ->firstOrFail();
+    }
+
+    /** @return array<string, mixed> */
+    private function eventViewData(SportEvent $sportEvent): array
+    {
+        $user = auth()->user();
+        $reminderAccountActive = $user instanceof User && $user->is_active;
+        $reminderSubscribed = $reminderAccountActive
+            && $user->eventReminderSubscriptions()
+                ->where('sport_event_id', $sportEvent->getKey())
+                ->exists();
+
+        return [
+            'sportEvent' => $sportEvent,
+            'eventReminderCanSubscribe' => $sportEvent->canAcceptEmailReminderSubscriptions(),
+            'reminderAccountActive' => $reminderAccountActive,
+            'reminderSubscribed' => $reminderSubscribed,
+        ];
     }
 }

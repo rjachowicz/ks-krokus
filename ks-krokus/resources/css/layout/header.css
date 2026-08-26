@@ -1,19 +1,26 @@
 .site-header {
     position: fixed;
     z-index: 1000;
+    isolation: isolate;
     top: 0;
     right: 0;
     left: 0;
     border-bottom: 1px solid transparent;
     background: var(--header-bg);
-    backdrop-filter: blur(18px) saturate(150%);
-    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .site-header.is-scrolled {
-    border-color: var(--line);
+    border-color: var(--line-strong);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .site-header {
+        background: var(--header-bg-fallback);
+    }
 }
 
 .nav-container {
@@ -166,16 +173,6 @@
     padding: 0;
 }
 
-.header-notifications svg {
-    width: 20px;
-    height: 20px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
 .notification-count {
     display: inline-grid;
     min-width: 21px;
@@ -206,29 +203,11 @@
     color: var(--gold-strong);
 }
 
-.account-icon {
-    width: 20px;
-    height: 20px;
-    flex: 0 0 auto;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
 .account-menu {
     position: relative;
 }
 
 .account-menu__chevron {
-    width: 12px;
-    height: 8px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.7;
-    stroke-linecap: round;
-    stroke-linejoin: round;
     transition: transform 160ms ease;
 }
 
@@ -277,6 +256,7 @@
     width: 100%;
     min-height: 42px;
     align-items: center;
+    gap: 10px;
     padding: 10px;
     border: 0;
     border-radius: 8px;
@@ -316,16 +296,6 @@
     border-color: rgba(209, 169, 54, 0.65);
     color: var(--gold-strong);
     transform: translateY(-1px);
-}
-
-.theme-icon {
-    width: 20px;
-    height: 20px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
 }
 
 html[data-theme="light"] .sun-icon,

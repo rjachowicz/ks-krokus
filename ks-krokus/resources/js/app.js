@@ -5,6 +5,9 @@ import { initToasts } from './modules/toasts';
 import { initAdminUi } from './modules/admin-ui';
 import { initFormStates } from './modules/form-state';
 import { initImageFallbacks } from './modules/image-fallback';
+import { initConfirmations } from './modules/confirmation';
+import { initNotificationSelection } from './modules/notification-selection';
+import { initEventReminders } from './modules/event-reminders';
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
@@ -13,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initStickyHeader();
     initToasts();
     initImageFallbacks();
+    initConfirmations();
+    initNotificationSelection();
+    initEventReminders();
 
     if (document.querySelector('[data-admin-sidebar]')) {
         initAdminUi();
@@ -36,6 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('[data-rich-text]')) {
         import('./modules/rich-text').then(({ initRichTextEditors }) => {
             initRichTextEditors();
+        });
+    }
+
+    if (document.querySelector('[data-event-dialog]')) {
+        import('./modules/event-dialog').then(({ initEventDialogs }) => {
+            initEventDialogs();
         });
     }
 

@@ -19,9 +19,10 @@
     <section class="page-container page-section" aria-labelledby="results-list-title">
         <x-section-heading id="results-list-title" title="Archiwum wyników" meta="RESULTS_DATABASE" />
 
-        <form method="GET" class="content-toolbar panel-card ui-cluster" aria-label="Filtrowanie wyników">
+        <form method="GET" class="content-toolbar filter-form panel-card" aria-label="Filtrowanie wyników">
             <x-form-errors />
 
+            <div class="filter-form__row">
             <label for="results-filter-query">
                 Szukaj zawodów
                 <input
@@ -70,10 +71,15 @@
                 @enderror
             </label>
 
-            <button type="submit" class="btn btn-primary">Filtruj</button>
-            @if (request()->hasAny(['q', 'discipline', 'competition_system']))
-                <a href="{{ route('results.index') }}" class="btn btn-secondary">Wyczyść</a>
-            @endif
+                <div class="filter-form__actions">
+                    <div class="filter-form__action-group">
+                        <button type="submit" class="btn btn-primary">Filtruj</button>
+                        @if (request()->hasAny(['q', 'discipline', 'competition_system']))
+                            <a href="{{ route('results.index') }}" class="btn btn-secondary">Wyczyść</a>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </form>
 
         @if ($events->isEmpty())

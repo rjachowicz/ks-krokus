@@ -84,5 +84,7 @@ class AppServiceProvider extends ServiceProvider
             ->by($request->ip()));
         RateLimiter::for('notification-actions', static fn (Request $request): Limit => Limit::perMinute(30)
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
+        RateLimiter::for('event-reminders', static fn (Request $request): Limit => Limit::perMinute(10)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 }

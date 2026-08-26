@@ -92,6 +92,9 @@ final class SportEventController extends Controller
                 $data['title'].' '.$data['start_at'],
             );
             $data['is_public'] = $request->boolean('is_public');
+            $data['email_reminders_enabled'] = $request->boolean(
+                'email_reminders_enabled',
+            );
             $data['created_by'] = $request->user()->getKey();
             $data['updated_by'] = $request->user()->getKey();
 
@@ -155,9 +158,17 @@ final class SportEventController extends Controller
             );
 
             $data['is_public'] = $request->boolean('is_public');
+            $data['email_reminders_enabled'] = $request->boolean(
+                'email_reminders_enabled',
+            );
             $data['updated_by'] = $request->user()->getKey();
 
             $lockedEvent->update($data);
+
+            if (! $lockedEvent->email_reminders_enabled) {
+                $lockedEvent->reminderSubscriptions()->delete();
+            }
+
             $lockedEvent->competitions()->sync($competitionIds);
         });
 

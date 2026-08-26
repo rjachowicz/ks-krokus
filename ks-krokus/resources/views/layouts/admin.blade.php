@@ -24,7 +24,13 @@
                     Pulpit
                 </a>
 
-                <a href="{{ route('account.show') }}">Moje konto</a>
+                <a
+                    href="{{ route('admin.account.show') }}"
+                    class="{{ request()->routeIs('admin.account.*') ? 'active' : '' }}"
+                    @if (request()->routeIs('admin.account.*')) aria-current="page" @endif
+                >
+                    Moje konto
+                </a>
 
                 <a
                     href="{{ route('admin.my-listings.index') }}"
@@ -109,16 +115,6 @@
                     </a>
                 @endif
 
-                <span class="admin-nav__label">Strona</span>
-
-                <a
-                    href="{{ route('home') }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Otwórz stronę publiczną w nowej karcie"
-                >
-                    Otwórz stronę
-                </a>
             </nav>
         </aside>
         <button class="admin-sidebar-backdrop" type="button" aria-label="Zamknij menu panelu" data-admin-menu-backdrop></button>
@@ -139,38 +135,75 @@
                     <strong>@yield('admin_title', 'Panel administracyjny')</strong>
                 </div>
 
-                <div class="admin-user" data-admin-user>
-                    <span>
-                        <strong>{{ auth()->user()->name }}</strong><br>
-                        {{ auth()->user()->role->label() }}
-                    </span>
-
-                    <a
-                        class="admin-notifications-link"
-                        href="{{ route('notifications.index') }}"
-                        aria-label="Powiadomienia{{ $unreadNotificationsCount > 0 ? ': '.$unreadNotificationsCount.' nieprzeczytanych' : '' }}"
-                        title="Powiadomienia"
-                    >
-                        <span aria-hidden="true">●</span>
-                        @if ($unreadNotificationsCount > 0)
-                            <span class="notification-count" aria-hidden="true">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
-                        @endif
-                    </a>
-
+                <div class="admin-topbar__actions" data-admin-user>
                     <button
-                        class="admin-theme-toggle"
+                        class="admin-topbar__control admin-theme-toggle"
                         type="button"
                         aria-label="Przełącz motyw kolorystyczny"
                         title="Przełącz motyw"
                         data-theme-toggle
                     >
-                        <span aria-hidden="true">◐</span>
+                        <x-icon name="sun" class="theme-icon sun-icon" />
+                        <x-icon name="moon" class="theme-icon moon-icon" />
                     </button>
 
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="btn btn-secondary">Wyloguj</button>
-                    </form>
+                    <div class="admin-account-menu" data-account-menu>
+                        <button
+                            class="admin-account-menu__trigger"
+                            type="button"
+                            aria-controls="admin-account-menu-panel"
+                            aria-expanded="false"
+                            data-account-menu-toggle
+                        >
+                            <x-icon name="account" />
+                            <span class="admin-account-menu__trigger-label">Moje konto</span>
+                            <x-icon name="chevron" class="admin-account-menu__chevron" />
+                        </button>
+
+                        <div
+                            id="admin-account-menu-panel"
+                            class="admin-account-menu__panel"
+                            data-account-menu-panel
+                            hidden
+                        >
+                            <p class="admin-account-menu__identity">
+                                <strong>{{ auth()->user()->name }}</strong>
+                                <span>{{ auth()->user()->role->label() }}</span>
+                            </p>
+
+                            <a
+                                href="{{ route('admin.account.show') }}"
+                                @if (request()->routeIs('admin.account.*')) aria-current="page" @endif
+                            >
+                                <x-icon name="account" />
+                                Moje konto
+                            </a>
+
+                            <a
+                                href="{{ route('notifications.index') }}"
+                                aria-label="Powiadomienia{{ $unreadNotificationsCount > 0 ? ': '.$unreadNotificationsCount.' nieprzeczytanych' : '' }}"
+                            >
+                                <x-icon name="notification" />
+                                <span>Powiadomienia</span>
+                                @if ($unreadNotificationsCount > 0)
+                                    <span class="notification-count" aria-hidden="true">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
+                                @endif
+                            </a>
+
+                            <a href="{{ route('home') }}">
+                                <x-icon name="home" />
+                                Otwórz stronę
+                            </a>
+
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit">
+                                    <x-icon name="logout" />
+                                    Wyloguj się
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -181,21 +214,7 @@
         </div>
     </div>
 
-    <dialog
-        class="confirm-dialog"
-        aria-labelledby="confirm-dialog-title"
-        aria-describedby="confirm-dialog-message"
-        data-confirm-dialog
-    >
-        <form method="dialog">
-            <h2 id="confirm-dialog-title">Potwierdź operację</h2>
-            <p id="confirm-dialog-message" data-confirm-message></p>
-            <div class="confirm-dialog__actions">
-                <button type="submit" value="cancel" class="btn btn-secondary">Anuluj</button>
-                <button type="button" class="btn btn-danger" data-confirm-accept>Potwierdź</button>
-            </div>
-        </form>
-    </dialog>
+    <x-confirm-dialog />
 
 </body>
 </html>

@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetInitialPasswordController;
+use App\Http\Controllers\EventReminderController;
 use App\Http\Controllers\MySaleListingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Public\AccountRequestController as PublicAccountRequestController;
@@ -39,8 +40,19 @@ Route::get('/aktualnosci/{slug}', [NewsController::class, 'show'])
 
 Route::get('/kalendarz', [CalendarController::class, 'index'])
     ->name('calendar.index');
+Route::get('/kalendarz/{slug}/podglad', [CalendarController::class, 'modal'])
+    ->name('calendar.modal');
 Route::get('/kalendarz/{slug}', [CalendarController::class, 'show'])
     ->name('calendar.show');
+
+Route::prefix('kalendarz/{sportEvent}/przypomnienie')
+    ->middleware(['auth', 'active', 'throttle:event-reminders'])
+    ->group(function (): void {
+        Route::post('/', [EventReminderController::class, 'store'])
+            ->name('event-reminders.store');
+        Route::delete('/', [EventReminderController::class, 'destroy'])
+            ->name('event-reminders.destroy');
+    });
 
 Route::get('/wyniki', [ResultsController::class, 'index'])
     ->name('results.index');
@@ -107,6 +119,16 @@ Route::prefix('powiadomienia')
         Route::post('/przeczytaj-wszystkie', [NotificationController::class, 'markAllAsRead'])
             ->middleware('throttle:notification-actions')
             ->name('read-all');
+        Route::delete('/zaznaczone', [NotificationController::class, 'destroySelected'])
+            ->middleware('throttle:notification-actions')
+            ->name('destroy-selected');
+        Route::delete('/wszystkie', [NotificationController::class, 'destroyAll'])
+            ->middleware('throttle:notification-actions')
+            ->name('destroy-all');
+        Route::delete('/{notification}', [NotificationController::class, 'destroy'])
+            ->whereUuid('notification')
+            ->middleware('throttle:notification-actions')
+            ->name('destroy');
     });
 
 Route::prefix('moje-konto')
@@ -117,12 +139,25 @@ Route::prefix('moje-konto')
         Route::patch('/profil', [AccountController::class, 'updateProfile'])->name('profile.update');
         Route::patch('/email', [AccountController::class, 'updateEmail'])->name('email.update');
         Route::put('/haslo', [AccountController::class, 'updatePassword'])->name('password.update');
+        Route::patch('/przypomnienia-wydarzen', [AccountController::class, 'updateEventEmailNotifications'])
+            ->name('event-notifications.update');
     });
 
 Route::prefix('panel')
     ->name('admin.')
     ->middleware(['auth', 'active'])
     ->group(function (): void {
+        Route::get('moje-konto', [AccountController::class, 'show'])
+            ->name('account.show');
+        Route::patch('moje-konto/profil', [AccountController::class, 'updateProfile'])
+            ->name('account.profile.update');
+        Route::patch('moje-konto/email', [AccountController::class, 'updateEmail'])
+            ->name('account.email.update');
+        Route::put('moje-konto/haslo', [AccountController::class, 'updatePassword'])
+            ->name('account.password.update');
+        Route::patch('moje-konto/przypomnienia-wydarzen', [AccountController::class, 'updateEventEmailNotifications'])
+            ->name('account.event-notifications.update');
+
         Route::get('/', DashboardController::class)
             ->name('dashboard');
 

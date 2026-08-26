@@ -8,16 +8,22 @@
         <x-slot:actions><a href="{{ route('admin.my-listings.create') }}" class="btn btn-primary">Dodaj ogłoszenie</a></x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter panel-card listing-owner-filter" aria-label="Filtrowanie moich ogłoszeń">
-        <label for="my-listings-status">Status
-            <select id="my-listings-status" name="status" @error('status') aria-invalid="true" aria-describedby="my-listings-status-error" @enderror>
-                <option value="">Wszystkie statusy</option>
-                @foreach ($statuses as $value => $label)<option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>@endforeach
-            </select>
-            @error('status') <span id="my-listings-status-error" class="form-error">{{ $message }}</span> @enderror
-        </label>
-        <button type="submit" class="btn btn-primary">Filtruj</button>
-        @if (request('status'))<a href="{{ route('admin.my-listings.index') }}" class="btn btn-secondary">Wyczyść</a>@endif
+    <form method="GET" class="admin-filter filter-form panel-card listing-owner-filter" aria-label="Filtrowanie moich ogłoszeń">
+        <div class="filter-form__row">
+            <label for="my-listings-status">Status
+                <select id="my-listings-status" name="status" @error('status') aria-invalid="true" aria-describedby="my-listings-status-error" @enderror>
+                    <option value="">Wszystkie statusy</option>
+                    @foreach ($statuses as $value => $label)<option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>@endforeach
+                </select>
+                @error('status') <span id="my-listings-status-error" class="form-error">{{ $message }}</span> @enderror
+            </label>
+            <div class="filter-form__actions">
+                <div class="filter-form__action-group">
+                    <button type="submit" class="btn btn-primary">Filtruj</button>
+                    @if (request('status'))<a href="{{ route('admin.my-listings.index') }}" class="btn btn-secondary">Wyczyść</a>@endif
+                </div>
+            </div>
+        </div>
     </form>
 
     @if ($listings->isEmpty())

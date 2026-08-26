@@ -15,9 +15,13 @@ Kontrolery publiczne:
 
 Kontrolery konta zalogowanego użytkownika:
 - `AccountController` — podgląd własnego konta oraz rozdzielone aktualizacje profilu,
-  adresu e-mail i hasła pod `/moje-konto`
+  adresu e-mail i hasła pod `/moje-konto` oraz `/panel/moje-konto`; oba zestawy
+  tras używają tych samych metod i Form Requestów
 - `NotificationController` — paginowana lista bazodanowych powiadomień oraz
-  właścicielskie oznaczanie pojedynczego lub wszystkich jako przeczytane
+  właścicielskie oznaczanie jako przeczytane i usuwanie pojedynczego, zaznaczonych
+  lub wszystkich powiadomień
+- `EventReminderController` — idempotentne ustawienie i anulowanie przypomnienia
+  dla wydarzenia, zawsze w zakresie użytkownika z sesji
 
 Kontrolery administracyjne:
 - `DashboardController`
@@ -39,13 +43,16 @@ Panel korzysta z:
 
 Nie wystarczy ukryć przycisk w Blade. Operacja musi być zabezpieczona po stronie serwera.
 
-`/moje-konto*` korzysta z `auth` i `active`, nie przyjmuje identyfikatora użytkownika
-i zawsze działa na koncie z sesji. Osobne Form Requesty ograniczają edycję profilu,
-e-maila i hasła. Zwykła aktualizacja profilu nie przyjmuje roli, aktywności, funkcji
-klubowych ani danych weryfikacyjnych. Administracyjne dane członkowskie chronią
-jednocześnie middleware roli administratora i `MemberProfilePolicy`; moderator nie
-ma dostępu do profili innych osób. Policy zezwala każdemu aktywnemu użytkownikowi
-na podgląd własnego profilu, ale jego edycja pozostaje wyłącznie administracyjna.
+`/moje-konto*` i `/panel/moje-konto*` korzystają z `auth` i `active`, nie przyjmują
+identyfikatora użytkownika i zawsze działają na koncie z sesji. Wariant panelowy
+renderuje ten sam widok konta w `layouts.admin`, a formularze wysyła do nazwanych
+tras `admin.account.*`, dzięki czemu po operacji użytkownik pozostaje w panelu.
+Osobne Form Requesty ograniczają edycję profilu, e-maila i hasła. Zwykła
+aktualizacja profilu nie przyjmuje roli, aktywności, funkcji klubowych ani danych
+weryfikacyjnych. Administracyjne dane członkowskie chronią jednocześnie middleware
+roli administratora i `MemberProfilePolicy`; moderator nie ma dostępu do profili
+innych osób. Policy zezwala każdemu aktywnemu użytkownikowi na podgląd własnego
+profilu, ale jego edycja pozostaje wyłącznie administracyjna.
 
 ## Enumy
 
@@ -95,8 +102,62 @@ zapewniają idempotencję; `pending` i `approved` nie są przetwarzane.
 Kanał bazodanowy przechowuje wyłącznie krótki tytuł, komunikat, wewnętrzny URL i
 techniczny identyfikator rekordu. Publiczny header i topbar panelu pobierają tylko
 licznik nieprzeczytanych. Pełna lista działa pod `/powiadomienia`, używa paginacji
-i jest chroniona przez `auth` oraz `active`. Operacja pojedyncza rozpoczyna zapytanie
-od relacji użytkownika, dlatego sam UUID cudzego powiadomienia nie daje dostępu.
+i jest chroniona przez `auth` oraz `active`. Operacje pojedyncze rozpoczynają
+zapytanie od relacji użytkownika, dlatego sam UUID cudzego powiadomienia nie daje
+dostępu. Usuwanie zaznaczonych waliduje tablice UUID przez
+`DeleteSelectedNotificationsRequest`, wybiera rekordy wyłącznie przez
+`user->notifications()` i działa w transakcji. Identyfikator cudzego wpisu w
+tablicy jest neutralnie ignorowany i nigdy nie rozszerza scopu. Usunięcie wszystkich
+również działa przez relację bieżącego użytkownika i w transakcji. Paginacja wraca
+na bieżącą lub ostatnią istniejącą stronę po usunięciu rekordów.
+
+`notifications:prune` usuwa globalnie tylko identyfikatory wpisów z
+`created_at < now() - NOTIFICATION_RETENTION_DAYS`, partiami po 500, bez odczytu
+i logowania prywatnego pola `data`. Indeks `notifications.created_at` wspiera
+selekcję retencyjną. `0` oznacza bezpieczne wyłączenie procesu; wartość ujemna lub
+niecałkowita zwraca kod błędu bez modyfikacji danych. Komenda jest idempotentna i
+zaplanowana na 02:45 `Europe/Warsaw` z blokadą `withoutOverlapping()`.
+
+### E-mailowe przypomnienia o wydarzeniach
+
+`EventReminderSubscription` łączy `User` i `SportEvent`, przechowuje czas zapisu
+oraz `reminder_sent_at` i ma unikalny indeks `(user_id, sport_event_id)`. Klucze
+obce używają `cascadeOnDelete`, ponieważ subskrypcja nie ma samodzielnej wartości
+audytowej po trwałym usunięciu konta lub wydarzenia. Soft delete nadal zachowuje
+rekord, ale wszystkie zapytania wysyłkowe wymagają istniejących, nieusuniętych
+relacji. Relacje nie są wykorzystywane do publicznego renderowania listy osób.
+
+`EventReminderService` jest wspólnym miejscem transakcyjnego włączenia zgody,
+utworzenia subskrypcji i anulowania. Zapis najpierw sprawdza warunki domenowe,
+a następnie blokuje użytkownika i wydarzenie oraz powtarza kontrolę w transakcji.
+Warunki to: aktywne konto, publiczne i opublikowane wydarzenie, włączone
+`email_reminders_enabled` oraz `start_at > now() + 24 godziny`. Unikalny indeks i
+stała kolejność blokad domykają idempotencję przy równoległych żądaniach.
+
+Włączenie zgody w „Moim koncie” wymaga `current_password:web` i zapisuje
+`event_email_notifications_confirmed_at`. Wyłączenie zeruje potwierdzenie i usuwa
+wszystkie subskrypcje. Tę samą strategię stosuje wyłączenie przypomnień przez
+administratora wydarzenia. Usunięcie rekordu zatrzymuje też Notification, ponieważ
+przed wysyłką ponownie sprawdza ona istnienie właścicielskiej subskrypcji, aktywność
+użytkownika, zgodę i bieżącą publiczność wydarzenia.
+
+`events:send-reminders` działa w oknie od 23 h 45 min do 24 h 15 min przed
+`start_at`. Wybiera tylko rekordy z pustym `reminder_sent_at`, ponownie blokuje i
+weryfikuje użytkownika, wydarzenie i subskrypcję, a następnie ustawia znacznik
+przed dispatch. `EventReminderNotification::beforeCommit()` świadomie nadpisuje
+globalne `after_commit=true`: przy kolejce `database` znacznik i szyfrowany rekord
+zadania `jobs` powstają w tej samej transakcji. Rollback usuwa oba, równoległy
+proces widzi znacznik, a awaria workera pozostawia zadanie do standardowego retry.
+Operator po wyczerpaniu prób ponawia istniejący wpis przez `queue:retry`, zamiast
+uruchamiać drugi dispatch z komendy.
+
+Notification implementuje `ShouldQueue` i `ShouldBeEncrypted`, korzysta z kanału
+`mail` oraz istniejącej konfiguracji Resend. Zawiera wyłącznie publiczne dane
+wydarzenia i wyjaśnienie źródła wiadomości. Jak w każdym transporcie e-mail typu
+at-least-once, awaria dokładnie po zaakceptowaniu wiadomości przez dostawcę, lecz
+przed potwierdzeniem zadania przez worker, pozostaje granicznym ryzykiem duplikatu
+po retry; aplikacja gwarantuje pojedynczy rekord zadania, nie transakcję rozproszoną
+z zewnętrznym dostawcą.
 
 ## Bezpieczeństwo i logi
 
@@ -129,6 +190,12 @@ interfejsu ani jawnych wpisów logu.
 
 ## Moje konto i dane członkowskie
 
+Publiczna trasa `account.show` zachowuje `layouts.app`, natomiast
+`admin.account.show` pozostaje w `layouts.admin` z sidebarem i topbarem. Wspólny
+route-aware widok wybiera layout i nazwy endpointów formularzy bez powielania
+operacji biznesowych. Panelowy dropdown konta prowadzi do tego wariantu, centrum
+powiadomień, strony głównej w tej samej karcie oraz wylogowania POST z CSRF.
+
 `MemberProfile` jest relacją 1:1 z `User`. Przechowuje minimalny zestaw danych
 członkowskich, JSON dyscyplin oraz audyt weryfikacji. Użytkownik widzi te pola tylko
 do odczytu. Administrator edytuje je na osobnym ekranie powiązanym z użytkownikiem;
@@ -145,17 +212,39 @@ znaków, litery, mała i wielka litera oraz cyfra. Hasło jest zapisywane przez
 `Hash::make`, a rotacja `remember_token` unieważnia trwałe logowania. Aplikacja nie
 usuwa obecnie aktywnych sesji bazodanowych na innych urządzeniach.
 
+Pola `event_notifications_current_password` i
+`event_reminder_current_password` są dodane do globalnej listy `dontFlash`, więc
+nie trafiają do `_old_input` sesji. Procesor logów nadal maskuje wszystkie klucze
+zawierające `password`.
+
 ## Kalendarz
 
 `CalendarController@index`:
 - waliduje miesiąc i rok,
 - tworzy datę wyświetlanego miesiąca,
-- pobiera publiczne wydarzenia,
+- pobiera wyłącznie wydarzenia ze scope `publiclyVisible()`,
 - zachowuje filtry,
 - wyznacza zakres tygodni od poniedziałku do niedzieli,
+- mapuje jeden rekord wydarzenia wielodniowego na wszystkie widoczne dni bez
+  duplikowania danych w bazie,
 - przekazuje dni i nawigację do widoku.
 
-Aktualne ograniczenie: wydarzenia są grupowane po `start_at`. Wydarzenia wielodniowe mogą wymagać mapowania na każdy dzień zakresu bez duplikowania rekordów w bazie.
+Pełny widok `GET /kalendarz/{slug}` oraz fragment HTML modala
+`GET /kalendarz/{slug}/podglad` korzystają z jednej prywatnej metody kontrolera.
+Zapytanie zawsze zaczyna się od `SportEvent::publiclyVisible()`, eager-loaduje
+powiązane definicje konkurencji i zwraca 404 dla szkicu, wydarzenia niepublicznego,
+usuniętego lub nieistniejącego. Fragment zawiera wyłącznie dane przeznaczone do
+publikacji i nie serializuje modelu ani pól audytowych.
+
+`calendar.partials.event-details` jest wspólnym źródłem HTML opisu, terminów,
+miejsca, adresu, dyscypliny, systemu, konkurencji, rejestracji i miejsca na przyszłe
+przypomnienie. Używają go pełny widok oraz odpowiedź modala. Link wydarzenia w
+miesięcznej siatce zachowuje zwykły `href` do pełnego widoku, a osobny atrybut
+wskazuje endpoint fragmentu. Moduł `event-dialog.js` jest importowany dynamicznie
+wyłącznie przy obecności dialogu, przechwytuje tylko zwykłą aktywację linku i
+obsługuje loading, błąd, retry, anulowanie poprzedniego requestu oraz odrzucenie
+nieaktualnej odpowiedzi. Bez JavaScriptu i przy zmodyfikowanym kliknięciu pozostaje
+standardowa nawigacja HTTP.
 
 Filtry enumów powinny być walidowane przez `Rule::enum(...)` lub `Rule::in(...)`, nie jako dowolny string.
 

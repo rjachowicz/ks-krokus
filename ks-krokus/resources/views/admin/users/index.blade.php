@@ -13,7 +13,8 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter panel-card">
+    <form method="GET" class="admin-filter filter-form panel-card">
+        <div class="filter-form__row">
         <label>
             Szukaj
             <input id="user-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Imię, e-mail lub telefon" autocomplete="off"
@@ -42,10 +43,15 @@
             @error('active') <span id="user-filter-active-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
-        <button type="submit" class="btn btn-primary">Filtruj</button>
-        @if (request()->hasAny(['q', 'role', 'active']))
-            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Wyczyść</a>
-        @endif
+            <div class="filter-form__actions">
+                <div class="filter-form__action-group">
+                    <button type="submit" class="btn btn-primary">Filtruj</button>
+                    @if (request()->hasAny(['q', 'role', 'active']))
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Wyczyść</a>
+                    @endif
+                </div>
+            </div>
+        </div>
     </form>
 
     <div class="admin-table-wrap" role="region" aria-label="Lista użytkowników" tabindex="0">

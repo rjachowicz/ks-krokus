@@ -13,7 +13,8 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter panel-card">
+    <form method="GET" class="admin-filter filter-form panel-card">
+        <div class="filter-form__row">
         <label>
             Szukaj
             <input id="post-filter-query" type="search" name="q" value="{{ request('q') }}" placeholder="Tytuł lub opis" autocomplete="off"
@@ -32,10 +33,15 @@
             @error('status') <span id="post-filter-status-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
-        <button type="submit" class="btn btn-primary">Filtruj</button>
-        @if (request()->hasAny(['q', 'status']))
-            <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">Wyczyść</a>
-        @endif
+            <div class="filter-form__actions">
+                <div class="filter-form__action-group">
+                    <button type="submit" class="btn btn-primary">Filtruj</button>
+                    @if (request()->hasAny(['q', 'status']))
+                        <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">Wyczyść</a>
+                    @endif
+                </div>
+            </div>
+        </div>
     </form>
 
     <div class="admin-table-wrap" role="region" aria-label="Lista aktualności" tabindex="0">

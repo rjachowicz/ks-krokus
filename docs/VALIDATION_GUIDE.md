@@ -128,6 +128,26 @@ Stan powiadomienia pobieraj wyłącznie przez relację `notifications()` aktualn
 zalogowanego użytkownika. Identyfikator przesłany w URL nie jest samodzielną
 podstawą autoryzacji; cudze powiadomienie ma zwrócić 404 i pozostać bez zmian.
 
+## Przypomnienia wydarzeń
+
+Globalną zgodę obsługuje osobny `UpdateEventEmailNotificationsRequest`.
+`event_email_notifications_enabled` jest normalizowane przez `$this->boolean()`.
+Przy wartości `true` pole `event_notifications_current_password` jest wymagane i
+korzysta z `current_password:web`; przy wyłączeniu hasło nie jest wymagane.
+
+Zapis z wydarzenia obsługuje `SubscribeEventReminderRequest`, który zawsze wymaga
+`event_reminder_current_password` z `current_password:web`. Oba pola haseł są na
+liście `dontFlash`; nie używaj ich w tooltipach, komunikatach sukcesu ani logach.
+Po błędzie formularz z modala przekierowuje do pełnego widoku wydarzenia, gdzie
+błąd pozostaje powiązany z polem i dostępny dla czytnika ekranu.
+
+Warunków wydarzenia nie wolno opierać wyłącznie na Blade. Serwis domenowy sprawdza
+je przed transakcją i ponownie po `lockForUpdate`: `is_public = true`, status
+`published`, `email_reminders_enabled = true` oraz
+`start_at > now() + 24 godziny`. Równość oznacza zamknięty zapis. Endpoint
+anulowania nie przyjmuje identyfikatora subskrypcji i usuwa wyłącznie rekord
+wynikający z użytkownika sesji oraz wydarzenia w trasie.
+
 ## Blade
 
 Dodawaj `aria-invalid`, `aria-describedby` i komunikat pod polem. Na górze może być podsumowanie, ale nie zamiast komunikatów przy polach.

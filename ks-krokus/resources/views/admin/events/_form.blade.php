@@ -93,6 +93,23 @@
 
     <h2 class="admin-section-title form-grid--span-full">Termin i zapisy</h2>
 
+    <label class="admin-check-option form-grid--span-full">
+        <input type="hidden" name="email_reminders_enabled" value="0">
+        <input
+            id="event-email-reminders"
+            type="checkbox"
+            name="email_reminders_enabled"
+            value="1"
+            @checked(old('email_reminders_enabled', $event->email_reminders_enabled ?? false))
+            @error('email_reminders_enabled') aria-invalid="true" aria-describedby="event-email-reminders-error" @enderror
+        >
+        <span>
+            <strong>Włącz e-mailowe przypomnienia</strong><br>
+            Użytkownicy będą mogli zapisać się najpóźniej 24 godziny przed rozpoczęciem publicznego, opublikowanego wydarzenia.
+        </span>
+        @error('email_reminders_enabled') <span id="event-email-reminders-error" class="form-error">{{ $message }}</span> @enderror
+    </label>
+
     <label>
         <span class="form-label-text">
             Początek <span class="form-required" aria-hidden="true">*</span>

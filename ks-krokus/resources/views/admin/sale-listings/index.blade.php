@@ -18,8 +18,8 @@
         @if (auth()->user()->isAdmin())<a href="{{ route('admin.sale-listings.index', ['trashed' => 'only']) }}" @if (request('trashed') === 'only') aria-current="page" @endif>Kosz</a>@endif
     </nav>
 
-    <form method="GET" class="admin-filter panel-card listing-admin-filter" aria-label="Filtrowanie moderowanych ogłoszeń">
-        <div class="listing-admin-filter__primary">
+    <form method="GET" class="admin-filter filter-form panel-card listing-admin-filter" aria-label="Filtrowanie moderowanych ogłoszeń">
+        <div class="listing-admin-filter__primary filter-form__row">
             <label for="admin-listing-status">Status
                 <select id="admin-listing-status" name="status" @error('status') aria-invalid="true" aria-describedby="admin-listing-status-error" @enderror>
                     <option value="">Wszystkie statusy</option>
@@ -41,12 +41,16 @@
                 </select>
                 @error('category') <span id="admin-listing-category-error" class="form-error">{{ $message }}</span> @enderror
             </label>
-            <button class="btn btn-primary" type="submit">Filtruj</button>
+            <div class="filter-form__actions">
+                <div class="filter-form__action-group">
+                    <button class="btn btn-primary" type="submit">Filtruj</button>
+                </div>
+            </div>
         </div>
 
         <details class="listing-admin-filter__more" @if (request()->hasAny(['created_from', 'created_to', 'published_from', 'published_to', 'trashed']) || $errors->any()) open @endif>
             <summary>Daty i kosz</summary>
-            <div class="listing-admin-filter__advanced">
+            <div class="listing-admin-filter__advanced filter-form__row">
                 @foreach ([
                     ['created_from', 'Utworzono od'],
                     ['created_to', 'Utworzono do'],
@@ -69,11 +73,15 @@
                         @error('trashed') <span id="admin-listing-trashed-error" class="form-error">{{ $message }}</span> @enderror
                     </label>
                 @endif
-                <button class="btn btn-secondary" type="submit">Zastosuj zakres</button>
+                <div class="filter-form__actions">
+                    <div class="filter-form__action-group">
+                        <button class="btn btn-secondary" type="submit">Zastosuj zakres</button>
+                    </div>
+                </div>
             </div>
         </details>
 
-        @if (request()->query())<a class="listing-admin-filter__clear" href="{{ route('admin.sale-listings.index') }}">Wyczyść wszystkie filtry</a>@endif
+        @if (request()->query())<a class="filter-form__clear" href="{{ route('admin.sale-listings.index') }}">Wyczyść wszystkie filtry</a>@endif
     </form>
 
     <div class="admin-table-wrap" role="region" aria-label="Lista ogłoszeń" tabindex="0">

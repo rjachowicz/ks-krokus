@@ -13,7 +13,8 @@
         </x-slot:actions>
     </x-admin-page-header>
 
-    <form method="GET" class="admin-filter panel-card">
+    <form method="GET" class="admin-filter filter-form panel-card">
+        <div class="filter-form__row">
         <label>
             System
             <select id="competition-filter-system" name="competition_system" @error('competition_system') aria-invalid="true" aria-describedby="competition-filter-system-error" @enderror>
@@ -36,10 +37,15 @@
             @error('discipline') <span id="competition-filter-discipline-error" class="form-error">{{ $message }}</span> @enderror
         </label>
 
-        <button type="submit" class="btn btn-primary">Filtruj</button>
-        @if (request()->hasAny(['competition_system', 'discipline']))
-            <a href="{{ route('admin.competitions.index') }}" class="btn btn-secondary">Wyczyść</a>
-        @endif
+            <div class="filter-form__actions">
+                <div class="filter-form__action-group">
+                    <button type="submit" class="btn btn-primary">Filtruj</button>
+                    @if (request()->hasAny(['competition_system', 'discipline']))
+                        <a href="{{ route('admin.competitions.index') }}" class="btn btn-secondary">Wyczyść</a>
+                    @endif
+                </div>
+            </div>
+        </div>
     </form>
 
     <div class="admin-table-wrap" role="region" aria-label="Lista konkurencji" tabindex="0">

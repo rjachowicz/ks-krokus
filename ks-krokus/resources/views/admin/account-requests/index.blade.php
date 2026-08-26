@@ -13,7 +13,8 @@
         @endforeach
     </nav>
 
-    <form method="GET" class="admin-filter panel-card account-request-filter" aria-label="Filtrowanie wniosków o konto">
+    <form method="GET" class="admin-filter filter-form panel-card account-request-filter" aria-label="Filtrowanie wniosków o konto">
+        <div class="filter-form__row">
         <label for="account-request-query">Szukaj
             <input id="account-request-query" type="search" name="q" value="{{ request('q') }}" maxlength="100" placeholder="Imię, e-mail lub licencja"
                 @error('q') aria-invalid="true" aria-describedby="account-request-query-error" @enderror>
@@ -48,8 +49,13 @@
             @error('created_to')<span id="account-request-created-to-error" class="form-error">{{ $message }}</span>@enderror
         </label>
 
-        <button type="submit" class="btn btn-primary">Filtruj</button>
-        @if (request()->query())<a href="{{ route('admin.account-requests.index') }}" class="btn btn-secondary">Wyczyść</a>@endif
+            <div class="filter-form__actions">
+                <div class="filter-form__action-group">
+                    <button type="submit" class="btn btn-primary">Filtruj</button>
+                    @if (request()->query())<a href="{{ route('admin.account-requests.index') }}" class="btn btn-secondary">Wyczyść</a>@endif
+                </div>
+            </div>
+        </div>
     </form>
 
     <div class="admin-table-wrap" role="region" aria-label="Lista wniosków o konto" tabindex="0">

@@ -8,7 +8,10 @@ use App\Enums\CompetitionSystem;
 use App\Enums\Discipline;
 use App\Enums\EventType;
 use App\Enums\PublicationStatus;
+use Carbon\CarbonInterface;
+use Database\Factories\SportEventFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,6 +20,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SportEvent extends Model
 {
+    /** @use HasFactory<SportEventFactory> */
+    use HasFactory;
+
     use SoftDeletes;
 
     /**
@@ -35,6 +41,7 @@ class SportEvent extends Model
         'competition_system',
         'status',
         'is_public',
+        'email_reminders_enabled',
         'registration_url',
         'created_by',
         'updated_by',
@@ -50,6 +57,7 @@ class SportEvent extends Model
             'start_at' => 'datetime',
             'end_at' => 'datetime',
             'is_public' => 'boolean',
+            'email_reminders_enabled' => 'boolean',
         ];
     }
 
@@ -133,5 +141,22 @@ class SportEvent extends Model
             'sport_event_id',
             'event_competition_id',
         );
+    }
+
+    public function reminderSubscriptions(): HasMany
+    {
+        return $this->hasMany(EventReminderSubscription::class);
+    }
+
+    public function canAcceptEmailReminderSubscriptions(
+        ?CarbonInterface $at = null,
+    ): bool {
+        $at ??= now();
+
+        return ! $this->trashed()
+            && $this->is_public
+            && $this->status === PublicationStatus::Published
+            && $this->email_reminders_enabled
+            && $this->start_at->gt($at->copy()->addHours(24));
     }
 }

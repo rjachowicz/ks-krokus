@@ -25,6 +25,14 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('02:15')
             ->timezone('Europe/Warsaw')
             ->withoutOverlapping();
+        $schedule->command('notifications:prune')
+            ->dailyAt('02:45')
+            ->timezone('Europe/Warsaw')
+            ->withoutOverlapping();
+        $schedule->command('events:send-reminders')
+            ->everyFiveMinutes()
+            ->timezone('Europe/Warsaw')
+            ->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(AddSecurityHeaders::class);
@@ -35,6 +43,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash([
+            'event_notifications_current_password',
+            'event_reminder_current_password',
+        ]);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );

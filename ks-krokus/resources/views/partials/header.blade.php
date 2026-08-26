@@ -75,10 +75,7 @@
                             Wniosek o konto
                         </a>
                         <a class="main-nav__account-link" href="{{ route('login') }}">
-                            <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <circle cx="12" cy="8" r="4"></circle>
-                                <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
-                            </svg>
+                            <x-icon name="account" />
                             Zaloguj się
                         </a>
                     @else
@@ -87,14 +84,12 @@
                         </span>
 
                         <a class="main-nav__account-link" href="{{ route('account.show') }}">
-                            <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <circle cx="12" cy="8" r="4"></circle>
-                                <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
-                            </svg>
+                            <x-icon name="account" />
                             Moje konto
                         </a>
 
                         <a class="main-nav__account-link" href="{{ route('notifications.index') }}">
+                            <x-icon name="notification" />
                             Powiadomienia
                             @if ($unreadNotificationsCount > 0)
                                 <span class="notification-count" aria-label="nieprzeczytane powiadomienia: {{ $unreadNotificationsCount }}">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
@@ -108,10 +103,7 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button class="main-nav__logout" type="submit">
-                                <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M14 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-3"></path>
-                                    <path d="M10 12h11M18 9l3 3-3 3"></path>
-                                </svg>
+                                <x-icon name="logout" />
                                 Wyloguj się
                             </button>
                         </form>
@@ -131,10 +123,7 @@
                     aria-label="Powiadomienia{{ $unreadNotificationsCount > 0 ? ': '.$unreadNotificationsCount.' nieprzeczytanych' : '' }}"
                     title="Powiadomienia"
                 >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
-                        <path d="M10 21h4"></path>
-                    </svg>
+                    <x-icon name="notification" />
                     @if ($unreadNotificationsCount > 0)
                         <span class="notification-count" aria-hidden="true">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
                     @endif
@@ -148,14 +137,9 @@
                         aria-expanded="false"
                         data-account-menu-toggle
                     >
-                        <svg class="account-icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <circle cx="12" cy="8" r="4"></circle>
-                            <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
-                        </svg>
+                        <x-icon name="account" />
                         <span>Moje konto</span>
-                        <svg class="account-menu__chevron" viewBox="0 0 12 8" aria-hidden="true">
-                            <path d="m1 1 5 5 5-5"></path>
-                        </svg>
+                        <x-icon name="chevron" class="account-menu__chevron" />
                     </button>
 
                     <div
@@ -169,8 +153,12 @@
                             <span>{{ auth()->user()->role->label() }}</span>
                         </p>
 
-                        <a href="{{ route('account.show') }}">Moje konto</a>
+                        <a href="{{ route('account.show') }}">
+                            <x-icon name="account" />
+                            Moje konto
+                        </a>
                         <a href="{{ route('notifications.index') }}">
+                            <x-icon name="notification" />
                             Powiadomienia
                             @if ($unreadNotificationsCount > 0)
                                 <span class="notification-count" aria-label="nieprzeczytane powiadomienia: {{ $unreadNotificationsCount }}">{{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}</span>
@@ -178,12 +166,18 @@
                         </a>
 
                         @if (auth()->user()->canManageContent())
-                            <a href="{{ route('admin.dashboard') }}">Przejdź do panelu administracyjnego</a>
+                            <a href="{{ route('admin.dashboard') }}">
+                                <x-icon name="home" />
+                                Przejdź do panelu administracyjnego
+                            </a>
                         @endif
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit">Wyloguj się</button>
+                            <button type="submit">
+                                <x-icon name="logout" />
+                                Wyloguj się
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -196,14 +190,8 @@
                 title="Przełącz motyw"
                 data-theme-toggle
             >
-                <svg class="theme-icon sun-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="4"></circle>
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path>
-                </svg>
-
-                <svg class="theme-icon moon-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path>
-                </svg>
+                <x-icon name="sun" class="theme-icon sun-icon" />
+                <x-icon name="moon" class="theme-icon moon-icon" />
             </button>
 
             <button

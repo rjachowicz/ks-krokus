@@ -39,6 +39,8 @@ class User extends Authenticatable
         'has_range_access',
         'show_email_publicly',
         'show_phone_publicly',
+        'event_email_notifications_enabled',
+        'event_email_notifications_confirmed_at',
         'trainer_bio',
     ];
 
@@ -61,6 +63,8 @@ class User extends Authenticatable
             'has_range_access' => 'boolean',
             'show_email_publicly' => 'boolean',
             'show_phone_publicly' => 'boolean',
+            'event_email_notifications_enabled' => 'boolean',
+            'event_email_notifications_confirmed_at' => 'datetime',
             'password_link_sent_at' => 'datetime',
         ];
     }
@@ -93,6 +97,11 @@ class User extends Authenticatable
     public function saleListings(): HasMany
     {
         return $this->hasMany(SaleListing::class);
+    }
+
+    public function eventReminderSubscriptions(): HasMany
+    {
+        return $this->hasMany(EventReminderSubscription::class);
     }
 
     public function memberProfile(): HasOne

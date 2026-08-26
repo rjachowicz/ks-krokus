@@ -30,6 +30,7 @@ KS Krokus to aplikacja klubu strzeleckiego z częścią publiczną i panelem adm
 - `/aktualnosci/{post}`
 - `/kalendarz`
 - `/kalendarz/{sportEvent}`
+- `POST/DELETE /kalendarz/{sportEvent}/przypomnienie` — prywatne ustawienie lub anulowanie przypomnienia
 - `/wyniki`
 - `/wyniki/{sportEvent}`
 - `/ogloszenia`
@@ -95,6 +96,48 @@ członkowskie nie są przyjmowane przez te endpointy.
 Administrator edytuje `MemberProfile` z poziomu użytkownika. Moderator nie uzyskuje
 tego uprawnienia automatycznie. Notatki wewnętrzne nadal są prowadzone w źródłowym
 wniosku o konto. Zakres nie obejmuje pełnej kartoteki członków ani rozliczeń składek.
+
+Osobny formularz pozwala włączyć zgodę „Chcę otrzymywać e-mailowe przypomnienia
+o wybranych wydarzeniach”. Włączenie zawsze wymaga aktualnego hasła i zapisuje
+czas potwierdzenia. Wyłączenie nie wymaga hasła, zeruje czas potwierdzenia oraz
+usuwa wszystkie subskrypcje użytkownika, dzięki czemu zatrzymuje również
+zakolejkowane, ale jeszcze niewysłane przypomnienie.
+
+## Centrum powiadomień
+
+Aktywny zalogowany użytkownik ma pod `/powiadomienia` paginowaną listę własnych
+powiadomień. Może oznaczać je jako przeczytane, usuwać pojedynczo, usuwać wybrane
+albo usunąć wszystkie. Zaznaczenie pojedynczych wpisów i „Zaznacz wszystkie
+widoczne” działa również bez JavaScriptu; skrypt dodaje licznik i wygodną
+synchronizację checkboxów. Wszystkie operacje są ograniczone relacją
+`user->notifications()`, a grupowe usuwanie działa w transakcji.
+
+Retencję bazodanowych powiadomień konfiguruje:
+
+```env
+NOTIFICATION_RETENTION_DAYS=7
+```
+
+Komenda `php artisan notifications:prune` usuwa partiami wpisy starsze niż próg
+wyliczony z `created_at` i wypisuje wyłącznie statystyki. Wartość `0` świadomie
+wyłącza retencję. Wartość ujemna lub niecałkowita kończy komendę błędem bez
+usuwania danych. Scheduler uruchamia komendę codziennie o 02:45 w strefie
+`Europe/Warsaw` z `withoutOverlapping()`.
+
+## E-mailowe przypomnienia o wydarzeniach
+
+Przypomnienie jest prywatnym ustawieniem konta, a nie zgłoszeniem uczestnictwa.
+Aplikacja nie pokazuje publicznie użytkowników ani liczby subskrypcji. Zapis jest
+dostępny tylko dla aktywnego użytkownika oraz wydarzenia publicznego,
+opublikowanego, przyszłego, z włączonymi przypomnieniami i rozpoczynającego się
+ściśle później niż za 24 godziny. Dokładnie przy `start_at - 24 godziny` zapis
+jest już zamknięty.
+
+Komenda `php artisan events:send-reminders` wybiera niewysłane subskrypcje w
+oknie ±15 minut wokół 24 godzin do rozpoczęcia. Scheduler uruchamia ją co 5 minut
+w `Europe/Warsaw` z `withoutOverlapping()`. E-mail jest kolejkowany przez istniejącą
+konfigurację poczty i Resend. Wyłączenie zgody użytkownika albo przypomnień na
+wydarzeniu usuwa subskrypcje; ponowne włączenie wymaga ponownego wyboru wydarzeń.
 
 ## Wdrożenie
 

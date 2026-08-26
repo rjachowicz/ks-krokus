@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\UserRole;
@@ -32,6 +34,8 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::User,
             'is_active' => true,
+            'event_email_notifications_enabled' => false,
+            'event_email_notifications_confirmed_at' => null,
             'remember_token' => Str::random(10),
         ];
     }

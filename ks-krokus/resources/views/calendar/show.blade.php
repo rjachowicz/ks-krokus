@@ -25,82 +25,8 @@
         </x-slot:actions>
     </x-page-hero>
 
-    <section class="page-container page-section sidebar-layout event-detail-grid" aria-label="Szczegóły wydarzenia">
-        <article class="panel-card event-panel">
-            <h2>Opis wydarzenia</h2>
-
-            <div class="article-body">
-                {!! nl2br(e($sportEvent->description ?: 'Szczegółowy opis nie został jeszcze opublikowany.')) !!}
-            </div>
-
-            @if ($sportEvent->competitions->isNotEmpty())
-                <h3>Konkurencje</h3>
-
-                <ul class="competition-list">
-                    @foreach ($sportEvent->competitions as $competition)
-                        <li>
-                            <strong>{{ $competition->name }}</strong><br>
-                            {{ $competition->competition_system->label() }} /
-                            {{ $competition->discipline->label() }}
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </article>
-
-        <aside class="panel-card event-panel">
-            <h2>Informacje</h2>
-
-            <dl class="event-facts">
-                <div>
-                    <dt>Rodzaj</dt>
-                    <dd>{{ $sportEvent->event_type->label() }}</dd>
-                </div>
-                <div>
-                    <dt>Termin</dt>
-                    <dd>
-                        {{ $sportEvent->start_at->format('d.m.Y H:i') }}
-                        @if ($sportEvent->end_at)
-                            – {{ $sportEvent->end_at->format('d.m.Y H:i') }}
-                        @endif
-                    </dd>
-                </div>
-                <div>
-                    <dt>Miejsce</dt>
-                    <dd>
-                        {{ $sportEvent->location_name }}
-                        @if ($sportEvent->address)
-                            <br>{{ $sportEvent->address }}
-                        @endif
-                    </dd>
-                </div>
-                @if ($sportEvent->competition_system)
-                    <div>
-                        <dt>System</dt>
-                        <dd>{{ $sportEvent->competition_system->label() }}</dd>
-                    </div>
-                @endif
-                @if ($sportEvent->discipline)
-                    <div>
-                        <dt>Dyscyplina</dt>
-                        <dd>{{ $sportEvent->discipline->label() }}</dd>
-                    </div>
-                @endif
-            </dl>
-
-            @if ($sportEvent->registration_url)
-                <div class="btn-group content-actions">
-                    <a
-                        href="{{ $sportEvent->registration_url }}"
-                        class="btn btn-primary"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Przejdź do rejestracji — otwiera w nowej karcie"
-                    >
-                        Przejdź do rejestracji ↗
-                    </a>
-                </div>
-            @endif
-        </aside>
+    <section class="page-container page-section" aria-label="Szczegóły wydarzenia">
+        <x-form-errors />
+        @include('calendar.partials.event-details')
     </section>
 @endsection

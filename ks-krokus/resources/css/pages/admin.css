@@ -82,11 +82,7 @@
 }
 
 .account-request-filter {
-    flex-wrap: wrap;
-}
-
-.account-request-filter label {
-    flex: 1 1 180px;
+    margin-bottom: 20px;
 }
 
 .account-request-admin-status {
@@ -164,6 +160,7 @@
 .admin-topbar {
     position: sticky;
     z-index: 20;
+    isolation: isolate;
     top: 0;
     display: flex;
     min-height: 72px;
@@ -174,43 +171,138 @@
     border-bottom: 1px solid var(--line);
     background: var(--header-bg);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
-.admin-user {
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .admin-topbar {
+        background: var(--header-bg-fallback);
+    }
+}
+
+.admin-topbar__actions {
     display: flex;
     align-items: center;
-    gap: 12px;
-    color: var(--text-muted);
+    gap: 10px;
 }
 
-.admin-user strong {
-    color: var(--text);
-}
-
-.admin-notifications-link {
-    position: relative;
+.admin-topbar__control,
+.admin-account-menu__trigger {
     display: inline-grid;
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    min-height: 44px;
     place-items: center;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-control);
     background: var(--surface);
     color: var(--text);
-    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
 }
 
-.admin-notifications-link:hover {
+.admin-topbar__control {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+}
+
+.admin-account-menu {
+    position: relative;
+}
+
+.admin-account-menu__trigger {
+    display: inline-flex;
+    min-width: 0;
+    gap: 9px;
+    padding: 9px 12px;
+    font: inherit;
+    font-size: .86rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.admin-topbar__control:hover,
+.admin-account-menu__trigger:hover,
+.admin-account-menu__trigger[aria-expanded="true"] {
     border-color: var(--gold-strong);
+    background: var(--gold-soft);
     color: var(--gold-strong);
 }
 
-.admin-notifications-link .notification-count {
+.admin-account-menu__chevron {
+    transition: transform 160ms ease;
+}
+
+.admin-account-menu__trigger[aria-expanded="true"] .admin-account-menu__chevron {
+    transform: rotate(180deg);
+}
+
+.admin-account-menu__panel {
     position: absolute;
-    top: -7px;
-    right: -7px;
-    border: 2px solid var(--surface-solid);
+    z-index: 40;
+    top: calc(100% + 10px);
+    right: 0;
+    width: min(320px, calc(100vw - 28px));
+    max-height: calc(100dvh - 82px);
+    padding: 8px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-lg);
+}
+
+.admin-account-menu__panel[hidden] {
+    display: none;
+}
+
+.admin-account-menu__identity {
+    display: grid;
+    gap: 3px;
+    margin: 0 0 6px;
+    padding: 8px 10px 10px;
+    border-bottom: 1px solid var(--line);
+    overflow-wrap: anywhere;
+}
+
+.admin-account-menu__identity strong {
+    color: var(--text);
+    font-size: .88rem;
+}
+
+.admin-account-menu__identity span {
+    color: var(--text-soft);
+    font-size: .76rem;
+}
+
+.admin-account-menu__panel a,
+.admin-account-menu__panel button {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: .86rem;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.admin-account-menu__panel a:hover,
+.admin-account-menu__panel button:hover,
+.admin-account-menu__panel a[aria-current="page"] {
+    background: var(--gold-soft);
+    color: var(--gold-strong);
+}
+
+.admin-account-menu__panel .notification-count {
+    margin-left: auto;
 }
 
 .admin-content {
@@ -302,26 +394,7 @@ a.admin-metric:focus-visible {
 }
 
 .admin-filter {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: start;
-    gap: 12px;
     margin-bottom: 20px;
-}
-
-.admin-filter > :where(button, .btn) {
-    align-self: start;
-    margin-top: calc(1em + 5px);
-}
-
-.admin-filter label {
-    display: grid;
-    min-width: 170px;
-    flex: 1 1 170px;
-    gap: 5px;
-    color: var(--text-muted);
-    font-size: 0.78rem;
-    font-weight: 700;
 }
 
 .admin-table-wrap {
@@ -646,12 +719,11 @@ a.admin-metric:focus-visible {
     gap: 12px;
 }
 
-.admin-menu-toggle,
-.admin-theme-toggle {
+.admin-menu-toggle {
     display: inline-grid;
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
     place-items: center;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-control);
@@ -772,13 +844,21 @@ a.admin-metric:focus-visible {
 
     .admin-topbar {
         padding-inline: 14px;
-        align-items: flex-start;
-        flex-direction: column;
     }
 
-    .admin-user {
-        width: 100%;
-        justify-content: space-between;
+    .admin-topbar__title {
+        min-width: 0;
+    }
+
+    .admin-topbar__title strong {
+        overflow: hidden;
+        font-size: .9rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .admin-account-menu__trigger-label {
+        display: none;
     }
 
     .form-grid--3,

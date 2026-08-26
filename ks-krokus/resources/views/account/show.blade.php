@@ -1,21 +1,38 @@
-@extends('layouts.app')
+@extends(request()->routeIs('admin.account.*') ? 'layouts.admin' : 'layouts.app')
 
 @section('title', 'Moje konto — KS Krokus')
+@section('admin_title', 'Moje konto')
 @section('robots', 'noindex, nofollow, noarchive')
 @section('body_class', 'account-page')
 
 @section('content')
-    <x-page-hero id="account-title" eyebrow="Strefa użytkownika">
-        <x-slot:title>Moje konto</x-slot:title>
-        <x-slot:description>
-            Zarządzaj danymi kontaktowymi i bezpieczeństwem oraz sprawdź dane członkowskie zapisane w klubie.
-        </x-slot:description>
-    </x-page-hero>
+    @php($accountRoutePrefix = request()->routeIs('admin.account.*') ? 'admin.account' : 'account')
 
-    <div class="page-container page-section page-section--flush account-content ui-stack ui-stack--lg">
-        <x-form-errors />
+    @if (request()->routeIs('admin.account.*'))
+        <x-admin-page-header
+            title="Moje konto"
+            description="Zarządzaj danymi kontaktowymi i bezpieczeństwem oraz sprawdź dane członkowskie zapisane w klubie."
+        />
+    @else
+        <x-page-hero id="account-title" eyebrow="Strefa użytkownika">
+            <x-slot:title>Moje konto</x-slot:title>
+            <x-slot:description>
+                Zarządzaj danymi kontaktowymi i bezpieczeństwem oraz sprawdź dane członkowskie zapisane w klubie.
+            </x-slot:description>
+        </x-page-hero>
+    @endif
 
-        <form method="POST" action="{{ route('account.profile.update') }}" class="form-layout account-profile-form">
+    <div @class([
+        'account-content',
+        'ui-stack',
+        'ui-stack--lg',
+        'page-container page-section page-section--flush' => ! request()->routeIs('admin.account.*'),
+    ])>
+        @unless (request()->routeIs('admin.account.*'))
+            <x-form-errors />
+        @endunless
+
+        <form method="POST" action="{{ route($accountRoutePrefix.'.profile.update') }}" class="form-layout account-profile-form">
             @csrf
             @method('PATCH')
 
@@ -80,15 +97,73 @@
             </section>
         </form>
 
+        <form method="POST" action="{{ route($accountRoutePrefix.'.event-notifications.update') }}" class="form-layout">
+            @csrf
+            @method('PATCH')
+
+            <section class="form-section" aria-labelledby="account-event-notifications-title">
+                <div class="form-section__header">
+                    <span class="form-section__number" aria-hidden="true">3</span>
+                    <h2 id="account-event-notifications-title">Przypomnienia o wydarzeniach</h2>
+                    <p>Ta zgoda pozwala samodzielnie wybierać wydarzenia, o których chcesz otrzymać jednorazowe przypomnienie około 24 godziny przed rozpoczęciem.</p>
+                </div>
+
+                <div class="account-consents">
+                    <label class="form-check account-consent">
+                        <input type="hidden" name="event_email_notifications_enabled" value="0">
+                        <input
+                            id="account-event-email-notifications"
+                            type="checkbox"
+                            name="event_email_notifications_enabled"
+                            value="1"
+                            @checked(old('event_email_notifications_enabled', $user->event_email_notifications_enabled))
+                            @error('event_email_notifications_enabled') aria-invalid="true" aria-describedby="account-event-email-notifications-error" @enderror
+                        >
+                        <span>
+                            <strong>Chcę otrzymywać e-mailowe przypomnienia o wybranych wydarzeniach</strong><br>
+                            Zgoda nie zapisuje Cię jako uczestnika wydarzenia i nie ujawnia publicznie informacji o ustawionych przypomnieniach.
+                        </span>
+                    </label>
+                    @error('event_email_notifications_enabled')
+                        <span id="account-event-email-notifications-error" class="form-error" role="alert">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <label>
+                    Aktualne hasło — wymagane tylko przy włączaniu zgody
+                    <input
+                        id="account-event-notifications-current-password"
+                        type="password"
+                        name="event_notifications_current_password"
+                        autocomplete="current-password"
+                        aria-describedby="account-event-notifications-password-help @error('event_notifications_current_password') account-event-notifications-password-error @enderror"
+                        @error('event_notifications_current_password') aria-invalid="true" @enderror
+                    >
+                    <span id="account-event-notifications-password-help" class="form-help">Wyłączenie zgody nie wymaga hasła i natychmiast anuluje wszystkie zapisane przypomnienia.</span>
+                    @error('event_notifications_current_password')
+                        <span id="account-event-notifications-password-error" class="form-error" role="alert">{{ $message }}</span>
+                    @enderror
+                </label>
+
+                @if ($user->event_email_notifications_enabled && $user->event_email_notifications_confirmed_at)
+                    <p class="form-help">Zgoda potwierdzona: {{ $user->event_email_notifications_confirmed_at->format('d.m.Y H:i') }}.</p>
+                @endif
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Zapisz ustawienie przypomnień</button>
+                </div>
+            </section>
+        </form>
+
         <section class="form-section account-security" aria-labelledby="account-security-title">
             <div class="form-section__header">
-                <span class="form-section__number" aria-hidden="true">3</span>
+                <span class="form-section__number" aria-hidden="true">4</span>
                 <h2 id="account-security-title">Bezpieczeństwo</h2>
                 <p>Zmiana e-maila i hasła zawsze wymaga podania aktualnego hasła.</p>
             </div>
 
             <div class="ui-grid ui-grid--2 account-security-grid">
-                <form method="POST" action="{{ route('account.email.update') }}" class="panel-card form-layout">
+                <form method="POST" action="{{ route($accountRoutePrefix.'.email.update') }}" class="panel-card form-layout">
                     @csrf
                     @method('PATCH')
                     <h3>Zmień adres e-mail</h3>
@@ -118,7 +193,7 @@
                     <button type="submit" class="btn btn-primary">Zmień e-mail</button>
                 </form>
 
-                <form method="POST" action="{{ route('account.password.update') }}" class="panel-card form-layout">
+                <form method="POST" action="{{ route($accountRoutePrefix.'.password.update') }}" class="panel-card form-layout">
                     @csrf
                     @method('PUT')
                     <h3>Zmień hasło</h3>
@@ -165,7 +240,7 @@
 
         <section class="form-section" aria-labelledby="account-member-title">
             <div class="form-section__header">
-                <span class="form-section__number" aria-hidden="true">4</span>
+                <span class="form-section__number" aria-hidden="true">5</span>
                 <h2 id="account-member-title">Dane członkowskie</h2>
                 <p>Dane weryfikacyjne są tylko do odczytu. Ich zmianę zgłoś administratorowi klubu.</p>
             </div>
@@ -199,7 +274,7 @@
 
         <section class="form-section" aria-labelledby="account-status-title">
             <div class="form-section__header">
-                <span class="form-section__number" aria-hidden="true">5</span>
+                <span class="form-section__number" aria-hidden="true">6</span>
                 <h2 id="account-status-title">Status konta</h2>
                 <p>Rola, aktywność i weryfikacja są zarządzane przez administratora.</p>
             </div>

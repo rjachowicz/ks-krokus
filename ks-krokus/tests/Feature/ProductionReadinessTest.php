@@ -43,6 +43,7 @@ final class ProductionReadinessTest extends TestCase
         self::assertStringContainsString("TRUSTED_PROXIES=\n", $environment);
         self::assertStringContainsString("ACCOUNT_REQUEST_RETENTION_MONTHS=12\n", $environment);
         self::assertStringContainsString("ACCOUNT_REQUEST_RETENTION_ACTION=anonymize\n", $environment);
+        self::assertStringContainsString("NOTIFICATION_RETENTION_DAYS=7\n", $environment);
     }
 
     public function test_listing_expiration_is_scheduled_in_warsaw_timezone(): void

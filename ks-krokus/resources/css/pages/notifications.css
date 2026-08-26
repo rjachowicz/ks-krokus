@@ -11,6 +11,44 @@
     color: var(--text-muted);
 }
 
+.notification-center__header-actions,
+.notification-bulk-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification-center__header-actions {
+    justify-content: flex-end;
+}
+
+.notification-bulk-actions {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    background: var(--surface-muted);
+}
+
+.notification-bulk-actions__select-all {
+    min-width: min(100%, 240px);
+    flex: 1 1 240px;
+    padding-block: 4px;
+}
+
+.notification-bulk-actions__counter {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.notification-bulk-actions > .form-error {
+    width: 100%;
+    margin: 0;
+}
+
 .notification-list,
 .dashboard-notifications {
     display: grid;
@@ -39,6 +77,20 @@
 .notification-item--unread {
     border-left: 4px solid var(--gold-strong);
     background: var(--gold-soft);
+}
+
+.notification-item__main {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.notification-item__selection {
+    min-width: 44px;
+    flex: 0 0 44px;
+    justify-content: center;
+    margin-block: -8px;
 }
 
 .notification-item__content {
@@ -102,7 +154,7 @@
     min-height: 42px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 840px) {
     .notification-center__header,
     .notification-item {
         align-items: stretch;
@@ -114,6 +166,7 @@
     }
 
     .notification-center__header form,
+    .notification-center__header-actions,
     .notification-center__header .btn,
     .notification-item__actions,
     .notification-item__actions .btn {
@@ -122,5 +175,25 @@
 
     .notification-item__actions {
         flex-direction: column;
+    }
+
+    .notification-center__header-actions {
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 520px) {
+    .notification-bulk-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .notification-bulk-actions__select-all {
+        min-width: 0;
+        flex-basis: auto;
+    }
+
+    .notification-bulk-actions .btn {
+        width: 100%;
     }
 }

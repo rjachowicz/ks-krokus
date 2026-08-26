@@ -14,5 +14,6 @@
 </main>
 
 @include('partials.footer')
+<x-confirm-dialog />
 </body>
 </html>

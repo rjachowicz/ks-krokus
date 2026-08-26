@@ -29,12 +29,12 @@ function applyTheme(theme, button = null) {
         // Motyw nadal działa w bieżącej karcie bez trwałego zapisu.
     }
 
-    button?.setAttribute(
-        'aria-label',
-        normalizedTheme === 'dark'
-            ? 'Włącz jasny motyw'
-            : 'Włącz ciemny motyw',
-    );
+    const actionLabel = normalizedTheme === 'dark'
+        ? 'Włącz jasny motyw'
+        : 'Włącz ciemny motyw';
+
+    button?.setAttribute('aria-label', actionLabel);
+    button?.setAttribute('title', actionLabel);
 }
 
 export function initTheme() {

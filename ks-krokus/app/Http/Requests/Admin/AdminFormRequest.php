@@ -56,6 +56,7 @@ abstract class AdminFormRequest extends LocalizedFormRequest
             'start_at' => 'data rozpoczęcia', 'end_at' => 'data zakończenia',
             'location_name' => 'miejsce', 'address' => 'adres', 'status' => 'status',
             'is_public' => 'widoczność publiczna', 'registration_url' => 'adres zapisów',
+            'email_reminders_enabled' => 'dostępność przypomnień e-mail',
             'competition_ids' => 'konkurencje', 'competition_ids.*' => 'konkurencja',
             'excerpt' => 'krótkie streszczenie', 'content' => 'treść', 'content_format' => 'format treści',
             'published_at' => 'data publikacji', 'cover_image' => 'zdjęcie główne',

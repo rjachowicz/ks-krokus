@@ -21,10 +21,7 @@
 }
 
 .listing-filters__primary {
-    display: grid;
-    grid-template-columns: minmax(240px, 1fr) minmax(190px, .36fr) auto;
-    align-items: start;
-    gap: 14px;
+    grid-template-columns: minmax(240px, 1fr) minmax(190px, .36fr) minmax(150px, auto);
 }
 
 .listing-filters__primary > *,
@@ -84,32 +81,13 @@
 }
 
 .listing-filters__advanced {
-    display: grid;
     grid-template-columns: repeat(4, minmax(140px, 1fr));
-    align-items: start;
-    gap: 14px;
     padding-top: 14px;
 }
 
 .listing-filters__advanced-actions {
-    display: flex;
     grid-column: 1 / -1;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 14px;
-}
-
-.listing-filters__clear,
-.listing-admin-filter__clear {
-    color: var(--text-muted);
-    font-size: .82rem;
-    font-weight: 700;
-    text-underline-offset: 4px;
-}
-
-.listing-filters__clear:hover,
-.listing-admin-filter__clear:hover {
-    color: var(--gold-strong);
+    grid-row: auto;
 }
 
 .listing-results-bar {
@@ -135,10 +113,12 @@
 }
 
 .listing-sort {
-    display: grid;
+    width: min(100%, 390px);
+    margin-bottom: 0;
+}
+
+.listing-sort .filter-form__row {
     grid-template-columns: minmax(170px, 1fr) auto;
-    align-items: center;
-    gap: 9px;
 }
 
 .listing-sort label {
@@ -150,13 +130,6 @@
 .listing-sort .btn {
     min-height: var(--control-height);
     padding-block: 9px;
-}
-
-.listing-filters__primary > .btn,
-.listing-admin-filter__primary > .btn,
-.listing-admin-filter__advanced > .btn {
-    align-self: start;
-    margin-top: calc(1em + 7px);
 }
 
 .listing-grid {
@@ -1054,10 +1027,7 @@
 }
 
 .listing-admin-filter__primary {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(160px, 1fr)) auto;
-    align-items: start;
-    gap: 12px;
+    grid-template-columns: repeat(3, minmax(160px, 1fr)) minmax(150px, auto);
 }
 
 .listing-admin-filter__primary > *,
@@ -1076,16 +1046,8 @@
 }
 
 .listing-admin-filter__advanced {
-    display: grid;
     grid-template-columns: repeat(3, minmax(150px, 1fr));
-    align-items: start;
-    gap: 12px;
     padding-top: 12px;
-}
-
-.listing-admin-filter__clear {
-    display: inline-flex;
-    margin-top: 13px;
 }
 
 .listing-admin-table th:first-child {
@@ -1385,7 +1347,7 @@
         flex-direction: column;
     }
 
-    .listing-sort {
+    .listing-sort .filter-form__row {
         grid-template-columns: minmax(0, 1fr) auto;
     }
 
@@ -1430,7 +1392,7 @@
         flex-direction: column;
     }
 
-    .listing-sort {
+    .listing-sort .filter-form__row {
         grid-template-columns: 1fr;
     }
 

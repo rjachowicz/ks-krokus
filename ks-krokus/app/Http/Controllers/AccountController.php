@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Discipline;
+use App\Http\Requests\UpdateEventEmailNotificationsRequest;
 use App\Http\Requests\UpdateOwnEmailRequest;
 use App\Http\Requests\UpdateOwnPasswordRequest;
 use App\Http\Requests\UpdateOwnProfileRequest;
 use App\Models\User;
+use App\Support\EventReminderService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,5 +67,25 @@ final class AccountController extends Controller
         ])->save();
 
         return back()->with('success', 'Hasło zostało zmienione.');
+    }
+
+    public function updateEventEmailNotifications(
+        UpdateEventEmailNotificationsRequest $request,
+        EventReminderService $service,
+    ): RedirectResponse {
+        /** @var User $user */
+        $user = $request->user();
+        $enabled = (bool) $request->validated(
+            'event_email_notifications_enabled',
+        );
+
+        $service->updateConsent($user, $enabled);
+
+        return back()->with(
+            'success',
+            $enabled
+                ? 'E-mailowe przypomnienia o wydarzeniach zostały włączone.'
+                : 'E-mailowe przypomnienia zostały wyłączone, a zapisane przypomnienia anulowane.',
+        );
     }
 }
