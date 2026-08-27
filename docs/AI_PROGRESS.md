@@ -1,5 +1,33 @@
 # AI_PROGRESS.md
 
+## Bieżąca sesja — 2026-08-27 — przygotowanie refaktoru UI/UX
+
+### Cel i wykonane przygotowanie
+
+- [x] Potwierdzono czysty stan `main` i utworzono z niego branch
+  `refactor/ui-ux-audit`.
+- [x] Usunięto z dokumentacji nieistniejący branch bazowy
+  `v.0.4-refactor-calendar-and-admin-panel`. Bazą kolejnych feature branchy jest
+  aktualny `main`.
+- [x] Zinwentaryzowano istniejące testy UI, brak trwałego zestawu browser/E2E oraz
+  pliki headera, croppera, aktualności, kalendarza, konta, ogłoszeń, wyników i
+  funkcji klubowych w `docs/UI_UX_AUDIT_PREPARATION.md`.
+- Nie zmieniono kodu aplikacji, logiki biznesowej, widoków, stylów, JavaScriptu,
+  routingu, schematu bazy ani konfiguracji środowiska.
+
+### Stan bazowych kontroli
+
+- [x] `composer test` — 215 testów, 1875 asercji, wszystkie poprawne.
+- [ ] `./vendor/bin/pint --test` — zastany błąd formatowania w
+  `app/Models/Post.php` (`ordered_imports`) i `app/Support/MediaCrop.php`
+  (`no_superfluous_phpdoc_tags`, `unary_operator_spaces`,
+  `not_operator_with_successor_space`). Plików nie poprawiano poza zakresem.
+- [ ] Dokładne `npm run build` — polecenie zablokowane przez lokalną politykę
+  wykonywania skryptu `npm.ps1` w PowerShell. Równoważne `npm.cmd run build`
+  zakończyło poprawnie build Vite: 66 modułów; pozostało zastane ostrzeżenie npm
+  o przyszłym wycofaniu opcji `min-release-age`.
+- Nie dodano migracji ani zmiennych środowiskowych.
+
 ## Bieżąca sesja — 2026-08-27 — końcowe poprawki UI etapu 1
 
 ### Cel i wykonane zmiany

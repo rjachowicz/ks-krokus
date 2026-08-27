@@ -4,7 +4,8 @@
 
 Pracujesz nad repozytorium `rjachowicz/ks-krokus`.
 
-Branch bazowy: `v.0.4-refactor-calendar-and-admin-panel`.
+Branch bazowy: `main`. Każdą nową pracę rozpoczynaj na osobnym feature branchu
+utworzonym z aktualnego `main`.
 
 Aplikacja Laravel znajduje się w podkatalogu `ks-krokus`.
 
@@ -117,9 +118,9 @@ Niedopuszczalne komunikaty:
 - angielskie komunikaty Laravela,
 - techniczne nazwy pól.
 
-## Stan brancha v0.4
+## Stan `main`
 
-Branch zawiera już:
+`main` zawiera już:
 - przebudowany kalendarz miesięczny,
 - zakres tygodni od poniedziałku do niedzieli,
 - parametry `month` i `year`,

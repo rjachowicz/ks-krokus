@@ -1,5 +1,18 @@
 # TODO.md
 
+## P0 — przygotowanie refaktoru UI/UX
+
+- [x] Ustawić `main` jako jedyny branch bazowy w instrukcjach repozytorium i
+  rozpoczynać kolejne zadania na osobnych feature branchach.
+- [x] Utworzyć `refactor/ui-ux-audit` z czystego `main` bez zmian funkcjonalnych.
+- [x] Zapisać inwentaryzację testów UI i mapę plików obszarów objętych refaktorem.
+- [x] Uruchomić bazowe testy PHPUnit, Pint i build oraz zachować zastane problemy
+  poza zakresem bez ich przygodnego naprawiania.
+- [ ] Przed zmianami interakcji wybrać i skonfigurować trwały runner browser/E2E;
+  obecnie repo nie zawiera Dusk, Playwright ani Cypress.
+- [ ] Pokryć browser/E2E kluczowe interakcje headera, croppera, kalendarza,
+  ogłoszeń i autocomplete oraz macierz 320–1920 px w light/dark.
+
 ## P0 — etap 7/9: ogłoszenia, moderacja i układ widoków
 
 - [x] Zachować `intent` aktywnego submittera podczas ustawiania stanu wysyłania,
