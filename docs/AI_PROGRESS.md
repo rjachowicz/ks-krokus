@@ -1,5 +1,79 @@
 # AI_PROGRESS.md
 
+## Bieżąca sesja — 2026-08-27 — refaktor systemu kadrowania zdjęć
+
+### Cel i wykonane zmiany
+
+- [x] Przeniesiono jeden wspólny `<x-media-cropper-dialog />` do layoutu panelu.
+  Formularze aktualności i ogłoszeń nie renderują własnych kopii, dzięki czemu
+  dialog istnieje przed utworzeniem dynamicznych `data-crop-control` i nie jest
+  duplikowany na stronie.
+- [x] Dynamiczne nazwy pól zapisanych zdjęć korzystają z `:name` oraz pełnego
+  wyrażenia PHP. Renderowane inputy mają postać
+  `existing_images[ID][crop][x|y|width|height]` i nie ujawniają fragmentów składni
+  Blade pod zdjęciami.
+- [x] Cropper wykorzystuje prawie cały dostępny viewport, ma elastyczny tor obrazu
+  bez minimalnej wysokości wymuszającej overflow oraz większe uchwyty na
+  urządzeniach dotykowych. Zachowano ograniczenie dialogu do viewportu i mobilny
+  układ kontrolek.
+- [x] Ramka kadru jest ruchoma i skalowalna przy stałym `aspectRatio`; obraz nadal
+  można przesuwać i powiększać gestem, kółkiem, przyciskami oraz klawiaturą.
+  Początkowy kadr zajmuje 90% dostępnego obszaru, co pozostawia miejsce na wygodną
+  zmianę rozmiaru także dla źródeł kwadratowych.
+- [x] Zapis używa niezaokrąglonych danych źródłowych Cropper.js, normalizuje
+  krawędzie względem naturalnych wymiarów obrazu i gwarantuje `x`, `y`, `width`
+  oraz `height` w zakresie 0..1 bez wyjścia prawej lub dolnej krawędzi poza 1.
+- [x] Wszystkie istniejące i dynamiczne grupy akcji zdjęć korzystają ze wspólnego
+  `media-action-group` oraz `gap: var(--space-2)`, w tym pary ustawienia kadru i
+  usunięcia zdjęcia.
+- Nie zmieniono backendowego formatu cropów, migracji, schematu bazy, kalendarza,
+  wyników ani moderacji ogłoszeń.
+
+### Testy i ograniczenia
+
+- [x] Rozszerzono testy Laravel o dokładne nazwy czterech pól cropu dla zapisanej
+  aktualności i ogłoszenia, brak wycieku składni Blade, pojedynczy dialog layoutu,
+  dostępność dialogu przed kontrolkami dynamicznymi oraz wspólny gap akcji.
+- [x] `composer test` — 216 testów, 1897 asercji, wszystkie poprawne.
+- [x] `vendor/bin/pint --test` — poprawny po mechanicznym usunięciu dwóch zastanych
+  problemów formatowania w `Post` i `MediaCrop`; bez zmian zachowania backendu.
+- [x] `npm.cmd run build` — poprawny build Vite, 66 modułów. Bezpośrednie
+  `npm run build` pozostaje blokowane przez lokalną politykę wykonywania
+  `npm.ps1`; użyto równoważnego pliku wykonywalnego Windows.
+- Sesja Browser zwróciła pustą listę instancji. Repozytorium nadal nie ma Dusk,
+  Playwright ani Cypress, dlatego nie dodano pozornego testu E2E; cztery scenariusze
+  (nowa/zapisana aktualność i nowe/edytowane ogłoszenie) pozostają do wykonania po
+  udostępnieniu przeglądarki lub trwałego runnera.
+- Nie dodano migracji ani nowych zmiennych środowiskowych.
+
+## Bieżąca sesja — 2026-08-27 — przygotowanie refaktoru UI/UX
+
+### Cel i wykonane przygotowanie
+
+- [x] Potwierdzono czysty stan `main` i utworzono z niego branch
+  `refactor/ui-ux-audit`.
+- [x] Usunięto z dokumentacji nieistniejący branch bazowy
+  `v.0.4-refactor-calendar-and-admin-panel`. Bazą kolejnych feature branchy jest
+  aktualny `main`.
+- [x] Zinwentaryzowano istniejące testy UI, brak trwałego zestawu browser/E2E oraz
+  pliki headera, croppera, aktualności, kalendarza, konta, ogłoszeń, wyników i
+  funkcji klubowych w `docs/UI_UX_AUDIT_PREPARATION.md`.
+- Nie zmieniono kodu aplikacji, logiki biznesowej, widoków, stylów, JavaScriptu,
+  routingu, schematu bazy ani konfiguracji środowiska.
+
+### Stan bazowych kontroli
+
+- [x] `composer test` — 215 testów, 1875 asercji, wszystkie poprawne.
+- [ ] `./vendor/bin/pint --test` — zastany błąd formatowania w
+  `app/Models/Post.php` (`ordered_imports`) i `app/Support/MediaCrop.php`
+  (`no_superfluous_phpdoc_tags`, `unary_operator_spaces`,
+  `not_operator_with_successor_space`). Plików nie poprawiano poza zakresem.
+- [ ] Dokładne `npm run build` — polecenie zablokowane przez lokalną politykę
+  wykonywania skryptu `npm.ps1` w PowerShell. Równoważne `npm.cmd run build`
+  zakończyło poprawnie build Vite: 66 modułów; pozostało zastane ostrzeżenie npm
+  o przyszłym wycofaniu opcji `min-release-age`.
+- Nie dodano migracji ani zmiennych środowiskowych.
+
 ## Bieżąca sesja — 2026-08-27 — końcowe poprawki UI etapu 1
 
 ### Cel i wykonane zmiany

@@ -20,7 +20,8 @@ KS Krokus to aplikacja klubu strzeleckiego z częścią publiczną i panelem adm
 ## Repozytorium
 
 - `rjachowicz/ks-krokus`
-- branch bazowy: `v.0.4-refactor-calendar-and-admin-panel`
+- branch bazowy: `main`; nowe zadania rozpoczynaj na osobnym feature branchu
+  utworzonym z aktualnego `main`
 - katalog aplikacji: `../ks-krokus`
 
 ## Główne trasy publiczne

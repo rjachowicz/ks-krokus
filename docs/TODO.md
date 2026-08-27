@@ -1,5 +1,35 @@
 # TODO.md
 
+## P0 — refaktor systemu kadrowania zdjęć
+
+- [x] Zapewnić dokładnie jeden dialog croppera w layoucie panelu, dostępny także
+  przed dynamicznym utworzeniem kontrolek nowych zdjęć.
+- [x] Zastąpić interpolację Blade w atrybutach komponentu poprawnym `:name` z
+  wyrażeniem PHP i pokryć dokładne nazwy pól testami renderowania.
+- [x] Udostępnić ruchomą i skalowalną ramkę o stałych proporcjach, zoom obrazu,
+  sterowanie klawiaturą oraz poprawne kadrowanie źródeł landscape, portrait i 1:1.
+- [x] Ograniczyć dialog do viewportu, zwiększyć jego użyteczny obszar i uchwyty
+  dotykowe oraz zachować mobilny układ bez poziomego overflow.
+- [x] Normalizować kompletne granice kadru do 0..1 bez zmiany backendowego formatu
+  danych i bez migracji.
+- [x] Ujednolicić odstęp wszystkich grup akcji zdjęć przez `media-action-group`.
+- [ ] Wykonać cztery interakcyjne scenariusze Browser/E2E dla nowej i istniejącej
+  aktualności oraz nowego i edytowanego ogłoszenia, gdy będzie dostępna instancja
+  Browser albo repozytorium otrzyma uzgodniony trwały runner.
+
+## P0 — przygotowanie refaktoru UI/UX
+
+- [x] Ustawić `main` jako jedyny branch bazowy w instrukcjach repozytorium i
+  rozpoczynać kolejne zadania na osobnych feature branchach.
+- [x] Utworzyć `refactor/ui-ux-audit` z czystego `main` bez zmian funkcjonalnych.
+- [x] Zapisać inwentaryzację testów UI i mapę plików obszarów objętych refaktorem.
+- [x] Uruchomić bazowe testy PHPUnit, Pint i build oraz zachować zastane problemy
+  poza zakresem bez ich przygodnego naprawiania.
+- [ ] Przed zmianami interakcji wybrać i skonfigurować trwały runner browser/E2E;
+  obecnie repo nie zawiera Dusk, Playwright ani Cypress.
+- [ ] Pokryć browser/E2E kluczowe interakcje headera, croppera, kalendarza,
+  ogłoszeń i autocomplete oraz macierz 320–1920 px w light/dark.
+
 ## P0 — etap 7/9: ogłoszenia, moderacja i układ widoków
 
 - [x] Zachować `intent` aktywnego submittera podczas ustawiania stanu wysyłania,

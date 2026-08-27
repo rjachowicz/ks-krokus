@@ -215,6 +215,7 @@
     </div>
 
     <x-confirm-dialog />
+    <x-media-cropper-dialog />
 
 </body>
 </html>

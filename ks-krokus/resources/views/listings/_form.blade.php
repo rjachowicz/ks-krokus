@@ -198,15 +198,9 @@
                         </div>
                         <div class="listing-image-editor__fields">
                             <x-media-crop-fields
-                                name="existing_images[{{ $image->id }}][crop]"
+                                :name="'existing_images[' . $image->id . '][crop]'"
                                 :crop="$existingCrop"
                             />
-                            @if ($imageUrl)
-                                <button type="button" class="btn btn-secondary" data-crop-control
-                                        data-crop-url="{{ $imageUrl }}" data-crop-aspect="1.3333333333">
-                                    Ustaw ponownie kadr miniatury
-                                </button>
-                            @endif
                             @if ($errors->has("existing_images.{$image->id}.crop") || $errors->has("existing_images.{$image->id}.crop.*"))
                                 <span class="form-error" role="alert">{{ $errors->first("existing_images.{$image->id}.crop") ?: $errors->first("existing_images.{$image->id}.crop.*") }}</span>
                             @endif
@@ -234,12 +228,20 @@
                                     @error("existing_images.{$image->id}.sort_order") aria-invalid="true" aria-describedby="listing-image-{{ $image->id }}-order-error" @enderror>
                                 @error("existing_images.{$image->id}.sort_order") <span id="listing-image-{{ $image->id }}-order-error" class="form-error">{{ $message }}</span> @enderror
                             </label>
-                            <label class="form-check listing-image-editor__delete">
-                                <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" data-existing-listing-image-delete
-                                    @checked(in_array($image->id, $selectedDeletes, true))
-                                    @if ($errors->has('delete_images.*')) aria-invalid="true" aria-describedby="listing-delete-images-error" @endif>
-                                Usuń zdjęcie po zapisaniu
-                            </label>
+                            <div class="media-action-group">
+                                @if ($imageUrl)
+                                    <button type="button" class="btn btn-secondary" data-crop-control
+                                            data-crop-url="{{ $imageUrl }}" data-crop-aspect="1.3333333333">
+                                        Ustaw ponownie kadr miniatury
+                                    </button>
+                                @endif
+                                <label class="form-check listing-image-editor__delete">
+                                    <input type="checkbox" name="delete_images[]" value="{{ $image->id }}" data-existing-listing-image-delete
+                                        @checked(in_array($image->id, $selectedDeletes, true))
+                                        @if ($errors->has('delete_images.*')) aria-invalid="true" aria-describedby="listing-delete-images-error" @endif>
+                                    Usuń zdjęcie po zapisaniu
+                                </label>
+                            </div>
                         </div>
                     </article>
                 @endforeach
@@ -249,8 +251,6 @@
         </fieldset>
     @endif
 </section>
-
-<x-media-cropper-dialog />
 
 <section class="form-section" aria-labelledby="listing-contact-heading">
     <header class="form-section__header">
