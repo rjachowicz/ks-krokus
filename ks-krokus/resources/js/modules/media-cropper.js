@@ -94,6 +94,9 @@ export function initMediaCropper() {
             dragMode: 'move',
             guides: true,
             responsive: true,
+            cropBoxMovable: false,
+            cropBoxResizable: false,
+            toggleDragModeOnDblclick: false,
             viewMode: 1,
             ready() {
                 const current = readCrop(scope);

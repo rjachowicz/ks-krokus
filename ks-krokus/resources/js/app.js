@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (document.querySelector('[data-crop-control], [data-crop-enabled]')) {
+    if (document.querySelector('[data-media-cropper-dialog]')) {
         import('./modules/media-cropper').then(({ initMediaCropper }) => {
             initMediaCropper();
         });

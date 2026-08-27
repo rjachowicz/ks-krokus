@@ -185,6 +185,7 @@
                     @php
                         $imageUrl = $image->url();
                         $thumbnailUrl = $image->thumbnailUrl();
+                        $existingCrop = old("existing_images.{$image->id}.crop", $image->crop);
                     @endphp
                     <article class="listing-image-editor" data-crop-scope>
                         <div class="listing-image-editor__preview">
@@ -198,7 +199,7 @@
                         <div class="listing-image-editor__fields">
                             <x-media-crop-fields
                                 name="existing_images[{{ $image->id }}][crop]"
-                                :crop="old("existing_images.{$image->id}.crop", $image->crop)"
+                                :crop="$existingCrop"
                             />
                             @if ($imageUrl)
                                 <button type="button" class="btn btn-secondary" data-crop-control

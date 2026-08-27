@@ -29,6 +29,10 @@ html[data-theme="light"] {
     --font-body: "Inter", sans-serif;
     --font-heading: "Chakra Petch", sans-serif;
     --font-mono: "JetBrains Mono", monospace;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
     --container-width: 1280px;
     --page-gutter: 32px;
     --section-space: clamp(56px, 7vw, 84px);

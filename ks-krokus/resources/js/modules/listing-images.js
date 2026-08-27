@@ -217,7 +217,7 @@ export function initListingImages() {
                 primaryLabel.append(primary, document.createTextNode(' Ustaw jako zdjęcie główne'));
 
                 const actions = document.createElement('div');
-                actions.className = 'listing-upload-item__actions';
+                actions.className = 'listing-upload-item__actions media-action-group';
                 ['x', 'y', 'width', 'height'].forEach((field) => {
                     const hidden = document.createElement('input');
                     hidden.type = 'hidden';

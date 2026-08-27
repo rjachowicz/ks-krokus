@@ -221,7 +221,10 @@
             @endif
         >
             @foreach ($post->images as $image)
-                @php($imageUrl = $image->url())
+                @php
+                    $imageUrl = $image->url();
+                    $existingCrop = old("existing_images.{$image->id}.crop", $image->crop);
+                @endphp
                 <div class="image-edit-card" data-crop-scope>
                     @if ($imageUrl)
                         <img src="{{ $imageUrl }}" alt="{{ $image->alt_text ?: $post->title }}">
@@ -232,7 +235,7 @@
                     <div class="image-edit-card__body">
                         <x-media-crop-fields
                             name="existing_images[{{ $image->id }}][crop]"
-                            :crop="old("existing_images.{$image->id}.crop", $image->crop)"
+                            :crop="$existingCrop"
                         />
                         @if ($imageUrl)
                             <button type="button" class="btn btn-secondary" data-crop-control

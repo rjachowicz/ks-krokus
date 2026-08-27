@@ -813,9 +813,7 @@
 }
 
 .listing-upload-item__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    align-items: center;
 }
 
 .listing-upload-item__actions .btn {

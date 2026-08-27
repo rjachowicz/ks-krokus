@@ -625,8 +625,8 @@ select {
 }
 
 .media-cropper {
-    width: min(920px, calc(100vw - 2rem));
-    max-width: 920px;
+    width: min(1280px, calc(100vw - 2rem));
+    max-width: none;
     max-height: calc(100dvh - 2rem);
     padding: 0;
     overflow: auto;
@@ -636,7 +636,7 @@ select {
     background: var(--surface-solid);
 }
 
-.file-preview__actions {
+.media-action-group {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
@@ -672,7 +672,7 @@ select {
 }
 
 .media-cropper__stage {
-    height: min(62dvh, 620px);
+    height: min(72dvh, calc(100dvh - 12rem));
     min-height: 280px;
     overflow: hidden;
     background: #101214;
@@ -707,7 +707,7 @@ select {
     }
 
     .media-cropper__stage {
-        height: 48dvh;
+        height: min(48dvh, calc(100dvh - 22rem));
         min-height: 220px;
     }
 

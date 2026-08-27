@@ -147,7 +147,7 @@ export function initFileUploads() {
                 });
 
                 const actions = document.createElement('div');
-                actions.className = 'file-preview__actions';
+                actions.className = 'file-preview__actions media-action-group';
 
                 if (cropEnabled && cropName !== '') {
                     const crop = cropValues.get(key) || {};

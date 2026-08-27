@@ -86,6 +86,41 @@ final class MediaManagementTest extends TestCase
             ->assertDontSee('/storage/sale-listings/images/brak.jpg', false);
     }
 
+    public function test_existing_crop_data_does_not_leak_blade_expressions_into_forms(): void
+    {
+        Storage::fake((string) config('media.disk'));
+        $moderator = User::factory()->create(['role' => UserRole::Moderator, 'is_active' => true]);
+        $owner = User::factory()->create(['is_active' => true]);
+        $post = Post::query()->create([
+            'title' => 'Kadrowana aktualność',
+            'slug' => 'kadrowana-aktualnosc',
+            'content' => 'Treść aktualności.',
+            'status' => PublicationStatus::Draft,
+        ]);
+        $post->images()->create([
+            'path' => 'news/gallery/kadr.jpg',
+            'crop' => ['x' => 0.1, 'y' => 0.1, 'width' => 0.8, 'height' => 0.8],
+            'sort_order' => 0,
+        ]);
+        $listing = SaleListing::factory()->for($owner, 'author')->create();
+        SaleListingImage::factory()->for($listing, 'listing')->create([
+            'crop' => ['x' => 0.1, 'y' => 0.1, 'width' => 0.8, 'height' => 0.8],
+        ]);
+
+        $responses = [
+            $this->actingAs($moderator)->get(route('admin.posts.edit', $post)),
+            $this->actingAs($owner)->get(route('admin.my-listings.edit', $listing)),
+        ];
+
+        foreach ($responses as $response) {
+            $response
+                ->assertOk()
+                ->assertDontSee('$image->crop', false)
+                ->assertDontSee('id}.crop', false)
+                ->assertDontSee('old("existing_images', false);
+        }
+    }
+
     public function test_media_audit_reports_missing_files_and_never_deletes_by_default(): void
     {
         Storage::fake((string) config('media.disk'));
