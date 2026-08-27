@@ -3,7 +3,7 @@
         <header>
             <div>
                 <h2 id="media-cropper-title">Ustaw kadr zdjęcia</h2>
-                <p id="media-cropper-help">Przesuń zdjęcie, użyj zoomu albo klawiszy strzałek. Klawisze plus i minus zmieniają przybliżenie, R przywraca ustawienia.</p>
+                <p id="media-cropper-help">Przesuń lub skaluj ramkę kadru. Zdjęcie możesz przesuwać, powiększać gestem, kółkiem myszy albo przyciskami. Strzałki przesuwają zdjęcie, plus i minus zmieniają zoom, a R przywraca ustawienia.</p>
             </div>
             <button type="button" class="btn btn-secondary" data-media-cropper-cancel aria-label="Zamknij bez zapisywania kadru">Zamknij</button>
         </header>

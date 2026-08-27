@@ -104,20 +104,22 @@
             @endif
             <div class="image-edit-card__body">
                 <x-media-crop-fields name="cover_crop" :crop="old('cover_crop', $post->cover_crop)" />
-                @if ($coverUrl)
-                    <button type="button" class="btn btn-secondary" data-crop-control
-                            data-crop-url="{{ $coverUrl }}" data-crop-aspect="1.7777777778">
-                        Ustaw ponownie kadr okładki
-                    </button>
-                @endif
-                <label class="form-check">
-                    <input id="post-remove-cover" type="checkbox" name="remove_cover" value="1"
-                           data-cover-remove
-                           @checked(old('remove_cover', false))
-                           @error('remove_cover') aria-invalid="true"
-                           aria-describedby="post-remove-cover-error" @enderror>
-                    Usuń obecne zdjęcie główne
-                </label>
+                <div class="media-action-group">
+                    @if ($coverUrl)
+                        <button type="button" class="btn btn-secondary" data-crop-control
+                                data-crop-url="{{ $coverUrl }}" data-crop-aspect="1.7777777778">
+                            Ustaw ponownie kadr okładki
+                        </button>
+                    @endif
+                    <label class="form-check">
+                        <input id="post-remove-cover" type="checkbox" name="remove_cover" value="1"
+                               data-cover-remove
+                               @checked(old('remove_cover', false))
+                               @error('remove_cover') aria-invalid="true"
+                               aria-describedby="post-remove-cover-error" @enderror>
+                        Usuń obecne zdjęcie główne
+                    </label>
+                </div>
                 @error('remove_cover')
                     <span id="post-remove-cover-error" class="form-error" role="alert">{{ $message }}</span>
                 @enderror
@@ -234,15 +236,9 @@
 
                     <div class="image-edit-card__body">
                         <x-media-crop-fields
-                            name="existing_images[{{ $image->id }}][crop]"
+                            :name="'existing_images[' . $image->id . '][crop]'"
                             :crop="$existingCrop"
                         />
-                        @if ($imageUrl)
-                            <button type="button" class="btn btn-secondary" data-crop-control
-                                    data-crop-url="{{ $imageUrl }}" data-crop-aspect="1.3333333333">
-                                Ustaw ponownie kadr miniatury
-                            </button>
-                        @endif
                         @if ($errors->has("existing_images.{$image->id}.crop") || $errors->has("existing_images.{$image->id}.crop.*"))
                             <span class="form-error" role="alert">{{ $errors->first("existing_images.{$image->id}.crop") ?: $errors->first("existing_images.{$image->id}.crop.*") }}</span>
                         @endif
@@ -294,27 +290,33 @@
                             @enderror
                         </label>
 
-                        <label class="form-check">
-                            <input
-                                type="checkbox"
-                                name="delete_images[]"
-                                value="{{ $image->id }}"
-                                data-existing-file-delete
-                                @checked(in_array($image->id, $selectedImageIds, true))
-                                @if ($errors->has('delete_images.*'))
-                                    aria-invalid="true" aria-describedby="post-delete-images-error"
-                                @endif
-                            >
-                            Usuń zdjęcie
-                        </label>
+                        <div class="media-action-group">
+                            @if ($imageUrl)
+                                <button type="button" class="btn btn-secondary" data-crop-control
+                                        data-crop-url="{{ $imageUrl }}" data-crop-aspect="1.3333333333">
+                                    Ustaw ponownie kadr miniatury
+                                </button>
+                            @endif
+                            <label class="form-check">
+                                <input
+                                    type="checkbox"
+                                    name="delete_images[]"
+                                    value="{{ $image->id }}"
+                                    data-existing-file-delete
+                                    @checked(in_array($image->id, $selectedImageIds, true))
+                                    @if ($errors->has('delete_images.*'))
+                                        aria-invalid="true" aria-describedby="post-delete-images-error"
+                                    @endif
+                                >
+                                Usuń zdjęcie
+                            </label>
+                        </div>
                     </div>
                 </div>
             @endforeach
         </div>
     @endif
 </div>
-
-<x-media-cropper-dialog />
 
 <div class="form-actions form-actions--sticky">
     <button type="submit" class="btn btn-primary">Zapisz aktualność</button>

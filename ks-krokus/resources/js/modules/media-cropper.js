@@ -3,6 +3,32 @@ import 'cropperjs/dist/cropper.css';
 
 const VALUES = ['x', 'y', 'width', 'height'];
 
+function clamp(value, minimum = 0, maximum = 1) {
+    return Math.min(maximum, Math.max(minimum, value));
+}
+
+function normalizeCrop(crop, sourceWidth = 1, sourceHeight = 1) {
+    if (!Number.isFinite(sourceWidth) || sourceWidth <= 0 || !Number.isFinite(sourceHeight) || sourceHeight <= 0) {
+        return null;
+    }
+
+    const left = clamp(crop.x / sourceWidth);
+    const top = clamp(crop.y / sourceHeight);
+    const right = clamp((crop.x + crop.width) / sourceWidth);
+    const bottom = clamp((crop.y + crop.height) / sourceHeight);
+
+    if (right <= left || bottom <= top) {
+        return null;
+    }
+
+    return {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+    };
+}
+
 function readCrop(scope) {
     const crop = {};
 
@@ -12,7 +38,7 @@ function readCrop(scope) {
         crop[key] = value;
     }
 
-    return crop;
+    return normalizeCrop(crop);
 }
 
 function writeCrop(scope, crop) {
@@ -20,7 +46,7 @@ function writeCrop(scope, crop) {
         const field = scope.querySelector(`[data-crop-field="${key}"]`);
         if (field) {
             field.disabled = false;
-            field.value = String(Math.max(0, Math.min(1, crop[key])));
+            field.value = String(crop[key]);
         }
     });
     scope.dispatchEvent(new CustomEvent('media-crop:changed', {
@@ -88,18 +114,27 @@ export function initMediaCropper() {
         panel.scrollTop = 0;
         cancel.focus({ preventScroll: true });
 
+        const requestedAspectRatio = Number.parseFloat(control.dataset.cropAspect || '');
+        const aspectRatio = Number.isFinite(requestedAspectRatio) && requestedAspectRatio > 0
+            ? requestedAspectRatio
+            : 4 / 3;
+
         cropper = new Cropper(image, {
-            aspectRatio: Number.parseFloat(control.dataset.cropAspect || '1.3333333333'),
-            autoCropArea: 1,
+            aspectRatio,
+            autoCropArea: 0.9,
             background: false,
             checkOrientation: true,
             dragMode: 'move',
             guides: true,
+            minContainerHeight: 0,
+            minContainerWidth: 0,
             responsive: true,
-            cropBoxMovable: false,
-            cropBoxResizable: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
             toggleDragModeOnDblclick: false,
             viewMode: 1,
+            zoomOnTouch: true,
+            zoomOnWheel: true,
             ready() {
                 const current = readCrop(scope);
                 const dimensions = cropper.getImageData();
@@ -117,14 +152,13 @@ export function initMediaCropper() {
 
     save.addEventListener('click', () => {
         if (!cropper || !activeScope) return;
-        const data = cropper.getData(true);
+        const data = cropper.getData();
         const dimensions = cropper.getImageData();
-        writeCrop(activeScope, {
-            x: data.x / dimensions.naturalWidth,
-            y: data.y / dimensions.naturalHeight,
-            width: data.width / dimensions.naturalWidth,
-            height: data.height / dimensions.naturalHeight,
-        });
+        const normalized = normalizeCrop(data, dimensions.naturalWidth, dimensions.naturalHeight);
+
+        if (!normalized) return;
+
+        writeCrop(activeScope, normalized);
         close();
     });
     cancel.addEventListener('click', close);

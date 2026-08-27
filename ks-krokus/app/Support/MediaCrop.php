@@ -7,7 +7,6 @@ namespace App\Support;
 final class MediaCrop
 {
     /**
-     * @param  mixed  $value
      * @return array{x: float, y: float, width: float, height: float}|null
      */
     public static function fromInput(mixed $value): ?array

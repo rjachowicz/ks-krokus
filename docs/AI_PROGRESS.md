@@ -1,5 +1,51 @@
 # AI_PROGRESS.md
 
+## Bieżąca sesja — 2026-08-27 — refaktor systemu kadrowania zdjęć
+
+### Cel i wykonane zmiany
+
+- [x] Przeniesiono jeden wspólny `<x-media-cropper-dialog />` do layoutu panelu.
+  Formularze aktualności i ogłoszeń nie renderują własnych kopii, dzięki czemu
+  dialog istnieje przed utworzeniem dynamicznych `data-crop-control` i nie jest
+  duplikowany na stronie.
+- [x] Dynamiczne nazwy pól zapisanych zdjęć korzystają z `:name` oraz pełnego
+  wyrażenia PHP. Renderowane inputy mają postać
+  `existing_images[ID][crop][x|y|width|height]` i nie ujawniają fragmentów składni
+  Blade pod zdjęciami.
+- [x] Cropper wykorzystuje prawie cały dostępny viewport, ma elastyczny tor obrazu
+  bez minimalnej wysokości wymuszającej overflow oraz większe uchwyty na
+  urządzeniach dotykowych. Zachowano ograniczenie dialogu do viewportu i mobilny
+  układ kontrolek.
+- [x] Ramka kadru jest ruchoma i skalowalna przy stałym `aspectRatio`; obraz nadal
+  można przesuwać i powiększać gestem, kółkiem, przyciskami oraz klawiaturą.
+  Początkowy kadr zajmuje 90% dostępnego obszaru, co pozostawia miejsce na wygodną
+  zmianę rozmiaru także dla źródeł kwadratowych.
+- [x] Zapis używa niezaokrąglonych danych źródłowych Cropper.js, normalizuje
+  krawędzie względem naturalnych wymiarów obrazu i gwarantuje `x`, `y`, `width`
+  oraz `height` w zakresie 0..1 bez wyjścia prawej lub dolnej krawędzi poza 1.
+- [x] Wszystkie istniejące i dynamiczne grupy akcji zdjęć korzystają ze wspólnego
+  `media-action-group` oraz `gap: var(--space-2)`, w tym pary ustawienia kadru i
+  usunięcia zdjęcia.
+- Nie zmieniono backendowego formatu cropów, migracji, schematu bazy, kalendarza,
+  wyników ani moderacji ogłoszeń.
+
+### Testy i ograniczenia
+
+- [x] Rozszerzono testy Laravel o dokładne nazwy czterech pól cropu dla zapisanej
+  aktualności i ogłoszenia, brak wycieku składni Blade, pojedynczy dialog layoutu,
+  dostępność dialogu przed kontrolkami dynamicznymi oraz wspólny gap akcji.
+- [x] `composer test` — 216 testów, 1897 asercji, wszystkie poprawne.
+- [x] `vendor/bin/pint --test` — poprawny po mechanicznym usunięciu dwóch zastanych
+  problemów formatowania w `Post` i `MediaCrop`; bez zmian zachowania backendu.
+- [x] `npm.cmd run build` — poprawny build Vite, 66 modułów. Bezpośrednie
+  `npm run build` pozostaje blokowane przez lokalną politykę wykonywania
+  `npm.ps1`; użyto równoważnego pliku wykonywalnego Windows.
+- Sesja Browser zwróciła pustą listę instancji. Repozytorium nadal nie ma Dusk,
+  Playwright ani Cypress, dlatego nie dodano pozornego testu E2E; cztery scenariusze
+  (nowa/zapisana aktualność i nowe/edytowane ogłoszenie) pozostają do wykonania po
+  udostępnieniu przeglądarki lub trwałego runnera.
+- Nie dodano migracji ani nowych zmiennych środowiskowych.
+
 ## Bieżąca sesja — 2026-08-27 — przygotowanie refaktoru UI/UX
 
 ### Cel i wykonane przygotowanie

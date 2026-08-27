@@ -625,10 +625,12 @@ select {
 }
 
 .media-cropper {
-    width: min(1280px, calc(100vw - 2rem));
-    height: min(960px, calc(100dvh - 2rem));
+    box-sizing: border-box;
+    width: min(1440px, calc(100vw - 1rem));
+    height: min(1080px, calc(100dvh - 1rem));
     max-width: none;
-    max-height: calc(100dvh - 2rem);
+    max-height: calc(100dvh - 1rem);
+    margin: auto;
     padding: 0;
     overflow: hidden;
     border: 1px solid var(--line-strong);
@@ -640,7 +642,12 @@ select {
 .media-action-group {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--space-2);
+}
+
+.media-action-group > .form-check {
+    margin: 0;
 }
 
 .media-cropper::backdrop {
@@ -651,10 +658,11 @@ select {
 .media-cropper__panel {
     display: grid;
     height: 100%;
-    grid-template-rows: auto minmax(280px, 1fr) auto;
+    max-height: 100%;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     gap: var(--space-4);
     padding: clamp(1rem, 3vw, 1.5rem);
-    overflow: auto;
+    overflow: hidden;
 }
 
 .media-cropper__panel > header,
@@ -676,9 +684,13 @@ select {
 }
 
 .media-cropper__stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
     min-width: 0;
     min-height: 0;
     overflow: hidden;
+    border-radius: var(--radius-control);
     background: #101214;
     outline: 2px solid transparent;
     outline-offset: 3px;
@@ -691,6 +703,63 @@ select {
 .media-cropper__stage img {
     display: block;
     max-width: 100%;
+}
+
+.media-cropper .cropper-line,
+.media-cropper .cropper-point {
+    background-color: var(--gold-fill);
+}
+
+@media (pointer: coarse) {
+    .media-cropper .cropper-line.line-e,
+    .media-cropper .cropper-line.line-w {
+        width: 18px;
+    }
+
+    .media-cropper .cropper-line.line-n,
+    .media-cropper .cropper-line.line-s {
+        height: 18px;
+    }
+
+    .media-cropper .cropper-point {
+        width: 20px;
+        height: 20px;
+        opacity: 1;
+    }
+
+    .media-cropper .cropper-point.point-e,
+    .media-cropper .cropper-point.point-w {
+        margin-top: -10px;
+    }
+
+    .media-cropper .cropper-point.point-n,
+    .media-cropper .cropper-point.point-s {
+        margin-left: -10px;
+    }
+
+    .media-cropper .cropper-point.point-e,
+    .media-cropper .cropper-point.point-ne,
+    .media-cropper .cropper-point.point-se {
+        right: -10px;
+    }
+
+    .media-cropper .cropper-point.point-n,
+    .media-cropper .cropper-point.point-ne,
+    .media-cropper .cropper-point.point-nw {
+        top: -10px;
+    }
+
+    .media-cropper .cropper-point.point-w,
+    .media-cropper .cropper-point.point-nw,
+    .media-cropper .cropper-point.point-sw {
+        left: -10px;
+    }
+
+    .media-cropper .cropper-point.point-s,
+    .media-cropper .cropper-point.point-se,
+    .media-cropper .cropper-point.point-sw {
+        bottom: -10px;
+    }
 }
 
 .media-cropper__controls {
