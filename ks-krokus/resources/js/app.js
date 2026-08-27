@@ -45,6 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (document.querySelector('[data-media-lightbox]')) {
+        import('./modules/media-lightbox').then(({ initMediaLightboxes }) => {
+            initMediaLightboxes();
+        });
+    }
+
     if (document.querySelector('[data-rich-text]')) {
         import('./modules/rich-text').then(({ initRichTextEditors }) => {
             initRichTextEditors();

@@ -75,17 +75,13 @@
                                 <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn-secondary"
                                     aria-label="Edytuj aktualność: {{ $post->title }}">Edytuj</a>
 
-                                @if ($post->isPubliclyVisible())
-                                    <a
-                                        href="{{ route('news.show', $post) }}"
-                                        class="btn btn-secondary"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label="Podgląd aktualności: {{ $post->title }} — otwiera w nowej karcie"
-                                    >
-                                        Podgląd
-                                    </a>
-                                @endif
+                                <a
+                                    href="{{ route('admin.posts.show', $post) }}"
+                                    class="btn btn-secondary"
+                                    aria-label="Podgląd aktualności: {{ $post->title }}"
+                                >
+                                    Podgląd
+                                </a>
 
                                 <form
                                     method="POST"

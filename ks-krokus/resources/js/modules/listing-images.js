@@ -14,10 +14,6 @@ export function initListingGallery() {
         const mainImage = gallery.querySelector('[data-listing-gallery-main]');
         const mainCaption = gallery.querySelector('[data-listing-gallery-caption]');
         const thumbnails = [...gallery.querySelectorAll('[data-listing-gallery-thumbnail]')];
-        const lightbox = document.querySelector('[data-listing-lightbox]');
-        const lightboxImage = lightbox?.querySelector('[data-listing-lightbox-image]');
-        const lightboxCaption = lightbox?.querySelector('[data-listing-lightbox-caption]');
-        const closeButton = lightbox?.querySelector('[data-listing-lightbox-close]');
 
         if (!mainLink || !mainImage) {
             return;
@@ -35,6 +31,7 @@ export function initListingGallery() {
             mainLink.setAttribute('aria-label', `Powiększ zdjęcie: ${alt}`);
             mainImage.src = src;
             mainImage.alt = alt;
+            mainLink.dataset.mediaLightboxCaption = caption;
             setCaption(mainCaption, caption);
             thumbnails.forEach((candidate) => {
                 if (candidate === thumbnail) {
@@ -50,24 +47,6 @@ export function initListingGallery() {
                 event.preventDefault();
                 selectImage(thumbnail);
             });
-        });
-
-        mainLink.addEventListener('click', (event) => {
-            if (!lightbox || !lightboxImage || typeof lightbox.showModal !== 'function') {
-                return;
-            }
-
-            event.preventDefault();
-            lightboxImage.src = mainLink.href;
-            lightboxImage.alt = mainImage.alt;
-            setCaption(lightboxCaption, mainCaption?.textContent.trim() || '');
-            lightbox.showModal();
-            closeButton?.focus();
-        });
-
-        closeButton?.addEventListener('click', () => lightbox.close());
-        lightbox?.addEventListener('click', (event) => {
-            if (event.target === lightbox) lightbox.close();
         });
     });
 }

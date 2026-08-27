@@ -42,7 +42,7 @@ final class AdminCrudAuditTest extends TestCase
 
         $post = Post::query()->firstOrFail();
 
-        $response->assertRedirect(route('admin.posts.edit', $post));
+        $response->assertRedirect(route('admin.posts.index'));
         $this->get(route('admin.posts.edit', $post))
             ->assertOk()
             ->assertSeeText($post->title);

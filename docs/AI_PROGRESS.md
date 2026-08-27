@@ -1,5 +1,49 @@
 # AI_PROGRESS.md
 
+## Bieżąca sesja — 2026-08-27 — panelowy podgląd i lightbox aktualności
+
+### Cel i wykonane zmiany
+
+- [x] `PostController::store` po poprawnym utworzeniu aktualności przekierowuje
+  do `admin.posts.index` z dotychczasowym polskim komunikatem sukcesu.
+- [x] Dodano `admin.posts.show` pod `/panel/aktualnosci/{post}`. Widok korzysta z
+  `layouts.admin`, działa dla statusów `Published`, `Draft` i pozostałych rekordów
+  dostępnych w panelu oraz nie przechodzi przez publiczny scope `published()`.
+- [x] Linki „Podgląd” na liście i w edycji prowadzą zawsze do panelowej trasy,
+  są dostępne także dla szkicu i nie wymuszają nowej karty.
+- [x] Prezentację nagłówka, okładki, treści, galerii i akcji artykułu wydzielono do
+  jednego komponentu `<x-news.article>`, używanego przez publiczny `news.show` i
+  panelowy `admin.posts.show`. Publiczny layout, meta title, meta description,
+  filtrowanie publikacji i sekcja „Więcej aktualności” pozostały bez zmian.
+- [x] Okładka i każde dostępne zdjęcie galerii aktualności są linkami do pełnego
+  pliku i otwierają wspólny natywny dialog. Moduł obsługuje Escape, przycisk
+  zamknięcia, klik w backdrop, klawiaturę, izolację fokusu przez `showModal()` oraz
+  jawny powrót fokusu do elementu otwierającego.
+- [x] Dotychczasowy lightbox ogłoszeń wydzielono do wspólnego
+  `<x-media-lightbox>`, modułu `media-lightbox.js` i arkusza komponentu. W module
+  ogłoszeń pozostała wyłącznie zmiana bieżącego zdjęcia i podpisu; workflow,
+  dane, trasy i pozostały HTML ogłoszeń nie zostały zmienione.
+- [x] Mechanicznie poprawiono dwa zastane problemy Pint w `Post` i `MediaCrop`,
+  bez zmiany zachowania modeli, kadrowania ani zapisu plików.
+
+### Testy i ograniczenia
+
+- [x] Dodano 5 testów Feature obejmujących redirect po `store`, panelowy podgląd
+  Published i Draft, użycie layoutu panelu, linki listy, zachowanie publicznego
+  widoku wraz z SEO oraz znaczniki współdzielonego lightboxa.
+- [x] Testy celowane: `PostPreviewTest` — 5 testów / 39 asercji,
+  `AdminCrudAuditTest` — 6 / 95, `SaleListingModuleTest` — 29 / 238.
+- [x] `composer test` — 220 testów, 1910 asercji, wszystkie poprawne.
+- [x] `vendor/bin/pint --test` — bez błędów.
+- [x] `npm run build` przez `cmd /c` — poprawny build Vite, 67 modułów; osobny
+  moduł lightboxa 0,91 kB (0,43 kB gzip). Pozostało zastane ostrzeżenie npm o
+  przyszłym wycofaniu opcji `min-release-age`.
+- [x] `php artisan view:cache`, lista siedmiu tras `admin.posts.*` i
+  `git diff --check` — poprawne.
+- Nie dodano migracji ani nowych zmiennych środowiskowych. Fizyczna kontrola
+  lightboxa z NVDA/VoiceOver i rzeczywistą przeglądarką pozostaje testem
+  wdrożeniowym; semantyka, fallback bez JS i zachowanie serwerowe są pokryte.
+
 ## Bieżąca sesja — 2026-08-27 — końcowe poprawki UI etapu 1
 
 ### Cel i wykonane zmiany

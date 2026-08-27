@@ -1,5 +1,23 @@
 # TODO.md
 
+## P0 — panelowy podgląd i lightbox aktualności
+
+- [x] Po utworzeniu aktualności przekierować do `admin.posts.index`.
+- [x] Dodać `admin.posts.show` w `layouts.admin`, działający dla Published i Draft
+  bez przechodzenia przez publiczny `news.show`.
+- [x] Przepiąć panelowe linki „Podgląd” na trasę panelową i otwierać je w tej
+  samej karcie.
+- [x] Wydzielić jeden komponent prezentacji artykułu dla publicznego i panelowego
+  widoku, zachowując osobne layouty i publiczne SEO.
+- [x] Dodać klikalną okładkę i galerię aktualności z dostępnym lightboxem,
+  Escape, zamknięciem przez backdrop oraz przywracaniem fokusu.
+- [x] Uogólnić dotychczasowy lightbox ogłoszeń do wspólnego komponentu i modułu
+  bez zmiany workflow ani danych ogłoszeń.
+- [x] Pokryć redirect, oba statusy podglądu, layout panelu, link listy, publiczny
+  widok i integrację lightboxa testami regresyjnymi.
+- [ ] Po wdrożeniu wykonać fizyczny test lightboxa z NVDA/VoiceOver i na
+  rzeczywistych urządzeniach od 320 px.
+
 ## P0 — etap 7/9: ogłoszenia, moderacja i układ widoków
 
 - [x] Zachować `intent` aktywnego submittera podczas ustawiania stanu wysyłania,
