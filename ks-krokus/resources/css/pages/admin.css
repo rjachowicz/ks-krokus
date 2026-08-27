@@ -160,7 +160,6 @@
 .admin-topbar {
     position: sticky;
     z-index: 20;
-    isolation: isolate;
     top: 0;
     display: flex;
     min-height: 72px;
@@ -170,8 +169,8 @@
     padding: 14px 28px;
     border-bottom: 1px solid var(--line);
     background: var(--header-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {

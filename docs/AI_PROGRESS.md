@@ -1,5 +1,32 @@
 # AI_PROGRESS.md
 
+## Bieżąca sesja — 2026-08-27 — końcowe poprawki UI etapu 1
+
+### Cel i wykonane zmiany
+
+- [x] Przebudowano wyłącznie mobilny wariant croppera: nagłówek pozostał zwartym
+  wierszem z małym przyciskiem zamknięcia w prawym górnym rogu, akcje tworzą
+  siatkę 2 × 2, a środkowy tor kadrowania wykorzystuje pozostałą wysokość bez
+  stałego odejmowania rozmiaru kontrolek. Poniżej 300 px akcje przechodzą do
+  jednej kolumny; wariant desktopowy pozostał bez zmian.
+- [x] Dodano celowany selektor `.file-preview__actions.media-action-group`, który
+  zachowuje flex i odstępy mimo bardziej ogólnej reguły `.file-preview div`, bez
+  zmiany układu nazwy i rozmiaru pliku.
+- [x] Historia `main` potwierdziła, że `isolation: isolate` usunięto wcześniej z
+  publicznego headera jako przyczynę problemu z blur. Zastosowano tę samą poprawkę
+  w `.admin-topbar` oraz zrównano blur i saturację z publicznym efektem glass,
+  zachowując półprzezroczyste tło, prefiks WebKit i nieprzezroczysty fallback.
+
+### Testy i ograniczenia
+
+- [x] `php artisan test --filter=InterfaceAuditTest` — 8 testów, 233 asercje.
+- [x] `php artisan test --filter=MediaManagementTest` — 8 testów, 52 asercje.
+- [x] `npm.cmd run build` — poprawny build Vite, 66 modułów; pozostało zastane
+  ostrzeżenie npm o przyszłym wycofaniu opcji `min-release-age`.
+- [x] `php artisan view:cache` i `git diff --check` — poprawne.
+- Nie dodano migracji ani zmiennych środowiskowych. Nie zmieniono JavaScriptu,
+  Blade, backendu, routingu ani testów. Nie wykonano commita ani pusha.
+
 ## Bieżąca sesja — 2026-08-26 — etap 7/9: ogłoszenia, moderacja i układ widoków
 
 ### Cel

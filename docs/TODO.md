@@ -128,6 +128,12 @@
 - [x] Zastąpić ręczne przesunięcia przycisków wspólnym układem filtrów dla
   części publicznej, panelu, ogłoszeń i sekcji „Moje ogłoszenia”.
 - [x] Dodać regresje struktury stopki, logowania i wspólnego systemu filtrów.
+- [x] Uporządkować mobilny cropper: zwarty nagłówek, małe zamknięcie, akcje 2 × 2
+  i elastyczny obszar kadrowania bez stałego odejmowania wysokości.
+- [x] Przywrócić flex oraz odstępy grupie akcji podglądu pliku bez zmiany układu
+  informacji o nazwie i rozmiarze.
+- [x] Usunąć z `.admin-topbar` potwierdzoną przyczynę niedziałającego blur oraz
+  zachować spójny z publicznym headerem efekt glass i fallback.
 - [ ] Powtórzyć wizualny audyt 320–1920 px po udostępnieniu instancji
   przeglądarki; bieżąca sesja nie udostępniła żadnego backendu Browser.
 
