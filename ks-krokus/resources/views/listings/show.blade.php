@@ -39,7 +39,13 @@
 
                     <figure class="listing-gallery__stage">
                         @if ($primaryImage)
-                            <a href="{{ $primaryImageUrl }}" data-listing-gallery-open aria-label="Powiększ zdjęcie: {{ $primaryImage->alt_text ?: $listing->title }}">
+                            <a
+                                href="{{ $primaryImageUrl }}"
+                                data-listing-gallery-open
+                                data-media-lightbox-trigger="listing-lightbox-{{ $listing->getKey() }}"
+                                data-media-lightbox-caption="{{ $primaryImage->caption }}"
+                                aria-label="Powiększ zdjęcie: {{ $primaryImage->alt_text ?: $listing->title }}"
+                            >
                                 <img
                                     src="{{ $primaryImageUrl }}"
                                     alt="{{ $primaryImage->alt_text ?: $listing->title }}"
@@ -165,16 +171,13 @@
         </div>
 
         @if ($primaryImage)
-            <dialog class="listing-lightbox" aria-labelledby="listing-lightbox-title" data-listing-lightbox>
-                <div class="listing-lightbox__header">
-                    <h2 id="listing-lightbox-title">Powiększone zdjęcie ogłoszenia</h2>
-                    <button type="button" class="listing-lightbox__close" aria-label="Zamknij podgląd zdjęcia" data-listing-lightbox-close>×</button>
-                </div>
-                <figure>
-                    <img src="{{ $primaryImageUrl }}" alt="{{ $primaryImage->alt_text ?: $listing->title }}" data-listing-lightbox-image>
-                    <figcaption data-listing-lightbox-caption @if (! $primaryImage->caption) hidden @endif>{{ $primaryImage->caption }}</figcaption>
-                </figure>
-            </dialog>
+            <x-media-lightbox
+                id="listing-lightbox-{{ $listing->getKey() }}"
+                title="Powiększone zdjęcie ogłoszenia"
+                :initial-src="$primaryImageUrl"
+                :initial-alt="$primaryImage->alt_text ?: $listing->title"
+                :initial-caption="$primaryImage->caption"
+            />
         @endif
     </section>
 @endsection

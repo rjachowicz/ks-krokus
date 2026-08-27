@@ -587,7 +587,7 @@ final class SaleListingModuleTest extends TestCase
             ->assertOk()
             ->assertSee('data-listing-gallery', false)
             ->assertSee('data-listing-gallery-thumbnail', false)
-            ->assertSee('data-listing-lightbox', false)
+            ->assertSee('data-media-lightbox', false)
             ->assertSee('class="listing-detail__panel listing-report-section panel-card"', false)
             ->assertSeeText('Bezpieczna transakcja')
             ->assertSee('aria-current="true"', false);

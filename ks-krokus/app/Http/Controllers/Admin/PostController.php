@@ -93,7 +93,7 @@ final class PostController extends Controller
                 : null;
             $this->storeUploadedFiles($request, $gallery);
 
-            $post = DB::transaction(function () use ($request, $cover, $gallery): Post {
+            DB::transaction(function () use ($request, $cover, $gallery): void {
                 $data = $request->validated();
                 $data['slug'] = UniqueSlug::for(Post::class, $data['title']);
                 $data['content_format'] = $data['content_format'] ?? 'plain';
@@ -124,8 +124,6 @@ final class PostController extends Controller
 
                 $post = Post::query()->create($data);
                 $this->createGalleryImages($post, $gallery);
-
-                return $post;
             });
         } catch (Throwable $exception) {
             $this->deleteFiles([
@@ -137,8 +135,15 @@ final class PostController extends Controller
         }
 
         return redirect()
-            ->route('admin.posts.edit', $post)
+            ->route('admin.posts.index')
             ->with('success', 'Aktualność została utworzona.');
+    }
+
+    public function show(Post $post): View
+    {
+        $post->load(['author', 'images']);
+
+        return view('admin.posts.show', compact('post'));
     }
 
     public function edit(Post $post): View

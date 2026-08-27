@@ -5,19 +5,15 @@
 
 @section('content')
     <x-admin-page-header :title="$post->title" :description="$post->status->label()">
-        @if ($post->isPubliclyVisible())
-            <x-slot:actions>
-                <a
-                    href="{{ route('news.show', $post) }}"
-                    class="btn btn-secondary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Podgląd aktualności: {{ $post->title }} — otwiera w nowej karcie"
-                >
-                    Podgląd publiczny
-                </a>
-            </x-slot:actions>
-        @endif
+        <x-slot:actions>
+            <a
+                href="{{ route('admin.posts.show', $post) }}"
+                class="btn btn-secondary"
+                aria-label="Podgląd aktualności: {{ $post->title }}"
+            >
+                Podgląd
+            </a>
+        </x-slot:actions>
     </x-admin-page-header>
 
     <form

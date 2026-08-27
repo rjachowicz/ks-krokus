@@ -197,12 +197,12 @@ Route::prefix('panel')
                 ->name('sale-listings.flag');
 
             Route::resource('aktualnosci', AdminPostController::class)
-                ->except('show')
                 ->parameters(['aktualnosci' => 'post'])
                 ->names([
                     'index' => 'posts.index',
                     'create' => 'posts.create',
                     'store' => 'posts.store',
+                    'show' => 'posts.show',
                     'edit' => 'posts.edit',
                     'update' => 'posts.update',
                     'destroy' => 'posts.destroy',
