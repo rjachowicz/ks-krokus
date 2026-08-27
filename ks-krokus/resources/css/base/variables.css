@@ -23,7 +23,8 @@ html[data-theme="light"] {
     --line-strong: rgba(17, 21, 27, 0.2);
     --shadow-sm: 0 10px 30px rgba(18, 24, 32, 0.07);
     --shadow-lg: 0 24px 70px rgba(18, 24, 32, 0.13);
-    --header-bg: rgba(246, 248, 250, 0.72);
+    --header-bg: rgba(246, 248, 250, 0.68);
+    --header-bg-scrolled: rgba(246, 248, 250, 0.58);
     --header-bg-fallback: rgba(246, 248, 250, 0.97);
     --map-filter: grayscale(0.12) contrast(0.98);
     --font-body: "Inter", sans-serif;
@@ -68,7 +69,8 @@ html[data-theme="dark"] {
     --line-strong: rgba(255, 255, 255, 0.18);
     --shadow-sm: 0 12px 34px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 26px 80px rgba(0, 0, 0, 0.48);
-    --header-bg: rgba(8, 11, 16, 0.72);
+    --header-bg: rgba(8, 11, 16, 0.7);
+    --header-bg-scrolled: rgba(8, 11, 16, 0.62);
     --header-bg-fallback: rgba(8, 11, 16, 0.97);
     --map-filter: grayscale(0.35) brightness(0.82) contrast(1.08);
 }

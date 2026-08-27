@@ -247,8 +247,12 @@ final class InterfaceAuditTest extends TestCase
         $adminLayout = (string) file_get_contents(resource_path('views/layouts/admin.blade.php'));
         $icon = (string) file_get_contents(resource_path('views/components/icon.blade.php'));
 
+        self::assertStringContainsString('--header-bg:', $variables);
+        self::assertStringContainsString('--header-bg-scrolled:', $variables);
         self::assertStringContainsString('--header-bg-fallback:', $variables);
-        self::assertStringContainsString('isolation: isolate', $headerStyles);
+        self::assertStringContainsString('position: fixed', $headerStyles);
+        self::assertStringContainsString('background: var(--header-bg)', $headerStyles);
+        self::assertStringContainsString('background: var(--header-bg-scrolled)', $headerStyles);
         self::assertStringContainsString('backdrop-filter: blur(20px)', $headerStyles);
         self::assertStringContainsString('-webkit-backdrop-filter: blur(20px)', $headerStyles);
         self::assertStringContainsString('@supports not', $headerStyles);
@@ -259,5 +263,25 @@ final class InterfaceAuditTest extends TestCase
         self::assertStringNotContainsString('<svg', $adminLayout);
         self::assertStringContainsString('aria-hidden="true"', $icon);
         self::assertStringContainsString('focusable="false"', $icon);
+    }
+
+    public function test_listing_create_loads_cropper_before_dynamic_controls_are_created(): void
+    {
+        $user = User::factory()->create(['is_active' => true]);
+        $app = (string) file_get_contents(resource_path('js/app.js'));
+        $cropper = (string) file_get_contents(resource_path('js/modules/media-cropper.js'));
+
+        $this->actingAs($user)
+            ->get(route('admin.my-listings.create'))
+            ->assertOk()
+            ->assertSee('data-listing-images', false)
+            ->assertSee('data-media-cropper-dialog', false);
+
+        self::assertStringContainsString(
+            "document.querySelector('[data-media-cropper-dialog]')",
+            $app,
+        );
+        self::assertStringContainsString("document.addEventListener('click'", $cropper);
+        self::assertStringContainsString("closest('[data-crop-control]')", $cropper);
     }
 }

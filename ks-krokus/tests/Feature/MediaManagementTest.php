@@ -254,9 +254,11 @@ final class MediaManagementTest extends TestCase
         try {
             $this->artisan('storage:link')->assertExitCode(0);
             $this->artisan('storage:link')->assertExitCode(0);
-            self::assertTrue(is_link($link) || is_dir($link));
+            clearstatcache(true, $link);
+            self::assertTrue(file_exists($link));
         } finally {
-            if (is_link($link) || is_dir($link)) {
+            clearstatcache(true, $link);
+            if (is_link($link) || is_dir($link) || file_exists($link)) {
                 rmdir($link);
             }
             if (is_dir($target)) {

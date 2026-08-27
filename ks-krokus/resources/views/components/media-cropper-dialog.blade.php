@@ -5,6 +5,7 @@
                 <h2 id="media-cropper-title">Ustaw kadr zdjęcia</h2>
                 <p id="media-cropper-help">Przesuń zdjęcie, użyj zoomu albo klawiszy strzałek. Klawisze plus i minus zmieniają przybliżenie, R przywraca ustawienia.</p>
             </div>
+            <button type="button" class="btn btn-secondary" data-media-cropper-cancel aria-label="Zamknij bez zapisywania kadru">Zamknij</button>
         </header>
         <div class="media-cropper__stage" data-media-cropper-stage tabindex="0" aria-label="Obszar kadrowania zdjęcia">
             <img data-media-cropper-image alt="Podgląd kadrowanego zdjęcia">
@@ -14,7 +15,6 @@
             <button type="button" class="btn btn-secondary" data-media-cropper-zoom-in>Powiększ</button>
             <button type="button" class="btn btn-secondary" data-media-cropper-reset>Resetuj</button>
             <button type="button" class="btn btn-primary" data-media-cropper-save>Zapisz kadr</button>
-            <button type="button" class="btn btn-secondary" data-media-cropper-cancel aria-label="Zamknij bez zapisywania kadru">Zamknij</button>
         </div>
     </div>
 </dialog>

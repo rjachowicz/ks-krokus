@@ -44,6 +44,7 @@ function sourceFor(control) {
 export function initMediaCropper() {
     const dialog = document.querySelector('[data-media-cropper-dialog]');
     const image = dialog?.querySelector('[data-media-cropper-image]');
+    const panel = dialog?.querySelector('.media-cropper__panel');
     const stage = dialog?.querySelector('[data-media-cropper-stage]');
     const save = dialog?.querySelector('[data-media-cropper-save]');
     const cancel = dialog?.querySelector('[data-media-cropper-cancel]');
@@ -51,7 +52,7 @@ export function initMediaCropper() {
     const zoomIn = dialog?.querySelector('[data-media-cropper-zoom-in]');
     const zoomOut = dialog?.querySelector('[data-media-cropper-zoom-out]');
 
-    if (!dialog || !image || !stage || !save || !cancel || !reset || !zoomIn || !zoomOut) return;
+    if (!dialog || !image || !panel || !stage || !save || !cancel || !reset || !zoomIn || !zoomOut) return;
 
     let cropper = null;
     let activeScope = null;
@@ -84,7 +85,8 @@ export function initMediaCropper() {
         activeSource = source;
         image.src = source.url;
         dialog.showModal();
-        cancel.focus();
+        panel.scrollTop = 0;
+        cancel.focus({ preventScroll: true });
 
         cropper = new Cropper(image, {
             aspectRatio: Number.parseFloat(control.dataset.cropAspect || '1.3333333333'),

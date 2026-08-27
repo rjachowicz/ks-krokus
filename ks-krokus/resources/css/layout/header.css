@@ -12,12 +12,14 @@
 }
 
 .site-header.is-scrolled {
+    background: var(--header-bg-scrolled);
     border-color: var(--line-strong);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .site-header {
+    .site-header,
+    .site-header.is-scrolled {
         background: var(--header-bg-fallback);
     }
 }
