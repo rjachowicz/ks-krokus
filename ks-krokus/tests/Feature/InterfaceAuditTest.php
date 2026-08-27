@@ -270,12 +270,20 @@ final class InterfaceAuditTest extends TestCase
         $user = User::factory()->create(['is_active' => true]);
         $app = (string) file_get_contents(resource_path('js/app.js'));
         $cropper = (string) file_get_contents(resource_path('js/modules/media-cropper.js'));
+        $adminLayout = (string) file_get_contents(resource_path('views/layouts/admin.blade.php'));
+        $postForm = (string) file_get_contents(resource_path('views/admin/posts/_form.blade.php'));
+        $listingForm = (string) file_get_contents(resource_path('views/listings/_form.blade.php'));
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->get(route('admin.my-listings.create'))
             ->assertOk()
             ->assertSee('data-listing-images', false)
             ->assertSee('data-media-cropper-dialog', false);
+
+        self::assertSame(1, substr_count((string) $response->getContent(), 'data-media-cropper-dialog'));
+        self::assertStringContainsString('<x-media-cropper-dialog />', $adminLayout);
+        self::assertStringNotContainsString('<x-media-cropper-dialog />', $postForm);
+        self::assertStringNotContainsString('<x-media-cropper-dialog />', $listingForm);
 
         self::assertStringContainsString(
             "document.querySelector('[data-media-cropper-dialog]')",
@@ -283,5 +291,26 @@ final class InterfaceAuditTest extends TestCase
         );
         self::assertStringContainsString("document.addEventListener('click'", $cropper);
         self::assertStringContainsString("closest('[data-crop-control]')", $cropper);
+        self::assertStringContainsString('cropBoxMovable: true', $cropper);
+        self::assertStringContainsString('cropBoxResizable: true', $cropper);
+        self::assertStringContainsString('const normalized = normalizeCrop(', $cropper);
+    }
+
+    public function test_photo_actions_share_the_media_action_group_gap(): void
+    {
+        $formStyles = (string) file_get_contents(resource_path('css/components/forms.css'));
+        $postForm = (string) file_get_contents(resource_path('views/admin/posts/_form.blade.php'));
+        $listingForm = (string) file_get_contents(resource_path('views/listings/_form.blade.php'));
+        $fileUpload = (string) file_get_contents(resource_path('js/modules/file-upload.js'));
+        $listingImages = (string) file_get_contents(resource_path('js/modules/listing-images.js'));
+
+        self::assertMatchesRegularExpression(
+            '/\.media-action-group\s*\{[^}]*gap:\s*var\(--space-2\)/s',
+            $formStyles,
+        );
+        self::assertStringContainsString('<div class="media-action-group">', $postForm);
+        self::assertStringContainsString('<div class="media-action-group">', $listingForm);
+        self::assertStringContainsString("actions.className = 'file-preview__actions media-action-group'", $fileUpload);
+        self::assertStringContainsString("actions.className = 'listing-upload-item__actions media-action-group'", $listingImages);
     }
 }

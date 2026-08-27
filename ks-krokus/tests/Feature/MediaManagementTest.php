@@ -97,27 +97,36 @@ final class MediaManagementTest extends TestCase
             'content' => 'Treść aktualności.',
             'status' => PublicationStatus::Draft,
         ]);
-        $post->images()->create([
+        $postImage = $post->images()->create([
             'path' => 'news/gallery/kadr.jpg',
             'crop' => ['x' => 0.1, 'y' => 0.1, 'width' => 0.8, 'height' => 0.8],
             'sort_order' => 0,
         ]);
         $listing = SaleListing::factory()->for($owner, 'author')->create();
-        SaleListingImage::factory()->for($listing, 'listing')->create([
+        $listingImage = SaleListingImage::factory()->for($listing, 'listing')->create([
             'crop' => ['x' => 0.1, 'y' => 0.1, 'width' => 0.8, 'height' => 0.8],
         ]);
 
         $responses = [
-            $this->actingAs($moderator)->get(route('admin.posts.edit', $post)),
-            $this->actingAs($owner)->get(route('admin.my-listings.edit', $listing)),
+            [$this->actingAs($moderator)->get(route('admin.posts.edit', $post)), $postImage->id],
+            [$this->actingAs($owner)->get(route('admin.my-listings.edit', $listing)), $listingImage->id],
         ];
 
-        foreach ($responses as $response) {
+        foreach ($responses as [$response, $imageId]) {
             $response
                 ->assertOk()
                 ->assertDontSee('$image->crop', false)
                 ->assertDontSee('id}.crop', false)
                 ->assertDontSee('old("existing_images', false);
+
+            foreach (['x', 'y', 'width', 'height'] as $coordinate) {
+                $response->assertSee(
+                    "name=\"existing_images[{$imageId}][crop][{$coordinate}]\"",
+                    false,
+                );
+            }
+
+            self::assertSame(1, substr_count((string) $response->getContent(), 'data-media-cropper-dialog'));
         }
     }
 

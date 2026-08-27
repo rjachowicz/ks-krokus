@@ -3,7 +3,7 @@
 ## Start nowej sesji
 
 ```text
-Pracuj na aktualnym branchu utworzonym z `v.0.4-refactor-calendar-and-admin-panel`.
+Pracuj na osobnym feature branchu utworzonym z aktualnego `main`.
 
 Przeczytaj:
 - AGENTS.md
@@ -14,7 +14,7 @@ Przeczytaj:
 - docs/AI_PROGRESS.md
 - docs/TODO.md
 
-Sprawdź branch i git status. Nie cofaj zmian v0.4. Przedstaw krótki plan i wykonaj zadanie do końca. Po zmianach uruchom testy, Pint i build oraz zaktualizuj AI_PROGRESS.md i TODO.md.
+Sprawdź branch i git status. Nie cofaj zmian obecnych na `main`. Przedstaw krótki plan i wykonaj zadanie do końca. Po zmianach uruchom testy, Pint i build oraz zaktualizuj AI_PROGRESS.md i TODO.md.
 ```
 
 ## Formularze i walidacja
